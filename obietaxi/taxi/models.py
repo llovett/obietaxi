@@ -19,6 +19,9 @@ class UserProfile(mdb.Document):
     openid = mdb.StringField() # not sure what type the ID should actually be
 
 class Trip(mdb.Document):
+    '''
+    Trip models a trip taken by a Driver and some number of Passengers
+    '''
     start = mdb.GeoPointField()
     end = mdb.GeoPointField()
     driver = mdb.ReferenceField('UserProfile')
@@ -29,6 +32,9 @@ class Trip(mdb.Document):
     completed = mdb.BooleanField(default=False)
 
 class RideRequest(mdb.Document):
+    '''
+    RideRequest models a request for a ride from a Passenger, looking for a Driver.
+    '''
     driver = mdb.ReferenceField('UserProfile')
     passenger = mdb.ReferenceField('UserProfile')
     start = mdb.GeoPointField()
@@ -40,6 +46,9 @@ class RideRequest(mdb.Document):
     # repeat = mdb.StringField()
 
 class RideOffer(mdb.Document):
+    '''
+    RideOffer models an offer for a ride from a Driver, looking for Passengers.
+    '''
     driver = mdb.ReferenceField('UserProfile')
     passenger = mdb.ReferenceField('UserProfile')
     start = mdb.GeoPointField()
