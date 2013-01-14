@@ -4,6 +4,6 @@ from taxi import views
 
 urlpatterns = patterns('',
                        url( r'^$', direct_to_template, { 'template':'index.html' } ),
-                       url( r'^/trip/new/$', views.new_trip, name="trip_new" ),
-                       url( r'^/browse/$', views.list_trips, name="trip_list" ),
+                       url( r'^/request/ride/new$', views.request_ride_new, name="request_ride_new" ),
+                       url( r'^/request/show$', views.request_show, name="request_show" ),
 )
