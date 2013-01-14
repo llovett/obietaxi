@@ -1,8 +1,8 @@
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from models import RideRequest, Trip, UserProfile, RideOffer
 import datetime
 import json
+from random import random
 
 def new_trip( request ):
     # TODO: take information from the request, and create a new Trip object.
@@ -45,3 +45,25 @@ def new_offer( request ):
                            trip=trip, message=message, date=date)
     ride_offer.save()
     return HttpResponseRedirect('/browse')
+
+def request_ride_new( request ):
+    '''
+    Creates a new RideRequest from POST data given in <request>.
+    '''
+    # TODO: Create a new RideRequest from the POST data.
+    # Save this RideRequest in the database
+    new_request = RideRequest.objects.create(start=random()*90,
+                                             end=random()*90,
+                                             date=datetime.today()
+                                             )
+
+    return redirect( 'request_list' )
+
+def request_show( request ):
+    '''
+    Lists all of the RideRequests and renders them to "browse.html"
+    '''
+    # TODO: Pull all RideRequests from the database and render them in the
+    # "browse.html" template
+    ride_requests = RideRequests.objects
+    return render_to_response( "browse.html", locals() )
