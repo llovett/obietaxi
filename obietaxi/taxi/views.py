@@ -1,4 +1,7 @@
 from django.shortcuts import render_to_response, redirect
+from models import RideRequest
+from random import random
+from datetime import datetime
 
 def request_ride_new( request ):
     '''
@@ -6,6 +9,10 @@ def request_ride_new( request ):
     '''
     # TODO: Create a new RideRequest from the POST data.
     # Save this RideRequest in the database
+    new_request = RideRequest.objects.create(start=random()*90,
+                                             end=random()*90,
+                                             date=datetime.today()
+                                             )
 
     return redirect( 'request_list' )
 

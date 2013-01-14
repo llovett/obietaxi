@@ -4,4 +4,10 @@
   <title>Ride Requests</title>
 </head>
 <body>
-  <form action
+  <ul>
+    {% for item in ride_requests %}
+    <li> {{ item }} </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
