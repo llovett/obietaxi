@@ -1,18 +1,11 @@
-
-<html>
-<head>
-  <title>Front Page</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
   <form method="POST" action="{% url request_ride_new %}">
-{% csrf_token %}
-
-  Start time: <input type="text" name="trip_start"><br>
-  End time: <input type="text" name="trip_end"><br>
-  Date: <input type="text" name="trip_date"><br>
-  <input type="submit" value="Submit">
-</form>
-
-</body>
-</html>
-
+    {% csrf_token %}
+    
+    Start time: <input type="text" name="trip_start"><br>
+    End time: <input type="text" name="trip_end"><br>
+    Date: <input type="text" name="trip_date"><br>
+    <input type="submit" value="Submit">
+  </form>
+{% endblock %}

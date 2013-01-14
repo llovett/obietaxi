@@ -54,7 +54,7 @@ def request_ride_new( request ):
     # Save this RideRequest in the database
     new_request = RideRequest.objects.create(start=(random()*90,random()*90),
                                              end=(random()*90,random()*90),
-                                             date=datetime.today()
+                                             date=datetime.datetime.today()
                                              )
 
     return redirect( 'request_show' )

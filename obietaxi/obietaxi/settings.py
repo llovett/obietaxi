@@ -9,6 +9,8 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+import os
+HERE = os.path.dirname( os.path.abspath(__file__) )
 mdb.connect('database_file') # give this a better name later?
 
 
@@ -101,6 +103,7 @@ ROOT_URLCONF = 'obietaxi.urls'
 WSGI_APPLICATION = 'obietaxi.wsgi.application'
 
 TEMPLATE_DIRS = (
+    HERE + '/templates',
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.

@@ -1,13 +1,9 @@
-
-<html>
-<head>
-  <title>Ride Requests</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Browse{% endblock %}
+{% block content %}
   <ul>
     {% for item in ride_requests %}
-    <li> {{ item }} </li>
+      <li> {{ item }} </li>
     {% endfor %}
   </ul>
-</body>
-</html>
+{% endblock %}
