@@ -3,9 +3,9 @@
   <form method="POST" action="{% url request_ride_new %}">
     {% csrf_token %}
     
-    Start time: <input type="text" name="trip_start"><br>
-    End time: <input type="text" name="trip_end"><br>
-    Date: <input type="text" name="trip_date"><br>
+    Start time: <input type="text" name="start_point"><br>
+    End time: <input type="text" name="end_point"><br>
+    Date: <input type="text" name="start_date"><br>
     <input type="submit" value="Submit">
   </form>
 {% endblock %}

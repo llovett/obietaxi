@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response, redirect
-from models import RideRequest, Trip, UserProfile, RideOffer
+from models import RideRequest, Trip, UserProfile, RideOffer, Location
 import datetime
 import json
 from random import random
@@ -55,8 +55,11 @@ def request_ride_new( request ):
     Creates a new RideRequest from POST data given in <request>.
     '''
     # Currently random start/end points, date. Change this later.
-    new_request = RideRequest.objects.create( start=(random()*90,random()*90),
-                                              end=(random()*90,random()*90),
+    randloc = lambda : (random()*90,random()*90)
+    startLocation = Location( position=randloc(), title=request.POST['start_point'] )
+    endLocation = Location( position=randloc(), title=request.POST['end_point'] )
+    new_request = RideRequest.objects.create( start=startLocation,
+                                              end=endLocation,
                                               date=datetime.datetime.today() )
     return redirect( 'request_show' )
 

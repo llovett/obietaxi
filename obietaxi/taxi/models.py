@@ -1,8 +1,25 @@
 import mongoengine as mdb
+import math
 
 class Trust(mdb.EmbeddedDocument):
     message = mdb.StringField()
     user = mdb.ReferenceField('UserProfile')
+
+class Location(mdb.EmbeddedDocument):
+    '''
+    Models any location
+    '''
+    position = mdb.GeoPointField()
+    title = mdb.StringField()
+
+    def __unicode__( self ):
+        return self.title
+
+    def __eq__( self, obj ):
+        EQUALS_DELTA = 0.001
+        if not isinstance( obj, Location ):return False
+        return math.sqrt( (obj.position[0]-self.position[0])**2 +
+                          (obj.position[1]-self.position[1])**2 ) < EQUALS_DELTA
 
 class UserProfile(mdb.Document):
     """The basic model for a user."""
@@ -36,8 +53,8 @@ class RideRequest(mdb.Document):
     RideRequest models a request for a ride from a Passenger, looking for a Driver.
     '''
     passenger = mdb.ReferenceField('UserProfile')
-    start = mdb.GeoPointField()
-    end = mdb.GeoPointField()
+    start = mdb.EmbeddedDocumentField( Location )
+    end = mdb.EmbeddedDocumentField( Location )
     trip = mdb.ReferenceField(Trip)
     message = mdb.StringField()
     date = mdb.DateTimeField()
