@@ -46,17 +46,18 @@ def new_offer( request ):
     ride_offer.save()
     return HttpResponseRedirect('/browse')
 
+#################
+# RIDE REQUESTS #
+#################
+
 def request_ride_new( request ):
     '''
     Creates a new RideRequest from POST data given in <request>.
     '''
-    # TODO: Create a new RideRequest from the POST data.
-    # Save this RideRequest in the database
-    new_request = RideRequest.objects.create(start=(random()*90,random()*90),
-                                             end=(random()*90,random()*90),
-                                             date=datetime.datetime.today()
-                                             )
-
+    # Currently random start/end points, date. Change this later.
+    new_request = RideRequest.objects.create( start=(random()*90,random()*90),
+                                              end=(random()*90,random()*90),
+                                              date=datetime.datetime.today() )
     return redirect( 'request_show' )
 
 def request_show( request ):

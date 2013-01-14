@@ -3,7 +3,7 @@
 {% block content %}
   <ul>
     {% for item in ride_requests %}
-      <li> {{ item }} </li>
+      <li>Request from {{ item.start }} to {{ item.end }} on {{ item.date }}</li>
     {% endfor %}
   </ul>
 {% endblock %}
