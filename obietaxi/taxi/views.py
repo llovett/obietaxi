@@ -9,12 +9,12 @@ def request_ride_new( request ):
     '''
     # TODO: Create a new RideRequest from the POST data.
     # Save this RideRequest in the database
-    new_request = RideRequest.objects.create(start=random()*90,
-                                             end=random()*90,
+    new_request = RideRequest.objects.create(start=(random()*90,random()*90),
+                                             end=(random()*90,random()*90),
                                              date=datetime.today()
                                              )
 
-    return redirect( 'request_list' )
+    return redirect( 'request_show' )
 
 def request_show( request ):
     '''
@@ -22,5 +22,6 @@ def request_show( request ):
     '''
     # TODO: Pull all RideRequests from the database and render them in the
     # "browse.html" template
-    ride_requests = RideRequests.objects
+
+    ride_requests = RideRequest.objects
     return render_to_response( "browse.html", locals() )
