@@ -35,7 +35,6 @@ class RideRequest(mdb.Document):
     '''
     RideRequest models a request for a ride from a Passenger, looking for a Driver.
     '''
-    driver = mdb.ReferenceField('UserProfile')
     passenger = mdb.ReferenceField('UserProfile')
     start = mdb.GeoPointField()
     end = mdb.GeoPointField()
