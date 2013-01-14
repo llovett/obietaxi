@@ -60,7 +60,11 @@ def request_ride_new( request ):
     endLocation = Location( position=randloc(), title=request.POST['end_point'] )
     new_request = RideRequest.objects.create( start=startLocation,
                                               end=endLocation,
-                                              date=datetime.datetime.today() )
+                                              date=datetime.datetime.today() 
+                                              '''fuzziness = '''
+                                              
+                                              )
+
     return redirect( 'request_show' )
 
 def request_show( request ):
