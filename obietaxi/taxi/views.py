@@ -1,9 +1,10 @@
 from django.shortcuts import render_to_response, redirect
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
-import datetime
+from datetime import datetime
 import json
 from random import random
-from time import strptime
+from time import strptime,mktime
+import sys
 
 def new_trip( request ):
     # TODO: take information from the request, and create a new Trip object.
@@ -68,12 +69,13 @@ def request_ride_new( request ):
     b = request.POST['date_month']
     d = request.POST['date_day']
     
-    # time to strip for data!
     date = strptime("%s %s %s %s %s %s" % (I,M,p,Y,b,d),"%I %M %p %Y %b %d")
+    
+    sys.stderr.write("%s" % (date))
 
     new_request = RideRequest.objects.create( start=startLocation,
                                               end=endLocation,
-                                              date=date
+                                              date=datetime.fromtimestamp(mktime(date))
                                               )
     return redirect( 'request_show' )
 
