@@ -3,6 +3,7 @@ from models import RideRequest, Trip, UserProfile, RideOffer, Location
 import datetime
 import json
 from random import random
+from time import strptime
 
 def new_trip( request ):
     # TODO: take information from the request, and create a new Trip object.
@@ -58,13 +59,22 @@ def request_ride_new( request ):
     randloc = lambda : (random()*90,random()*90)
     startLocation = Location( position=randloc(), title=request.POST['start_point'] )
     endLocation = Location( position=randloc(), title=request.POST['end_point'] )
+
+    # save data for creating a time struct w/ strptime
+    I = request.POST['time_start_hour']
+    M = request.POST['time_start_minutes']
+    p = request.POST['time_start_pam']
+    Y = request.POST['date_year']
+    b = request.POST['date_month']
+    d = request.POST['date_day']
+    
+    # time to strip for data!
+    date = strptime("%s %s %s %s %s %s" % (I,M,p,Y,b,d),"%I %M %p %Y %b %d")
+
     new_request = RideRequest.objects.create( start=startLocation,
                                               end=endLocation,
-                                              date=datetime.datetime.today() 
-                                              '''fuzziness = '''
-                                              
+                                              date=date
                                               )
-
     return redirect( 'request_show' )
 
 def request_show( request ):
