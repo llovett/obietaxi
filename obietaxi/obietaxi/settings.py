@@ -11,8 +11,7 @@ MANAGERS = ADMINS
 
 import os
 HERE = os.path.dirname( os.path.abspath(__file__) )
-mdb.connect('database_file') # give this a better name later?
-
+mdb.connect('obietaxi')
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
