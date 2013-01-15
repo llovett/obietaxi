@@ -1,4 +1,5 @@
 from django.shortcuts import render_to_response, redirect
+from django.template import RequestContext
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
 from datetime import datetime
 import json
@@ -87,4 +88,4 @@ def request_show( request ):
     # "browse.html" template
 
     ride_requests = RideRequest.objects
-    return render_to_response( "browse.html", locals() )
+    return render_to_response( "browse.html", locals(), context_instance=RequestContext(request) )

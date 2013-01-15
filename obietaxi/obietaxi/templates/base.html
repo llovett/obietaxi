@@ -2,9 +2,18 @@
 <html>
   <head>
     <title>Obietaxi - {% block title %}Welcome{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" />
   </head>
   <body>
+    <h1>{% block heading %}Obietaxi{% endblock %}</h1>
     {% block content %}
-    {% endblock %}    
+    {% endblock %}
+
+    <div id="navigation">    
+      <ul class="navlinks">
+	<li><a href="{% url main_page %}">Home</a></li>
+	<li><a href="{% url request_show %}">Browse</a></li>
+      </ul>
+    </div>      
   </body>
 </html>
