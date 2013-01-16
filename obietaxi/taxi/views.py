@@ -57,10 +57,20 @@ def request_ride_new( request ):
     '''
     Creates a new RideRequest from POST data given in <request>.
     '''
-    start_lat = request.POST['start_latitude']
-    start_lon = request.POST['start_longitude']
-    end_lat = request.POST['end_latitude']
-    end_lon = request.POST['end_longitude']
+    
+    end_lat = '0'
+    end_lon = '0'
+    start_lat = '0'
+    start_lon = '0'
+   
+    if request.POST['start_latitude'] != '':
+        start_lat = request.POST['start_latitude']
+        start_lon = request.POST['start_longitude']
+
+    if request.POST['end_latitude'] != '':
+        end_lat = request.POST['end_latitude']
+        end_lon = request.POST['end_longitude']
+
     startloc = (float(start_lat),float(start_lon))
     endloc = (float(end_lat),float(end_lon))
     startLocation = Location( position=startloc, title=request.POST['start_point'] )
@@ -77,27 +87,29 @@ def request_ride_new( request ):
     date = strptime("%s %s %s %s %s %s" % (I,M,p,Y,b,d),"%I %M %p %Y %b %d")
     date_stamp = datetime.fromtimestamp(mktime(date))
     
-    if request.POST['user_role'] is None:
-        rr = RideRequest.objects.create( start=startLocation,
-                                         end=endLocation,
-                                         date=date_stamp
-                                         )
+    # if request.POST['user_role'] is None:
+    #     rr = RideRequest.objects.create( start=startLocation,
+    #                                      end=endLocation,
+    #                                      date=date_stamp
+    #                                      )
 
-        return redirect('request_show', role='passenger')
-    elif request.POST['user_role'] == 'driver':
+    #     return redirect('request_show', role='passenger')
+    if request.POST['user_role'] == 'driver':
         ro = RideOffer.objects.create( start=startLocation,
                                        end=endLocation,
                                        date=date_stamp
                                        )
-
-        return redirect( 'request_show', role='driver' )
+        
+        kwargs = {'role': 'driver'}
+        return redirect( 'request_show', **kwargs )
     else:
         rr = RideRequest.objects.create( start=startLocation,
                                          end=endLocation,
                                          date=date_stamp
                                          )
 
-        return redirect('request_show', role='passenger')
+        kwargs = {'role': 'driver'}
+        return redirect('request_show', **kwargs)
 
 def request_show( request, **kwargs ):
     '''
@@ -105,6 +117,7 @@ def request_show( request, **kwargs ):
     '''
     # TODO: Pull all RideRequests from the database and render them in the
     # "browse.html" template
+
     if kwargs['role'] == 'driver':
         ride_offers = RideOffer.objects
         return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
