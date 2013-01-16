@@ -2,9 +2,19 @@
 {% block title %}Browse{% endblock %}
 {% block heading %}Browse{% endblock %}
 {% block content %}
-  <ul>
-    {% for item in ride_requests %}
-      <li>Request from {{ item.start }} to {{ item.end }} on {{ item.date }}</li>
-    {% endfor %}
-  </ul>
+
+{% if ride_requests %}  
+<ul>
+  {% for item in ride_requests %}
+  <li>Request from {{ item.start }} to {{ item.end }} on {{ item.date }}</li>
+  {% endfor %}
+</ul>
+{% else %}
+<ul>
+  {% for item in ride_offers %}
+  <li>Request from {{ item.start }} to {{ item.end }} on {{ item.date }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
 {% endblock %}

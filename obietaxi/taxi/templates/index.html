@@ -3,6 +3,9 @@
 <form method="POST" action="{% url request_ride_new %}">
   {% csrf_token %}
   
+  <input type="radio" name="user_role" value="passenger">Passenger
+  <input type="radio" name="user_role" value="driver">Driver<br>
+
   Start location: <input type="text" name="start_point"><br>
   End location: <input type="text" name="end_point"><br>
   Date: 
@@ -145,55 +148,10 @@
 
   Pickup buffer:
   <select name="time_buffer">
-    <option value="0">0</option>
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="8">8</option>
-    <option value="9">9</option>
-    <option value="10">10</option>
-    <option value="11">11</option>
-    <option value="12">12</option>
-    <option value="13">13</option>
-    <option value="14">14</option>
     <option value="15">15</option>
-    <option value="16">16</option>
-    <option value="17">17</option>
-    <option value="18">18</option>
-    <option value="19">19</option>
-    <option value="20">20</option>
-    <option value="21">21</option>
-    <option value="22">22</option>
-    <option value="23">23</option>
-    <option value="24">24</option>
-    <option value="25">25</option>
-    <option value="26">26</option>
-    <option value="27">27</option>
-    <option value="28">28</option>
-    <option value="29">29</option>
     <option value="30">30</option>
-  </select>
-
-  <!-- sunrisemouth is an angaram of "minutes hours"
-
-       Funky return value explaination:
-          the user specifies [45|minutes] and in the back
-	  the actual buffer time is calculated as 
-	  time_buffer*time_buffer_sunrisemouth = 45*1 minutes
-
-          This way [2|hours] becomes 2*60 minutes, so everything 
-          can be done in minutes
-
-       Change if too funky
-    -->  
-  <select name="time_buffer_sunrisemouth">
-    <option value="1">minute(s)</option>
-    <option value="60">hour(s)</option>
-  </select><br>
+    <option value="45">45</option>
+  </select>minutes<br>
 
   <input type="submit" value="Submit">
 </form>

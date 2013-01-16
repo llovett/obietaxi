@@ -67,8 +67,8 @@ class RideOffer(mdb.Document):
     '''
     driver = mdb.ReferenceField('UserProfile')
     passenger = mdb.ReferenceField('UserProfile')
-    start = mdb.GeoPointField()
-    end = mdb.GeoPointField()
+    start = mdb.EmbeddedDocumentField(Location)
+    end = mdb.EmbeddedDocumentField(Location)
     trip = mdb.ReferenceField('Trip')
     message = mdb.StringField()
     date = mdb.DateTimeField()

@@ -57,12 +57,13 @@ def request_ride_new( request ):
     '''
     Creates a new RideRequest from POST data given in <request>.
     '''
+
     # Currently random start/end points, date. Change this later.
     randloc = lambda : (random()*90,random()*90)
     startLocation = Location( position=randloc(), title=request.POST['start_point'] )
     endLocation = Location( position=randloc(), title=request.POST['end_point'] )
-
-    # save data for creating a time struct w/ strptime
+    
+    # save data for creating a time struct w/ strptime()
     I = request.POST['time_start_hour']
     M = request.POST['time_start_minutes']
     p = request.POST['time_start_pam']
@@ -71,21 +72,39 @@ def request_ride_new( request ):
     d = request.POST['date_day']
     
     date = strptime("%s %s %s %s %s %s" % (I,M,p,Y,b,d),"%I %M %p %Y %b %d")
+    date_stamp = datetime.fromtimestamp(mktime(date))
     
-    sys.stderr.write("%s" % (date))
+    if request.POST['user_role'] is None:
+        rr = RideRequest.objects.create( start=startLocation,
+                                         end=endLocation,
+                                         date=date_stamp
+                                         )
 
-    new_request = RideRequest.objects.create( start=startLocation,
-                                              end=endLocation,
-                                              date=datetime.fromtimestamp(mktime(date))
-                                              )
-    return redirect( 'request_show' )
+        return redirect('request_show', role='passenger')
+    elif request.POST['user_role'] == 'driver':
+        ro = RideOffer.objects.create( start=startLocation,
+                                       end=endLocation,
+                                       date=date_stamp
+                                       )
 
-def request_show( request ):
+        return redirect( 'request_show', role='driver' )
+    else:
+        rr = RideRequest.objects.create( start=startLocation,
+                                         end=endLocation,
+                                         date=date_stamp
+                                         )
+
+        return redirect('request_show', role='passenger')
+
+def request_show( request, **kwargs ):
     '''
     Lists all of the RideRequests and renders them to "browse.html"
     '''
     # TODO: Pull all RideRequests from the database and render them in the
     # "browse.html" template
-
-    ride_requests = RideRequest.objects
-    return render_to_response( "browse.html", locals(), context_instance=RequestContext(request) )
+    if kwargs['role'] == 'driver':
+        ride_offers = RideOffer.objects
+        return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
+    else:
+        ride_requests = RideRequest.objects
+        return render_to_response( "browse.html", locals(), context_instance=RequestContext(request) )
