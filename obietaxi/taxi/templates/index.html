@@ -1,10 +1,27 @@
 {% extends "base.html" %}
+
+{% block scripts %}
+ <script type="text/javascript"
+     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBO-9pr8jiFPszeyxuABOc4RoTTSr1o5wE&sensor=false&libraries=places"></script> 
+ <script type="text/javascript"
+     src="{{ STATIC_URL }}js/fuzzy-locations.js">
+ </script>
+ 
+{% endblock %}
+
 {% block content %}
 <form method="POST" action="{% url request_ride_new %}">
   {% csrf_token %}
   
-  Start location: <input type="text" name="start_point"><br>
-  End location: <input type="text" name="end_point"><br>
+  Start location: <input type="text" name="start_point" id="start_point" placeholder="Start"><br>
+  End location: <input type="text" name="end_point" id="end_point" placeholder="End"><br>
+
+  <!-- hidden latitude and longitude fields -->
+  <input type="hidden" name="start_latitude" id="start_latitude" value="" />
+  <input type="hidden" name="start_longitude" id="start_longitude" value="" />
+  <input type="hidden" name="end_latitude" id="end_latitude" value="" />
+  <input type="hidden" name="end_longitude" id="end_longitude" value="" />
+
   Date: 
   <select name="date_month">
     <option value="Jan">January</option>

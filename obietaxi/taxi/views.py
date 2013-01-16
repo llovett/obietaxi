@@ -58,9 +58,14 @@ def request_ride_new( request ):
     Creates a new RideRequest from POST data given in <request>.
     '''
     # Currently random start/end points, date. Change this later.
-    randloc = lambda : (random()*90,random()*90)
-    startLocation = Location( position=randloc(), title=request.POST['start_point'] )
-    endLocation = Location( position=randloc(), title=request.POST['end_point'] )
+    start_lat = request.POST['start_latitude']
+    start_lon = request.POST['start_longitude']
+    end_lat = request.POST['end_latitude']
+    end_lon = request.POST['end_longitude']
+    startloc = (float(start_lat),float(start_lon))
+    endloc = (float(end_lat),float(end_lon))
+    startLocation = Location( position=startloc, title=request.POST['start_point'] )
+    endLocation = Location( position=endloc, title=request.POST['end_point'] )
 
     # save data for creating a time struct w/ strptime
     I = request.POST['time_start_hour']
