@@ -14,15 +14,23 @@
   </head>
   <body>
     <h1>{% block heading %}Obietaxi{% endblock %}</h1>
-    {% block content %}
-    {% endblock %}
+    <div id="content">
+      {% block content %}
+      {% endblock %}
+    </div>      
 
     <div id="navigation">    
       <ul class="navlinks">
 	<li><a href="{% url main_page %}">Home</a></li>
 	<li><a href="{% url request_show %}">Browse</a></li>
-	<li><a href="{% url login %}">Login</a></li>
+	{% if not user.is_authenticated %}
+	  <!-- TODO: make popup menu that allows login/login with google -->	  
+	  <li><a href="{% url login %}">Login</a></li>
+	  <li><a href="{% url register %}">Register</a></li>
+	{% else %}
+	  <li><a href="{% url logout %}">Logout</a></li>
+	{% endif %}	  
       </ul>
-    </div>      
+    </div>
   </body>
 </html>
