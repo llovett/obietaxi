@@ -1,0 +1,16 @@
+{% extends "mol_base.html" %}
+{% block content %}
+  <form action="." method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="login" />
+  </form>
+  <strong>or</strong>
+  <form action="{{ endpoint }}" method="POST">
+    <!-- used for openid POST request to Google -->
+    {% for key, value in params.items %}
+      <input type="hidden" name="{{ key }}" value="{{ value }}" />
+    {% endfor %}
+    <input type="submit" value="Sign in with Google" />
+  </form>
+{% endblock %}

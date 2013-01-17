@@ -13,6 +13,12 @@ import os
 HERE = os.path.dirname( os.path.abspath(__file__) )
 mdb.connect('obietaxi')
 
+# This needs to be changed as the site is moved around
+HOSTNAME='llovett.cs.oberlin.edu:8050'
+
+# Message storage backend
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -80,6 +86,11 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.contrib.messages.context_processors.messages',
+)
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -116,6 +127,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'taxi',
+    'mongoengine-login',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:

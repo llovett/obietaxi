@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Authentication Demo</title>
+  </head>
+  <body>
+    <div id="content">
+      {% if messages %}
+	<ul class="messages">
+	  {% for message in messages %}
+	    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+	  {% endfor %}
+	</ul>
+      {% endif %}
+
+      {% block content %}
+      {% endblock %}
+    </div>
+    <div id="links">
+      <ul class="linklist">
+	<li><a href="{% url login %}">login</a></li>
+	<li><a href="{% url logout %}">logout</a></li>
+	{% if not user.is_authenticated %}
+	  <li><a href="{% url register %}">register</a></li>
+	{% endif %}
+      </ul>
+    </div>
+  </body>
+</html>
