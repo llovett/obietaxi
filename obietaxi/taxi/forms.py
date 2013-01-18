@@ -1,6 +1,7 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit
+from crispy_forms.layout import Submit, Layout, Fieldset
+from crispy_forms.bootstrap import FormActions
 from django.core.urlresolvers import reverse
 from fields import BootstrapSplitDateTimeField
 from widgets import BootstrapSplitDateTimeWidget
@@ -23,7 +24,8 @@ class RideRequestOfferForm (forms.Form):
         widget=BootstrapSplitDateTimeWidget(
             attrs={'date_class':'datepicker-default',
                    'time_class':'timepicker-default input-timepicker'}
-        )
+        ),
+        label="Departure"
     )   
                        
 
@@ -36,7 +38,24 @@ class RideRequestOfferForm (forms.Form):
         self.helper = FormHelper()
         self.helper.form_action = reverse( 'request_ride_new' )
         self.helper.form_method = 'POST'
-        self.helper.add_input( Submit('submit', 'Submit') )
+        self.helper.form_id = 'offer_or_request_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Select your trip',
+                'start_lat',
+                'start_lng',
+                'end_lat',
+                'end_lng',
+                'start_location',
+                'end_location',
+                'date',
+                'role'
+            ),
+            FormActions(
+                Submit('submit', 'Ask for a Ride', css_id="ask_button" ),
+                Submit('submit', 'Offer a Ride', css_id="offer_button" )
+            )
+        )
 
         super( RideRequestOfferForm, self ).__init__( *args, **kwargs )
         
