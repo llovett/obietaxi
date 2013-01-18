@@ -8,7 +8,8 @@ from django.template import RequestContext
 from forms import LoginForm, RegisterForm
 from mongoengine.django.auth import User
 from random import choice
-from models import RegistrationStub, UserProfile, OpenidAuthStub
+from models import RegistrationStub, OpenidAuthStub
+from taxi.models import UserProfile
 import smtplib
 from obietaxi import settings
 

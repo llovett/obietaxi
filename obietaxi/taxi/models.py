@@ -1,4 +1,5 @@
 import mongoengine as mdb
+from mongologin.models import OpenidAuthStub
 import math
 
 class Trust(mdb.EmbeddedDocument):
@@ -23,9 +24,6 @@ class Location(mdb.EmbeddedDocument):
 
 class UserProfile(mdb.Document):
     """The basic model for a user."""
-    first_name = mdb.StringField(required=True, max_length=50)
-    last_name = mdb.StringField(required=True, max_length=50)
-    email = mdb.StringField(required=True)
     phone_number = mdb.StringField()
     trips = mdb.ListField(mdb.ReferenceField('Trip'))
     trust = mdb.ListField( Trust )
@@ -33,7 +31,14 @@ class UserProfile(mdb.Document):
     reports = mdb.IntField(default=0)
     offers = mdb.ListField(mdb.ReferenceField('RideOffer'))
     requests = mdb.ListField(mdb.ReferenceField('RideRequest'))
-    openid = mdb.StringField() # not sure what type the ID should actually be
+    # mongoengine user object
+    # This already contains email, firstname, lastname
+    user = mdb.ReferenceField( 'mongoengine.django.auth.User' )
+    # Holds openid data
+    openid_auth_stub = mdb.EmbeddedDocumentField( OpenidAuthStub )
+
+    def __unicode__( self ):
+        return '{} (profile)'.format( self.user.username )
 
 class Trip(mdb.Document):
     '''
