@@ -193,7 +193,8 @@ def register( request ):
             user.last_name = form.cleaned_data['last_name']
             user.is_active = False
             user.save()
-            
+            profile = UserProfile.objects.create( phone_number=form.cleaned_data['phone'],
+                                                 user=user )
             stub = RegistrationStub.objects.create( user=user )
             
             # Send confirmation email
