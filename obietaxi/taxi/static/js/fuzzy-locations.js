@@ -1,6 +1,6 @@
 $(document).ready(function(){
-    var startPoint = document.getElementById('start_point');
-    var endPoint = document.getElementById('end_point');
+    var startPoint = document.getElementById('id_start_location');
+    var endPoint = document.getElementById('id_end_location');
 
     var defaultBounds = new google.maps.LatLngBounds(
 	new google.maps.LatLng(25.641526,-122.622072),

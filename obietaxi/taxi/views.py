@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
+from forms import RideRequestOfferForm
 from datetime import datetime
 from random import random
 from time import strptime,mktime
@@ -55,6 +56,10 @@ def new_offer( request ):
 #################
 # RIDE REQUESTS #
 #################
+
+def request_or_offer_ride( request ):
+    form = RideRequestOfferForm()
+    return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
 
 def request_ride_new( request ):
     '''
@@ -114,6 +119,9 @@ def request_ride_new( request ):
         
     return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
 
+
+def offer_ride_new( request ):
+    return HttpResponse("offering a new ride, eh? Just you wait until we write this code!")
 
 def request_show( request ):
     '''
