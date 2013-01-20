@@ -3,8 +3,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset
 from crispy_forms.bootstrap import FormActions
 from django.core.urlresolvers import reverse
-from fields import BootstrapSplitDateTimeField
 from widgets import BootstrapSplitDateTimeWidget
+from datetime import datetime
 
 class RideRequestOfferForm (forms.Form):
     '''
@@ -32,10 +32,13 @@ class RideRequestOfferForm (forms.Form):
         '%m/%d/%y',
         '%m/%d/%Y %I:%M %p'
     ]
+    now = datetime.now()
     date = forms.DateTimeField(
         widget=BootstrapSplitDateTimeWidget(
             attrs={'date_class':'datepicker-default',
-                   'time_class':'timepicker-default input-timepicker'},
+                   'time_class':'timepicker-default',
+                   'date_default':now.strftime("%m/%d/%Y"),
+                   'time_default':now.strftime("%I:%M %p") },
             date_format="%m/%d/%Y",
             time_format="%I:%M %p"
         ),
@@ -66,5 +69,3 @@ class RideRequestOfferForm (forms.Form):
         )
 
         super( RideRequestOfferForm, self ).__init__( *args, **kwargs )
-        
-        

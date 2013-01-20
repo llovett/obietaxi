@@ -9,18 +9,29 @@ $(document).ready(function(){
     var searchStartBox = new google.maps.places.SearchBox(startPoint, {bounds: defaultBounds});
     var searchEndBox = new google.maps.places.SearchBox(endPoint, {bounds: defaultBounds});
 
+    var updateLatLng = function( startOrEnd ) {
+	var places = (startOrEnd === 'start' ? searchStartBox : searchEndBox).getPlaces();
+	var lat = places[0].geometry.location.Ya;
+	var lng = places[0].geometry.location.Za;
+	$("#id_"+startOrEnd+"_lat").val(lat);
+	$("#id_"+startOrEnd+"_lng").val(lng);
+    }
+	
+    // Update lat/lng when input in fuzzy location inputs changes
     google.maps.event.addListener(searchStartBox, 'places_changed', function(){
-	var places = searchStartBox.getPlaces();
-	var start_lat = places[0].geometry.location.Ya;
-	var start_long = places[0].geometry.location.Za;
-	$("#id_start_lat").val(start_lat);
-	$("#id_start_lng").val(start_long);
+	updateLatLng( 'start' );
     });
     google.maps.event.addListener(searchEndBox, 'places_changed', function(){
-	var places = searchEndBox.getPlaces();
-	var end_lat = places[0].geometry.location.Ya;
-	var end_long = places[0].geometry.location.Za;
-	$("#id_end_lat").val(end_lat);
-	$("#id_end_lng").val(end_long);
+	updateLatLng( 'end' );
     });
+
+    // Set start/end lat/lng if there is already text in one of the
+    // fuzzy location inputs.  This is useful when the form doesn't
+    // validate the first time, and the browser needs to refresh.
+    if ( $("#id_start_location").val().length > 0 ) {
+	updateLatLng( 'start' );
+    }
+    if ( $("#id_end_location").val().length > 0 ) {
+	updateLatLng( 'end' );
+    }	
 });

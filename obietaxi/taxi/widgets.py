@@ -9,14 +9,20 @@ class BootstrapSplitDateTimeWidget(MultiWidget):
     def __init__(self, attrs=None, date_format=None, time_format=None):
         date_class = attrs['date_class']
         time_class = attrs['time_class']
+        date_default = attrs['date_default']
+        time_default = attrs['time_default']
         del attrs['date_class']
         del attrs['time_class']
+        del attrs['date_default']
+        del attrs['time_default']
 
         time_attrs = attrs.copy()
         time_attrs['class'] = time_class
+        time_attrs['value'] = time_default
 
         date_attrs = attrs.copy()
         date_attrs['class'] = date_class
+        date_attrs['value'] = date_default
 
         import sys
         sys.stderr.write("time format is %s"%time_format)
