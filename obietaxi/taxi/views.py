@@ -34,6 +34,12 @@ def _process_ro_form( request, type ):
         date = data['date']
         kwargs = { 'start':startLocation, 'end':endLocation, 'date':date }
 
+        # Associate request/offer with user, if possible
+        # TODO: make this mandatory!
+        profile = UserProfile.objects.get( user=request.user ) if request.user.is_authenticated() else None
+        if profile:
+            kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
+
         # Create offer/request object in database
         if type == 'offer':
             ro = RideOffer.objects.create( **kwargs )
