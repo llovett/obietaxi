@@ -1,3 +1,11 @@
+#heading {
+    margin-left:10px;
+}
+
+#content {
+    margin-left:10px;
+}
+
 .navlinks {
     list-style-type: none;
 }
