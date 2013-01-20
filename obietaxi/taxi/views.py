@@ -9,51 +9,60 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 
 def request_or_offer_ride( request ):
+    ''' Renders the ride request/offer form the first time '''
     form = RideRequestOfferForm()
     return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
 
-def _make_request_or_offer( data, type ):
-    startloc = (float(data['start_lat']),float(data['start_lng']))
-    endloc = (float(data['end_lat']),float(data['end_lng']))
-    startLocation = Location( position=startloc, title=data['start_location'] )
-    endLocation = Location( position=endloc, title=data['end_location'] )
-    date = data['date']
-    kwargs = { 'start':startLocation, 'end':endLocation, 'date':date }
+def _process_ro_form( request, type ):
+    ''' Process the request/offer form '''
 
-    if type == 'offer':
-        return RideOffer.objects.create( **kwargs )
-    elif type == 'request':
-        return RideRequest.objects.create( **kwargs )
+    form = RideRequestOfferForm( request.POST )
 
-def offer_ride_new( request ):
+    # Form validates
+    if form.is_valid():
+        data = form.cleaned_data
+
+        # Parse out the form
+        startloc = (float(data['start_lat']),float(data['start_lng']))
+        endloc = (float(data['end_lat']),float(data['end_lng']))
+        startLocation = Location( position=startloc, title=data['start_location'] )
+        endLocation = Location( position=endloc, title=data['end_location'] )
+        date = data['date']
+        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date }
+
+        # Create offer/request object in database
+        if type == 'offer':
+            ro = RideOffer.objects.create( **kwargs )
+            ride_requests = RideRequest.objects.all()
+        elif type == 'request':
+            ro = RideRequest.objects.create( **kwargs )
+            ride_offers = RideOffer.objects.all()
+
+        # Return listings of the other type
+        return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
+
+    # Render the form
+    return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
+    
+
+def offer_new( request ):
     '''
     Creates a new RideOffer from POST data given in <request>.
 
     '''
-    form = RideRequestOfferForm( request.POST )
-    if form.is_valid():
-        data = form.cleaned_data
-        rideRequest = _make_request_or_offer( data, 'offer' )
-        ride_requests = RideRequest.objects.all()
-        return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
-    return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
+    return _process_ro_form( request, 'offer' )
 
-def request_ride_new( request ):
+def request_new( request ):
     '''
     Creates a new RideRequest from POST data given in <request>.
 
     '''
-    form = RideRequestOfferForm( request.POST )
-    if form.is_valid():
-        data = form.cleaned_data
-        rideRequest = _make_request_or_offer( data, 'request' )
-        ride_offers = RideOffer.objects.all()
-        return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
-    return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
+    return _process_ro_form( request, 'request' )
 
 def request_show( request ):
     '''
     Lists all of the RideRequests and renders them to "browse.html"
+
     '''
     # TODO: Pull all RideRequests from the database and render them in the
     # "browse.html" template
