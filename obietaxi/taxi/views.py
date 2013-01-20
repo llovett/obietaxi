@@ -51,7 +51,7 @@ def request_ride_new( request ):
         return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
     return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
 
-def request_show( request ):# This view's name makes no sense
+def request_show( request ):
     '''
     Lists all of the RideRequests and renders them to "browse.html"
     '''
