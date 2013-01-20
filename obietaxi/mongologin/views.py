@@ -34,7 +34,7 @@ def login_view( request ):
             if user.check_password( request.POST['password'] ) and user.is_active:
                 user.backend = 'mongoengine.django.auth.MongoEngineBackend'
                 login( request, user )
-                return HttpResponseRedirect( reverse('login_success') )
+                return HttpResponseRedirect( reverse('user_home') )
             else:
                 return _fail_login( request, 'invalid login' )
         except User.DoesNotExist:
@@ -171,7 +171,7 @@ def activate( request ):
 
     # Create a success message
     messages.add_message( request, messages.SUCCESS, 'Your account has been successfully activated.' )
-    return HttpResponseRedirect( reverse('login_success') )
+    return HttpResponseRedirect( reverse('user_home') )
 
 def register( request ):
     # Cannot register if logged in already

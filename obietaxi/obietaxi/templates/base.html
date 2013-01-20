@@ -33,7 +33,8 @@
 	  <li><a href="{% url login %}">Login</a></li>
 	  <li><a href="{% url register %}">Register</a></li>
 	{% else %}
-	  <li><a href="{% url logout %}">Logout</a> (logged in as {{ user.username }})</li>
+	  <li><a href="{% url logout %}">Logout</a></li>
+	  <li><a href="{% url user_home %}">(logged in as {{ user.username }})</a></li>
 	{% endif %}	  
       </ul>
     </div>
