@@ -1,5 +1,6 @@
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
+from django.contrib.auth.decorators import login_required
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
 from forms import RideRequestOfferForm
 from datetime import datetime
@@ -14,7 +15,10 @@ def request_or_offer_ride( request ):
     return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
 
 def _process_ro_form( request, type ):
-    ''' Process the request/offer form '''
+    ''' Process the request/offer form.
+    Note that this is not a view, but receives <request> when called from another view. 
+
+    '''
 
     form = RideRequestOfferForm( request.POST )
 
@@ -72,4 +76,13 @@ def request_show( request ):
 
     return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
 
-    
+#####################
+# USER ACCOUNT INFO #
+#####################
+
+@login_required
+def show_requests_and_offers( request ):
+    profile = UserProfile.objects.get( user=request.user )
+    rides_requested = RideRequest.objects.filter( passenger=profile )
+    rides_offered = RideOffer.objects.filter( driver=profile )
+    return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )
