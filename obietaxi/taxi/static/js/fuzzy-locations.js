@@ -13,14 +13,14 @@ $(document).ready(function(){
 	var places = searchStartBox.getPlaces();
 	var start_lat = places[0].geometry.location.Ya;
 	var start_long = places[0].geometry.location.Za;
-	$("#start_latitude").val(start_lat);
-	$("#start_longitude").val(start_long);
+	$("#id_start_lat").val(start_lat);
+	$("#id_start_lng").val(start_long);
     });
     google.maps.event.addListener(searchEndBox, 'places_changed', function(){
 	var places = searchEndBox.getPlaces();
 	var end_lat = places[0].geometry.location.Ya;
 	var end_long = places[0].geometry.location.Za;
-	$("#end_latitude").val(end_lat);
-	$("#end_longitude").val(end_long);
+	$("#id_end_lat").val(end_lat);
+	$("#id_end_lng").val(end_long);
     });
 });

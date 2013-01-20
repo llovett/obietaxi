@@ -18,17 +18,24 @@ class BootstrapSplitDateTimeWidget(MultiWidget):
         date_attrs = attrs.copy()
         date_attrs['class'] = date_class
 
-        widgets = (DateInput(attrs=date_attrs, format=date_format), TimeInput(attrs=time_attrs))
+        import sys
+        sys.stderr.write("time format is %s"%time_format)
+        widgets = (DateInput(attrs=date_attrs, format=date_format), TimeInput(attrs=time_attrs, format=time_format))
 
         super(BootstrapSplitDateTimeWidget, self).__init__(widgets, attrs)
 
     def decompress(self, value):
+        import sys
+        sys.stderr.write("value in decompress() is %s"%str(value))    
         if value:
             d = strftime("%Y-%m-%d", value.timetuple())
             hour = strftime("%H", value.timetuple())
             minute = strftime("%M", value.timetuple())
             meridian = strftime("%p", value.timetuple())
-            return (d, hour+":"+minute, meridian)
+            t = (d, hour+":"+minute, meridian)
+
+            sys.stderr.write("time tuple is %s"%str(t))
+            return 
         else:
             return (None, None, None)
 

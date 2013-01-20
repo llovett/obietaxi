@@ -22,10 +22,20 @@ class BootstrapSplitDateTimeField(fields.MultiValueField):
         list to this function. This function needs to compress the list
         into a single object to save.
         """
+
+        import sys
+        sys.stderr.write("in field compress() now")
+
+        
         if data_list:
             if not (data_list[0] and data_list[1]):
                 raise ValidationError("Field is missing data.")
+
             input_time = time.strptime("%s"%(data_list[1]), "%I:%M %p")
             datetime_string = "%s %s" % (data_list[0], time.strftime('%H:%M', input_time))
+
+            import sys
+            sys.stderr.write("datetime_string: %s"%datetime_string)
+
             return datetime_string
         return None

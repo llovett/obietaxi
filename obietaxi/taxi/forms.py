@@ -20,19 +20,28 @@ class RideRequestOfferForm (forms.Form):
     end_location = forms.CharField()
 
     # TODO: make a custom widget for this
-    date = BootstrapSplitDateTimeField(
+    input_formats = [
+        '%Y-%m-%d %H:%M:%S',     # '2006-10-25 14:30:59'
+        '%Y-%m-%d %H:%M',        # '2006-10-25 14:30'
+        '%Y-%m-%d',              # '2006-10-25'
+        '%m/%d/%Y %H:%M:%S',     # '10/25/2006 14:30:59'
+        '%m/%d/%Y %H:%M',        # '10/25/2006 14:30'
+        '%m/%d/%Y',              # '10/25/2006'
+        '%m/%d/%y %H:%M:%S',     # '10/25/06 14:30:59'
+        '%m/%d/%y %H:%M',        # '10/25/06 14:30'
+        '%m/%d/%y',
+        '%m/%d/%Y %I:%M %p'
+    ]
+    date = forms.DateTimeField(
         widget=BootstrapSplitDateTimeWidget(
             attrs={'date_class':'datepicker-default',
-                   'time_class':'timepicker-default input-timepicker'}
+                   'time_class':'timepicker-default input-timepicker'},
+            date_format="%m/%d/%Y",
+            time_format="%I:%M %p"
         ),
-        label="Departure"
+        label="Departure",
+        input_formats = input_formats
     )   
-                       
-
-    # The role of this user
-    # Use a HiddenInput because who the heck knows what kind of widget we'll use for this (if any)
-    role = forms.ChoiceField( choices=(('passenger', 'passenger'), ('driver','driver')),
-                              widget=forms.HiddenInput )
 
     def __init__( self, *args, **kwargs ):
         self.helper = FormHelper()
@@ -49,7 +58,6 @@ class RideRequestOfferForm (forms.Form):
                 'start_location',
                 'end_location',
                 'date',
-                'role'
             ),
             FormActions(
                 Submit('submit', 'Ask for a Ride', css_id="ask_button" ),

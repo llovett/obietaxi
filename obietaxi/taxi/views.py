@@ -92,12 +92,16 @@ def request_ride_new( request ):
     Creates a new RideRequest from POST data given in <request>.
 
     '''
+    import sys
+    
     form = RideRequestOfferForm( request.POST )
     if form.is_valid():
+        sys.stderr.write("form was valid!")
         data = form.cleaned_data
         rideRequest = _make_request_or_offer( data, 'request' )
         ride_offers = RideOffer.objects
         return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
+    sys.stderr.write("form was not valid: %s"%str(form._errors))
     return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
         
     # # save data for creating a time struct w/ strptime
