@@ -9,8 +9,8 @@ class RideRequestEncoder( json.JSONEncoder ):
                 'passenger_first_name': o.passenger.user.first_name,
                 'passenger_last_name' : o.passenger.user.last_name,
                 'passenger_id': o.passenger.id,
-                'location_start': o.start,
-                'location_end' : o.end
+                'location_start': o.start.position,
+                'location_end' : o.end.position
             }
         else:
             return json.JSONEncoder.default( self, o )

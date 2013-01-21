@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Request from {{ ride_request.start.title }} to {{ ride_request.end.title }}{% endblock %}
+{% block heading %}Request from {{ ride_request.start.title }} to {{ ride_request.end.title }}{% endblock %}
+{% block content %}
+  {{ ride_request.passenger }} is looking for a ride from {{ ride_request.start.title }} to {{ ride_request.end.title }}. Can you help them out?
+  <strong>Intended departure:</strong> {{ ride_request.date }}
+  <!-- TODO: "offer a ride" button -->
+{% endblock %}

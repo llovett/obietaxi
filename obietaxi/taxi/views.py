@@ -1,6 +1,7 @@
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from bson.objectid import ObjectId
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
 from forms import RideRequestOfferForm
 from datetime import datetime
@@ -11,6 +12,11 @@ from django.http import HttpResponseRedirect, HttpResponse
 from Polygon.Shapes import Rectangle
 from encoders import RideRequestEncoder
 import json
+
+
+###################
+# OFFERS/REQUESTS #
+###################
 
 def request_or_offer_ride( request ):
     ''' Renders the ride request/offer form the first time '''
@@ -100,6 +106,15 @@ def request_search( request ):
     requests = { "requests" : [requestEncoder.default(r) for r in RideRequest.objects( start__within_polygon=bboxArea)] } 
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
     
+def request_show( request ):
+    ''' Renders a page displaying more information about a particular RideRequest '''
+    ride_request = get_object_or_404( RideRequest, pk=ObjectId(request.GET['request_id']) )
+    return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
+
+############
+# BROWSING #
+############
+
 def browse( request ):
     '''
     Lists all RideRequests and RideOffers and renders them into "browse.html"
@@ -109,7 +124,6 @@ def browse( request ):
     ride_offers = RideOffer.objects
 
     return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
-
 
 #####################
 # USER ACCOUNT INFO #
