@@ -64,6 +64,7 @@ def _process_ro_form( request, type ):
     return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
     
 
+@login_required
 def offer_new( request ):
     '''
     Creates a new RideOffer from POST data given in <request>.
