@@ -44,11 +44,14 @@ class Trip(mdb.Document):
     '''
     Trip models a trip taken by a Driver and some number of Passengers
     '''
-    start = mdb.GeoPointField()
-    end = mdb.GeoPointField()
+    start = mdb.EmbeddedDocumentField( Location )
+    end = mdb.EmbeddedDocumentField( Location )
     driver = mdb.ReferenceField('UserProfile')
     passengers = mdb.ListField(mdb.ReferenceField('UserProfile'))
     date_time = mdb.DateTimeField()
+
+    meta = { "indexes" : ["*start.position", "*end.position"] }
+    
     # not sure how to represent fuzziness
     # fuzziness = mdb.StringField()
     completed = mdb.BooleanField(default=False)
@@ -63,6 +66,9 @@ class RideRequest(mdb.Document):
     trip = mdb.ReferenceField(Trip)
     message = mdb.StringField()
     date = mdb.DateTimeField()
+
+    meta = { "indexes" : ["*start.position", "*end.position"] }
+    
     # fuzziness = mdb.StringField()
     # repeat = mdb.StringField()
 
@@ -77,5 +83,8 @@ class RideOffer(mdb.Document):
     trip = mdb.ReferenceField('Trip')
     message = mdb.StringField()
     date = mdb.DateTimeField()
+
+    meta = { "indexes" : ["*start.position", "*end.position"] }
+    
     # fuzziness = mdb.StringField()
     # repeat = mdb.StringField()

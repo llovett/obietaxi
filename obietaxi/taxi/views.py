@@ -103,8 +103,9 @@ def request_search( request ):
 
     # RideRequests within the bounds
     requestEncoder = RideRequestEncoder()
-    requests_within_start = RideRequests.objects( start__within_polygon=bboxArea )
-    requests_on_route = requests_within_start.filter( end__within_polygon=bboxArea )
+    requests_within_start = RideRequest.objects.filter( start__position__within_polygon=bboxArea )
+#    requests_on_route = [r for r in requests_within_start if r.end
+    requests_on_route = requests_within_start
     requests = { "requests" : [requestEncoder.default(r) for r in requests_on_route] }
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
     
