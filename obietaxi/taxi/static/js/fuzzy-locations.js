@@ -11,10 +11,12 @@ $(document).ready(function(){
 
     var updateLatLng = function( startOrEnd ) {
 	var places = (startOrEnd === 'start' ? searchStartBox : searchEndBox).getPlaces();
-	var lat = places[0].geometry.location.Ya;
-	var lng = places[0].geometry.location.Za;
-	$("#id_"+startOrEnd+"_lat").val(lat);
-	$("#id_"+startOrEnd+"_lng").val(lng);
+	if ( places ) {
+	    var lat = places[0].geometry.location.Ya;
+	    var lng = places[0].geometry.location.Za;
+	    $("#id_"+startOrEnd+"_lat").val(lat);
+	    $("#id_"+startOrEnd+"_lng").val(lng);
+	}
     }
 	
     // Update lat/lng when input in fuzzy location inputs changes

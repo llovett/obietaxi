@@ -1,0 +1,7 @@
+Django==1.4.3
+Polygon==2.0.5
+argparse==1.2.1
+django-crispy-forms==1.2.3
+mongoengine==0.7.8
+pymongo==2.4.1
+wsgiref==0.1.2

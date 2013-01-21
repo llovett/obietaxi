@@ -1,13 +1,22 @@
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from bson.objectid import ObjectId
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
 from forms import RideRequestOfferForm
 from datetime import datetime
 from random import random
 from time import strptime,mktime
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
+from Polygon.Shapes import Rectangle
+from encoders import RideRequestEncoder
+import json
+
+
+###################
+# OFFERS/REQUESTS #
+###################
 
 def request_or_offer_ride( request ):
     ''' Renders the ride request/offer form the first time '''
@@ -69,14 +78,51 @@ def request_new( request ):
     '''
     return _process_ro_form( request, 'request' )
 
+def request_search( request ):
+    '''
+    Searches for and returns any RideRequests within the bounds of the rectangles given
+    in the POST data
+
+    '''
+    postData = json.loads( request.raw_post_data )
+    rectangles = postData['rectangles']
+
+    # bboxArea = the union of all the bounding boxes on the route
+    bboxArea = None
+    # union all the boxes together
+    for i in xrange(0,len(rectangles),4):
+        # Make a Rectangle out of the width/height of a bounding box
+        # longitude = x, latitude = y
+        theRect = Rectangle( abs(rectangles[i] - rectangles[i+2]),
+                             abs(rectangles[i+1] - rectangles[i+3]) )
+        theRect.shift( rectangles[i+2], rectangles[i+3] )
+        bboxArea = bboxArea + theRect if bboxArea else theRect
+
+    # turn bboxArea into a list of points
+    bboxArea = [list(t) for t in bboxArea.contour( 0 )]
+
+    # RideRequests within the bounds
+    requestEncoder = RideRequestEncoder()
+    requests = { "requests" : [requestEncoder.default(r) for r in RideRequest.objects( start__within_polygon=bboxArea)] } 
+    return HttpResponse( json.dumps(requests), mimetype='application/json' )
+    
 def request_show( request ):
+    ''' Renders a page displaying more information about a particular RideRequest '''
+    try:
+        ride_request = RideRequest.objects.get( pk=ObjectId(request.GET['request_id']) )
+    except RideRequest.DoesNotExist:
+        raise Http404
+    return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
+
+############
+# BROWSING #
+############
+
+def browse( request ):
     '''
-    Lists all of the RideRequests and renders them to "browse.html"
+    Lists all RideRequests and RideOffers and renders them into "browse.html"
 
     '''
-    # TODO: Pull all RideRequests from the database and render them in the
-    # "browse.html" template
-
     ride_requests = RideRequest.objects
     ride_offers = RideOffer.objects
 
