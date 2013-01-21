@@ -71,6 +71,7 @@ def offer_new( request ):
     '''
     return _process_ro_form( request, 'offer' )
 
+@login_required
 def request_new( request ):
     '''
     Creates a new RideRequest from POST data given in <request>.
@@ -104,6 +105,7 @@ def request_search( request ):
     # RideRequests within the bounds
     requestEncoder = RideRequestEncoder()
     requests_within_start = RideRequest.objects.filter( start__position__within_polygon=bboxContour )
+    # Can't do two geospatial queries at once :(
     requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
     requests = { "requests" : [requestEncoder.default(r) for r in requests_on_route] }
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
