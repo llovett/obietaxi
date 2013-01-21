@@ -152,11 +152,11 @@ function route() {
 		    $("#status").text(start_points.length+" rides returned.");
 
 		    // Draw boxes
-		    drawBoxes( boxes );
+		    //drawBoxes( boxes );
 
 		    // Display markers that fit within the union of the boxes
 		    clearMarkers();
-		    for ( var i=0; i<points.length; i++ ) {
+		    for ( var i=0; i<start_points.length; i++ ) {
 			displayPoint( new google.maps.LatLng(start_points[i][0], start_points[i][1]) );
 			displayPoint( new google.maps.LatLng(end_points[i][0], end_points[i][1]) );
 		    }
@@ -166,6 +166,10 @@ function route() {
 	    $("#status").text("Directions query failed: "+status);
 	}
     } );
+}
+
+// Display the ride relevant ride requests beneath the map
+function showRides( requests ){
 }
 
 // Convert boxes into JSON
