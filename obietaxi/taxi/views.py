@@ -99,13 +99,12 @@ def request_search( request ):
         bboxArea = bboxArea + theRect if bboxArea else theRect
 
     # turn bboxArea into a list of points
-    bboxArea = [list(t) for t in bboxArea.contour( 0 )]
+    bboxContour = [list(t) for t in bboxArea.contour( 0 )]
 
     # RideRequests within the bounds
     requestEncoder = RideRequestEncoder()
-    requests_within_start = RideRequest.objects.filter( start__position__within_polygon=bboxArea )
-#    requests_on_route = [r for r in requests_within_start if r.end
-    requests_on_route = requests_within_start
+    requests_within_start = RideRequest.objects.filter( start__position__within_polygon=bboxContour )
+    requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
     requests = { "requests" : [requestEncoder.default(r) for r in requests_on_route] }
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
     
