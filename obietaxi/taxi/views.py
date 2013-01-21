@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response, redirect, get_object_or_404
+from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from bson.objectid import ObjectId
@@ -8,7 +8,7 @@ from datetime import datetime
 from random import random
 from time import strptime,mktime
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from Polygon.Shapes import Rectangle
 from encoders import RideRequestEncoder
 import json
@@ -108,7 +108,10 @@ def request_search( request ):
     
 def request_show( request ):
     ''' Renders a page displaying more information about a particular RideRequest '''
-    ride_request = get_object_or_404( RideRequest, pk=ObjectId(request.GET['request_id']) )
+    try:
+        ride_request = RideRequest.objects.get( pk=ObjectId(request.GET['request_id']) )
+    except RideRequest.DoesNotExist:
+        raise Http404
     return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
 
 ############

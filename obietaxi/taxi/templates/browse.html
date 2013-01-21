@@ -1,22 +1,27 @@
 {% extends "base.html" %}
+{% block scripts %}<script type="text/javascript" src="{{ STATIC_URL }}js/browse.js"></script>{% endblock %}
 {% block title %}Browse{% endblock %}
 {% block heading %}Browse{% endblock %}
 {% block content %}
 
-{% if ride_requests %}  
-<ul>
-  {% for item in ride_requests %}
-  <li>Request from {{ item.start }} to {{ item.end }} on {{ item.date }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
+  {% if ride_requests %}  
+    <ul>
+      {% for item in ride_requests %}
+	<li>
+	  <div class="rr_div" id="{{ item.id }}"><a href="#">Request from {{ item.start }} to
+	      {{ item.end }} on {{ item.date }}</a>
+	  </div>
+	</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
-{% if ride_offers %}
-<ul>
-  {% for item in ride_offers %}
-  <li>Offer from {{ item.start }} to {{ item.end }} on {{ item.date }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
+  {% if ride_offers %}
+    <ul>
+      {% for item in ride_offers %}
+	<li>Offer from {{ item.start }} to {{ item.end }} on {{ item.date }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
 {% endblock %}
