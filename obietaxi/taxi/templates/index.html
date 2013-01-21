@@ -9,14 +9,23 @@
 {% endblock %}
 
 {% block styles %}
-  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}datepicker/css/datepicker.css" />
-  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}timepicker/css/timepicker.css" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}datepicker/css/datepicker.css" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}timepicker/css/timepicker.css" />
 {% endblock %}
 
 {% block content %}
 
-  {% load crispy_forms_tags %}
-  <!-- this renders the entire form, including start/end tags and submit buttons -->
-  {% crispy form %}
+<div id="left_panel" class="left_panel">
+
+    {% load crispy_forms_tags %}
+    <!-- this renders the entire form, including start/end tags and submit buttons -->
+    {% crispy form %}
+
+</div>
+
+<div id="right_panel" class="right_panel">
+    <div id="map_canvas"><p>Derp!</p></div>
+</div>
+
 
 {% endblock %}

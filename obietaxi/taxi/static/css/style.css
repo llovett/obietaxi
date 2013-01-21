@@ -4,6 +4,21 @@
 
 #content {
     margin-left:10px;
+    position:relative;
+}
+
+#left_panel {
+    float:left;
+    width:50%;
+}
+
+#right_panel {
+    float:right;
+    width:50%;
+}
+
+#navigation {
+    clear:both;
 }
 
 .navlinks {
