@@ -9,7 +9,7 @@ $(document).ready(
 	// Change form action URL based on submit button
 	$("#offer_button").click(
 	    function( event ) {
-		$("#offer_or_request_form").attr( 'action', '/offer/new/' );
+		$("#offer_or_request_form").attr( 'action', '/request/search/' );
 	    }
 	);
 	$("#ask_button").click(
