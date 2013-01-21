@@ -114,6 +114,14 @@ def request_show( request ):
         raise Http404
     return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
 
+def offer_show( request ):
+    ''' Renders a page displaying more information about a particular RideOffer '''
+    try:
+        ride_offer = RideOffer.objects.get( pk=ObjectId(request.GET['offer_id']) )
+    except RideOffer.DoesNotExist:
+        raise Http404
+    return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
+
 ############
 # BROWSING #
 ############
