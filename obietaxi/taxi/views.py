@@ -147,6 +147,7 @@ def browse( request ):
 
 @login_required
 def show_requests_and_offers( request ):
+    ''' Shows all RideRequests and RideOffers for a particular user '''
     profile = UserProfile.objects.get( user=request.user )
     rides_requested = RideRequest.objects.filter( passenger=profile )
     rides_offered = RideOffer.objects.filter( driver=profile )
