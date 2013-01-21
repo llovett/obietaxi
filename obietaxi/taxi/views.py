@@ -8,6 +8,9 @@ from random import random
 from time import strptime,mktime
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
+from Polygon.Shapes import Rectangle
+from encoders import RideRequestEncoder
+import json
 
 def request_or_offer_ride( request ):
     ''' Renders the ride request/offer form the first time '''
@@ -69,18 +72,44 @@ def request_new( request ):
     '''
     return _process_ro_form( request, 'request' )
 
-def request_show( request ):
+def request_search( request ):
     '''
-    Lists all of the RideRequests and renders them to "browse.html"
+    Searches for and returns any RideRequests within the bounds of the rectangles given
+    in the POST data
 
     '''
-    # TODO: Pull all RideRequests from the database and render them in the
-    # "browse.html" template
+    postData = json.loads( request.raw_post_data )
+    rectangles = postData['rectangles']
 
+    # bboxArea = the union of all the bounding boxes on the route
+    bboxArea = None
+    # union all the boxes together
+    for i in xrange(0,len(rectangles),4):
+        # Make a Rectangle out of the width/height of a bounding box
+        # longitude = x, latitude = y
+        theRect = Rectangle( abs(rectangles[i] - rectangles[i+2]),
+                             abs(rectangles[i+1] - rectangles[i+3]) )
+        theRect.shift( rectangles[i+2], rectangles[i+3] )
+        bboxArea = bboxArea + theRect if bboxArea else theRect
+
+    # turn bboxArea into a list of points
+    bboxArea = [list(t) for t in bboxArea.contour( 0 )]
+
+    # RideRequests within the bounds
+    requestEncoder = RideRequestEncoder()
+    requests = { "requests" : [requestEncoder.default(r) for r in RideRequest.objects( start__within_polygon=bboxArea)] } 
+    return HttpResponse( json.dumps(requests), mimetype='application/json' )
+    
+def browse( request ):
+    '''
+    Lists all RideRequests and RideOffers and renders them into "browse.html"
+
+    '''
     ride_requests = RideRequest.objects
     ride_offers = RideOffer.objects
 
     return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
+
 
 #####################
 # USER ACCOUNT INFO #
