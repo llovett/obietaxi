@@ -38,7 +38,7 @@ class UserProfile(mdb.Document):
     openid_auth_stub = mdb.EmbeddedDocumentField( OpenidAuthStub )
 
     def __unicode__( self ):
-        return '{} (profile)'.format( self.user.username )
+        return '{}'.format( self.user.first_name )
 
 class Trip(mdb.Document):
     '''

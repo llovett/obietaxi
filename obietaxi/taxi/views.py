@@ -105,7 +105,7 @@ def request_search( request ):
     requestEncoder = RideRequestEncoder()
     requests_within_start = RideRequests.objects( start__within_polygon=bboxArea )
     requests_on_route = requests_within_start.filter( end__within_polygon=bboxArea )
-    requests = { "requests" : [requestEncoder.default(r) for r requests_on_route] }
+    requests = { "requests" : [requestEncoder.default(r) for r in requests_on_route] }
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
     
 def request_show( request ):
