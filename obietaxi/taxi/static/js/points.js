@@ -160,6 +160,7 @@ function route() {
 			displayPoint( new google.maps.LatLng(start_points[i][0], start_points[i][1]) );
 			displayPoint( new google.maps.LatLng(end_points[i][0], end_points[i][1]) );
 		    }
+		    showRides( start_points, end_points );
 		}
 	    } );
 	} else {
@@ -168,8 +169,12 @@ function route() {
     } );
 }
 
-// Display the ride relevant ride requests beneath the map
-function showRides( requests ){
+// List the relevant ride requests beneath the map
+// start_points[i] is the start location of the ride ending at end_points[i]
+function showRides( start_points, end_points ){
+   if(start_points.length != 0){
+       
+   }
 }
 
 // Convert boxes into JSON
