@@ -19,7 +19,10 @@
   {% if ride_offers %}
     <ul>
       {% for item in ride_offers %}
-	<li>Offer from {{ item.start }} to {{ item.end }} on {{ item.date }}</li>
+	<li>
+	  <div class="ro_div" id="{{ item.id }}"><a href="#">Offer from {{ item.start }} to {{ item.end }} on {{ item.date }}</a>
+	  </div>	      
+	</li>
       {% endfor %}
     </ul>
   {% endif %}

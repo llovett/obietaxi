@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Offer from {{ ride_offer.start.title }} to {{ ride_offer.end.title }}{% endblock %}
+{% block heading %}Offer from {{ ride_offer.start.title }} to {{ ride_offer.end.title }}{% endblock %}
+{% block content %}
+  {{ ride_offer.passenger }} is offering rides from {{
+  ride_offer.start.title }} to {{ ride_offer.end.title }}. Does this itinerary fit any of your needs?
+  <!-- TODO: answer the above question if possible -->
+  <strong>Intended departure:</strong> {{ ride_offer.date }}
+  <!-- TODO: "request a ride" button -->
+{% endblock %}
