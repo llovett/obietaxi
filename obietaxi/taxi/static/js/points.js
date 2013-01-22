@@ -134,11 +134,23 @@ function route() {
 	    var path = result.routes[0].overview_path;
 	    var boxes = routeBoxer.box( path, distance );
 
-	    // Make a request to the server
+	    // Make a request to the server -------
+	    // bounding boxes:
+	    var request = boxesToJSON( boxes );
+	    var startDate = Date.parse($("#id_date_0").val()+" "+$("#id_date_1").val());
+	    // Get approximate start/end times for this trip
+	    request.start_time = startDate;
+	    var rideLength = 0;
+	    for ( var i=0; i<result.routes[0].legs.length; i++ ) {
+		rideLength += result.routes[i].legs[0].duration.value;
+	    }
+	    var endDate = startDate + 1000.0*rideLength;
+	    request.end_time = endDate;
+	    
 	    $.ajax( {
 		type: "POST",
 		url: "/request/search/",
-		data: boxesToJSON(boxes),	// Convert our boxes coordinate data into JSON
+		data: request,
 		dataType: "text",
 		success: function( data ) {
 		    // Convert to object from JSON string
@@ -183,6 +195,7 @@ function showRides( requests ){
 	var userlink = $("<a></a>");
 	userlink.attr( {"href":"/accounts/profile/?user_id="+requests[i].passenger_id} );
 	userlink.append( passenger_name );
+//	var itemdesc = $("<
 	newitem.append( userlink );
 	$("#ride_listing").append( newitem );
     }
