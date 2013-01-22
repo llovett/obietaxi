@@ -48,7 +48,7 @@ class Trip(mdb.Document):
     end = mdb.EmbeddedDocumentField( Location )
     driver = mdb.ReferenceField('UserProfile')
     passengers = mdb.ListField(mdb.ReferenceField('UserProfile'))
-    date_time = mdb.DateTimeField()
+    date = mdb.DateTimeField()
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
     

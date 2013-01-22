@@ -14,6 +14,46 @@ from encoders import RideRequestEncoder
 import json
 
 
+#########
+# TRIPS #
+#########
+
+@login_required
+def offer_propose( request ):
+    ''' Asks for a ride from a particular offer '''
+    data = json.loads( request.raw_post_data )
+    offer = RideOffer.objects.get( pk=ObjectId(data['id']) )
+    msg = data['msg']
+    dest_email = offer.driver.user.username
+    from_email = request.user.username
+    subject = "{} {} is asking you for a ride!".format(
+        request.user.first_name,
+        request.user.last_name
+    )
+    send_email( from=from_email, to=dest_email, body=msg, subject=subject )
+    return HttpResponse()
+
+def trip_new( request ):
+    ''' Creates a new trip '''
+    data = json.loads( request.raw_post_data )
+
+    start_location = Location(
+        position = (float(data['start_lat']),float(data['start_lng'])),
+        title = data['start_title']
+    )
+    end_location = Location(
+        position = (float(data['end_lat']),float(data['end_lng'])),
+        title = data['end_title']
+    )
+    trip = Trip.objects.create(
+        start = start_location,
+        end = end_location,
+        driver = UserProfile.objects.get( pk=ObjectId(data['driver_id']) ),
+        passengers = [UserProfile.objects.get( pk=ObjectId(id) ) for id in data['passengers']],
+        date = datetime.strptime( data['date'], "%m/%d/%Y %I:%M %p" )
+    )
+    return HttpResponse()
+
 ###################
 # OFFERS/REQUESTS #
 ###################

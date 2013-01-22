@@ -6,5 +6,8 @@
   ride_offer.start.title }} to {{ ride_offer.end.title }}. Does this itinerary fit any of your needs?
   <!-- TODO: answer the above question if possible -->
   <strong>Intended departure:</strong> {{ ride_offer.date }}
-  <!-- TODO: "request a ride" button -->
+
+  <form method="POST" action="{% url trip_new %}">
+    <input type="submit" value="Ask for a Ride" />
+  </form>
 {% endblock %}
