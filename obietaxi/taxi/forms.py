@@ -63,8 +63,8 @@ class RideRequestOfferForm (forms.Form):
                 'date',
             ),
             FormActions(
-                Submit('submit', 'Ask for a Ride', css_id="ask_button" ),
-                Submit('submit', 'Offer a Ride', css_id="offer_button" )
+                Submit('ask', 'Ask for a Ride', css_id="ask_button" ),
+                Submit('offer', 'Offer a Ride', css_id="offer_button" )
             )
         )
 

@@ -12,53 +12,59 @@ var routeBounds;
 
 // What we do when the page loads
 function initialize() {
-    // Oberlin, OH
-    var latLng = new google.maps.LatLng(41.2939, -82.2175);
+    // Initialize the date and time pickers
+    $('.datepicker-default').datepicker({
+	format:'mm/dd/yyyy'
+    });
+    $('.timepicker-default').timepicker();
+
+
+    // Map & directions initialization code
+    var latLng = new google.maps.LatLng(41.2939, -82.2175);    // Oberlin, OH
     var mapOptions = {
 	center: latLng,
 	zoom: 11,
 	mapTypeId: google.maps.MapTypeId.ROADMAP
     };
+
     // This should match the id of the map div on points.html
     map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-
-    // Callback for clicking on the map
-    // google.maps.event.addListener( map, 'click', addPoint );
-
-    // Click handler for the directions "submit" button
-    $("#submit").click( function( event ) {
-	event.preventDefault();
-	route();
-    } );
-    $("#clear").click( function( event ) {
-	event.preventDefault();
-	clearBoxes();
-    } );
 
     // Setup directions/boxing utilities
     directionService = new google.maps.DirectionsService();
     directionsRenderer = new google.maps.DirectionsRenderer( {map: map} );
     routeBoxer = new RouteBoxer();
 
-    // Date and time pickers
-    $('.datepicker-default').datepicker({
-	format:'mm/dd/yyyy'
-    });
-    $('.timepicker-default').timepicker();
-
-    // Change form action URL based on submit button
+    // What we do when the "Offer a Ride" button is pressed
     $("#offer_button").click(
 	    function( event ) {
-		//$("#offer_or_request_form").attr( 'action', '/request/search/' );
 		event.preventDefault();
-		route();
+		route( function( results ) {
+		    // If there are no passenger results immediately, submit offer
+		    // and go to browse page showing requests
+		    if ( results.length == 0 ) {
+			$("#offer_or_request_form").attr( {"action":"/offer/new/"} );
+			console.log("no results... posting offer in foreground.");
+			$("#offer_or_request_form").submit();
+		    } else {
+			// Submit offer in the background
+			console.log("submitting offer via AJAX");
+			$.ajax( {
+			    type: "POST",
+			    url: "/offer/new/",
+			    data: $("#offer_or_request_form").serialize()
+			} );
+		    }
+		} );
 	    }
     );
+    // What we do when the "Ask for a Ride" button is pressed
     $("#ask_button").click(
-	    function( event ) {
-		$("#offer_or_request_form").attr( 'action', '/request/new/' );
-	    }
+	function( event ) {
+	    $("#offer_or_request_form").attr( {"action":"/request/new/"} );
+	}
     );
+	    
 }
 
 // This will submit the point's location to the server for storage in
@@ -109,12 +115,8 @@ function clearBoxes() {
 
 // Find a route between two points. Find also all points we have
 // stored within a certain distance of that route.
-function route() {
-    // Clear all previous boxes
-    //clearBoxes();
-
+function route( callback ) {
     // Bounding-box encapsulation distance
-    //var distance = $("#distance").val();
     var distance = "10";
     
     // The request to be sent to Google for directions
@@ -163,11 +165,12 @@ function route() {
 			end_points[i] = requests[i].location_end;
 		    }
 
-		    $("#status").text(start_points.length+" rides returned.");
-
 		    // Display markers that fit within the union of the boxes
 		    clearMarkers();
 		    showRides( requests );
+		    if ( !(typeof callback === 'undefined') ) {
+			callback( requests );
+		    }
 		}
 	    } );
 	} else {
@@ -184,9 +187,9 @@ function showRides( requests ){
 
     for ( var i=0; i<requests.length; i++ ) {
 	// Display starting point of passenger on the map, along with their name
-	var start_point = requests[i].location_start;
-	var end_point = requests[i].location_end;
-	var passenger_name = requests[i].passenger_first_name + requests[i].passenger_last_name;
+	var start_point = requests[i].location_start.point;
+	var end_point = requests[i].location_end.point;
+	var passenger_name = requests[i].passenger_first_name + " " + requests[i].passenger_last_name;
 	displayPoint( new google.maps.LatLng(start_point[0], start_point[1]), passenger_name);
 
 	// Put an item in the passenger list
@@ -195,8 +198,15 @@ function showRides( requests ){
 	var userlink = $("<a></a>");
 	userlink.attr( {"href":"/accounts/profile/?user_id="+requests[i].passenger_id} );
 	userlink.append( passenger_name );
-//	var itemdesc = $("<
-	newitem.append( userlink );
+	var itemdesc = $("<p>Going from <strong>"+
+			 requests[i].location_start.title+
+			 "</strong> to <strong>"+
+			 requests[i].location_end.title+
+			 "</strong></p>");
+	// TODO: add "offer ride" button
+	newitem
+	    .append( userlink )
+	    .append( itemdesc );
 	$("#ride_listing").append( newitem );
     }
 }
