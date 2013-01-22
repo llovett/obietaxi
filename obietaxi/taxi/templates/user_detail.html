@@ -16,7 +16,9 @@
   {% if rides_offered %}
     <ul>
       {% for ride in rides_offered %}
-        <li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}</li>
+        <li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
+
+	</li>
       {% endfor %}
     </ul>
   {% else %}

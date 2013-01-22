@@ -141,6 +141,15 @@ def browse( request ):
 
     return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
 
+######################
+# USER TRIP SETTINGS #
+######################
+
+def offer_settings( request ):
+    
+    
+    return HttpResponse("Coming soon")
+
 #####################
 # USER ACCOUNT INFO #
 #####################
