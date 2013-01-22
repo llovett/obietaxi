@@ -148,7 +148,10 @@ def browse( request ):
 @login_required
 def show_requests_and_offers( request ):
     ''' Shows all RideRequests and RideOffers for a particular user '''
-    profile = UserProfile.objects.get( user=request.user )
+    if 'user_id' in request.GET:
+        profile = UserProfile.objects.get( pk=ObjectId( request.GET['user_id'] ) )
+    else:
+        profile = UserProfile.objects.get( user=request.user )
     rides_requested = RideRequest.objects.filter( passenger=profile )
     rides_offered = RideOffer.objects.filter( driver=profile )
     return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )

@@ -48,3 +48,10 @@ body { width: 100%; height:100%; margin:0; padding:0; }
 .navlinks li {
     display:inline;
 }
+
+.maplabels {
+    background-color:white;
+    padding:5px;
+    border:2px solid gray;
+    white-space:nowrap;
+}

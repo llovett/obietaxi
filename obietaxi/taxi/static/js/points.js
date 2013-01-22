@@ -76,11 +76,13 @@ function addPoint( mouseEvent ) {
 }
 
 // This will display a point as a marker only.
-function displayPoint( latLng ) {
-    var marker = new google.maps.Marker( {
+function displayPoint( latLng, label ) {
+    var marker = new MarkerWithLabel( {
     	position: latLng,
     	map: map,
-    	title: "point you made"
+	title: label,
+	labelContent: label,
+	labelClass: "maplabels"
     } );
     markersArray.push( marker );
 }
@@ -151,16 +153,9 @@ function route() {
 
 		    $("#status").text(start_points.length+" rides returned.");
 
-		    // Draw boxes
-		    //drawBoxes( boxes );
-
 		    // Display markers that fit within the union of the boxes
 		    clearMarkers();
-		    for ( var i=0; i<start_points.length; i++ ) {
-			displayPoint( new google.maps.LatLng(start_points[i][0], start_points[i][1]) );
-			displayPoint( new google.maps.LatLng(end_points[i][0], end_points[i][1]) );
-		    }
-		    showRides( start_points, end_points );
+		    showRides( requests );
 		}
 	    } );
 	} else {
@@ -171,10 +166,26 @@ function route() {
 
 // List the relevant ride requests beneath the map
 // start_points[i] is the start location of the ride ending at end_points[i]
-function showRides( start_points, end_points ){
-   if(start_points.length != 0){
-       
-   }
+function showRides( requests ){
+    // Start out by emptying the current passenger listing
+    $("#ride_listing").empty();
+
+    for ( var i=0; i<requests.length; i++ ) {
+	// Display starting point of passenger on the map, along with their name
+	var start_point = requests[i].location_start;
+	var end_point = requests[i].location_end;
+	var passenger_name = requests[i].passenger_first_name + requests[i].passenger_last_name;
+	displayPoint( new google.maps.LatLng(start_point[0], start_point[1]), passenger_name);
+
+	// Put an item in the passenger list
+	var newitem = $("<li></li>");
+	newitem.addClass("passenger_item");
+	var userlink = $("<a></a>");
+	userlink.attr( {"href":"/accounts/profile/?user_id="+requests[i].passenger_id} );
+	userlink.append( passenger_name );
+	newitem.append( userlink );
+	$("#ride_listing").append( newitem );
+    }
 }
 
 // Convert boxes into JSON
