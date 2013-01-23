@@ -145,10 +145,9 @@ def browse( request ):
 # USER TRIP SETTINGS #
 ######################
 
-def offer_settings( request ):
-    
-    
-    return HttpResponse("Coming soon")
+def offer_settings(request, offer_id):
+    ride_offer = RideOffer.objects.get(pk=ObjectId(offer_id))
+    return render_to_response( 'offer_settings.html', locals(), context_instance=RequestContext(request) )
 
 #####################
 # USER ACCOUNT INFO #

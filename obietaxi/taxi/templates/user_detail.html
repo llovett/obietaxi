@@ -17,7 +17,7 @@
     <ul>
       {% for ride in rides_offered %}
         <li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
-
+	  <a href="{% url offer_settings ride.id %}">settings</a>
 	</li>
       {% endfor %}
     </ul>
