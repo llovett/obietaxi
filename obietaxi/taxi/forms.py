@@ -1,10 +1,12 @@
 from django import forms
+from bson.objectid import ObjectId
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset
 from crispy_forms.bootstrap import FormActions
 from django.core.urlresolvers import reverse
 from widgets import BootstrapSplitDateTimeWidget
 from datetime import datetime
+from models import RideOffer, RideRequest
 
 REPEAT_OPTIONS = (
     (None, ''),
@@ -85,6 +87,7 @@ class OfferOptionsForm (forms.Form):
     Form for updating the information of a RideOffer
     '''
 
+    offer_id = forms.CharField( widget=forms.HiddenInput )
     message = forms.CharField(
         required=False,
         max_length=300,
@@ -93,6 +96,11 @@ class OfferOptionsForm (forms.Form):
         )
     )
     
+    def clean( self ):
+        cleaned_data = super( RegisterForm, self ).clean()
+        if RideOffer.objects.count(id=ObjectId(cleaned_data['offer_id'])) == 0:
+            raise ValidationError("not a valid offer id")
+
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_action = '.'
@@ -101,6 +109,7 @@ class OfferOptionsForm (forms.Form):
         self.helper.layout = Layout(
             Fieldset(
                 'Ride Offer',
+                'offer_id',
                 'message',
                 ),
             FormActions(
