@@ -160,6 +160,7 @@ def _process_offer_update(request):
 
     # Form validates
     if form.is_valid():
+        offer_id = data['offer_id']
         data = form.cleaned_data
 
         # Parse out the form
@@ -181,7 +182,7 @@ def offer_options(request, offer_id):
     '''
 
     ride_offer = RideOffer.objects.get(pk=ObjectId(offer_id))
-    form = OfferOptionsForm()
+    form = OfferOptionsForm(initial={'offer_id':offer_id})
     return render_to_response( 'offer_options.html', locals(), context_instance=RequestContext(request) )
 
 def request_options(request, request_id):
