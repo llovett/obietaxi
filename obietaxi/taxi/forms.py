@@ -113,7 +113,8 @@ class OfferOptionsForm (forms.Form):
                 'message',
                 ),
             FormActions(
-                Submit('update', 'Update', css_id='update_button')
+                Submit('update', 'Update', css_id='update_button'),
+                Submit('cancel', 'Cancel Offer', css_id='cancel_button')
             )
         )
         
@@ -143,7 +144,8 @@ class RequestOptionsForm (forms.Form):
                 'message',
                 ),
             FormActions(
-                Submit('update', 'Update', css_id='update_button')
+                Submit('update', 'Update', css_id='update_button'),
+                Submit('cancel', 'Cancel Request', css_id='cancel_button')
             )
         )
 
