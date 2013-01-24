@@ -92,10 +92,6 @@ class OfferOptionsForm (forms.Form):
             attrs={'cols':5, 'rows':5}
         )
     )
-    repeat = forms.ChoiceField(
-        required=False,
-        choices=REPEAT_OPTIONS
-    )
     
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
@@ -106,7 +102,6 @@ class OfferOptionsForm (forms.Form):
             Fieldset(
                 'Ride Offer',
                 'message',
-                'repeat'
                 ),
             FormActions(
                 Submit('update', 'Update', css_id='update_button')
@@ -114,5 +109,36 @@ class OfferOptionsForm (forms.Form):
         )
         
         super( OfferOptionsForm, self).__init__( *args, **kwargs)
+
+class RequestOptionsForm (forms.Form):
+    '''
+    Form for updating a RideRequest
+    '''
+    
+    message = forms.CharField(
+        required=False,
+        max_length=300,
+        widget=forms.Textarea(
+            attrs={'cols':40, 'rows':5}
+        )
+    )
+    
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = '.'
+        self.helper.form_id = 'request_options_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Ride Request',
+                'message',
+                'repeat'
+                ),
+            FormActions(
+                Submit('update', 'Update', css_id='update_button')
+            )
+        )
+
+        super(RequestOptionsForm, self).__init__(*args, **kwargs)
+    
     
     

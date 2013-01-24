@@ -5,6 +5,11 @@
 
 {% block content %}
 
+{% load crispy_forms_tags %}
+<!-- this renders the form -->
+{% crispy form %}
+
+<!--
 {% if ride_request.driver %}
 Driver is {{ride_request.driver}} <br>
 {% endif %}
@@ -14,5 +19,6 @@ Date is {{ride_request.date}}
 {% if ride_request.repeat %}
 <br> Trip repeats {{ride_request.repeat}}
 {% endif %}
+-->
 
 {% endblock %}
