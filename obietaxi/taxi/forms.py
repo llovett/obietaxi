@@ -12,7 +12,11 @@ class AskForRideForm( forms.Form ):
     Form to facilitate asking for a ride from a posted RideOffer
     '''
     offer_id = forms.CharField( widget=forms.HiddenInput )
-    msg = forms.CharField( label="Your message", required=False, widget=Textarea )
+    msg = forms.CharField(
+        label="Your message",
+        required=False,
+        widget=Textarea( attrs={'rows':5, 'cols':50} )
+    )
 
     def __init__( self, *args, **kwargs ):
         self.helper = FormHelper()

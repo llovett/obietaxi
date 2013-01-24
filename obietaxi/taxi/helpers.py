@@ -10,12 +10,15 @@ def _hostname( protocol="http" ):
 def send_email( email_from="", email_subject="", email_to=[], email_body="" ):
     if len(email_from) == 0:
         email_from = 'noreply@{}'.format( hostname )
+    if not type(email_to) is list:
+        email_to=[email_to]
+    
     hostname = _hostname( protocol="" )
     email_message = "\r\n".join( ["From: {}".format(email_from),
-                                  "To: {}".format(', '.join(to)),
-                                  "Subject: {}".format(subject),
+                                  "To: {}".format(', '.join(email_to)),
+                                  "Subject: {}".format(email_subject),
                                   "",
-                                  body] )
+                                  email_body] )
     server = smtplib.SMTP( 'localhost' )
-    server.sendmail( email_from, to, email_message )
+    server.sendmail( email_from, email_to, email_message )
     server.quit()

@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from bson.objectid import ObjectId
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
 from forms import RideRequestOfferForm, AskForRideForm
@@ -11,6 +12,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from Polygon.Shapes import Rectangle
 from encoders import RideRequestEncoder
+from helpers import send_email
 import json
 
 
@@ -21,17 +23,28 @@ import json
 @login_required
 def offer_propose( request ):
     ''' Asks for a ride from a particular offer '''
-    data = json.loads( request.raw_post_data )
-    offer = RideOffer.objects.get( pk=ObjectId(data['offer_id']) )
-    msg = data['msg']
-    dest_email = offer.driver.user.username
-    from_email = request.user.username
-    subject = "{} {} is asking you for a ride!".format(
-        request.user.first_name,
-        request.user.last_name
-    )
-    send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
-    return HttpResponse()
+    form = AskForRideForm( request.POST )
+    if form.is_valid():
+        data = form.cleaned_data
+        offer = RideOffer.objects.get( pk=ObjectId(data['offer_id']) )
+        msg = data['msg']
+        dest_email = offer.driver.user.username
+
+
+        import sys
+        sys.stderr.write("destination email: %s\n"%dest_email)
+
+
+        from_email = request.user.username
+        subject = "{} {} is asking you for a ride!".format(
+            request.user.first_name,
+            request.user.last_name
+            )
+        send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
+        messages.add_message( request, messages.SUCCESS, "Your request has been sent successfully." )
+        return HttpResponseRedirect( reverse("browse") )
+
+    return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
 
 def trip_new( request ):
     ''' Creates a new trip '''
