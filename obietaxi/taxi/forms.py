@@ -77,3 +77,11 @@ class RideRequestOfferForm (forms.Form):
         )
 
         super( RideRequestOfferForm, self ).__init__( *args, **kwargs )
+
+class OfferOptionsForm (forms.Form):
+    '''
+    Form for updating the information of a RideOffer
+    '''
+    
+    
+    
