@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %} Ride Options {% endblock %}
+{% block title %} Offer Options {% endblock %}
 {% block heading %} Options {% endblock %}
 
 {% block content %}
+
+{% load crispy_forms_tags %}
+<!-- this renders the form -->
+{% crispy form %}
 
 Driver is {{ride_offer.driver}} <br>
 Start is {{ride_offer.start}} <br>

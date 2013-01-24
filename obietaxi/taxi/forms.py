@@ -6,6 +6,14 @@ from django.core.urlresolvers import reverse
 from widgets import BootstrapSplitDateTimeWidget
 from datetime import datetime
 
+REPEAT_OPTIONS = (
+    (None, ''),
+    ('weekly', 'Weekly'),
+    ('biweekly', 'Biweekly'),
+    ('monthly', 'Monthly'),
+)
+
+
 class RideRequestOfferForm (forms.Form):
     '''
     Form for posting either RideRequests or RideOffers
@@ -45,12 +53,6 @@ class RideRequestOfferForm (forms.Form):
         label="Departure",
         input_formats = input_formats
     )   
-    REPEAT_OPTIONS = (
-        (None, ''),
-        ('weekly', 'Weekly'),
-        ('biweekly', 'Biweekly'),
-        ('monthly', 'Monthly'),
-    )
     repeat = forms.ChoiceField(choices=REPEAT_OPTIONS)
 
     def __init__( self, *args, **kwargs ):
@@ -82,6 +84,35 @@ class OfferOptionsForm (forms.Form):
     '''
     Form for updating the information of a RideOffer
     '''
+
+    message = forms.CharField(
+        required=False,
+        max_length=300,
+        widget=forms.Textarea(
+            attrs={'cols':5, 'rows':5}
+        )
+    )
+    repeat = forms.ChoiceField(
+        required=False,
+        choices=REPEAT_OPTIONS
+    )
     
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = '.'
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'offer_options_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Ride Offer',
+                'message',
+                'repeat'
+                ),
+            FormActions(
+                Submit('update', 'Update', css_id='update_button')
+            )
+        )
+        
+        super( OfferOptionsForm, self).__init__( *args, **kwargs)
     
     

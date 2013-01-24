@@ -3,7 +3,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from bson.objectid import ObjectId
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
-from forms import RideRequestOfferForm
+from forms import RideRequestOfferForm, OfferOptionsForm
 from datetime import datetime
 from random import random
 from time import strptime,mktime
@@ -146,13 +146,63 @@ def browse( request ):
 # USER TRIP SETTINGS #
 ######################
 
+def _process_request_update(request):
+    
+    return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
+    
+def _process_offer_update(request):
+    '''
+    Process the request/offer update form
+    Not a view
+    '''
+    
+    form = OfferOptionsForm(request.POST)
+
+    # Form validates
+    if form.is_valid():
+        data = form.cleaned_data
+
+        # Parse out the form
+        new_message = data['message']
+        new_repeat = data['repeat']
+
+        # TODO: Get offer/request ID
+        
+        ro = RideOffer.objects.get() # need ID
+        ro.message = new_message
+        ro.repeat = new_repeat
+    
+    # Render the form
+    return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
+
 def offer_options(request, offer_id):
+    '''
+    Renders the offer update form the first time
+    '''
+
     ride_offer = RideOffer.objects.get(pk=ObjectId(offer_id))
+    form = OfferOptionsForm()
     return render_to_response( 'offer_options.html', locals(), context_instance=RequestContext(request) )
 
 def request_options(request, request_id):
+    '''
+    Renders the request update form the first time
+    '''
+
     ride_request = RideRequest.objects.get(pk=ObjectId(request_id))
     return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
+
+def offer_update(request):
+    '''
+    Updates a RideOffer from POST data given in <request>.
+    '''
+    return _process_offer_update(request)
+
+def request_update(request):
+    '''
+    Updates a RideRequest from POST data given in <request>.
+    '''
+    return _process_request_update(request)
 
 #####################
 # USER ACCOUNT INFO #
