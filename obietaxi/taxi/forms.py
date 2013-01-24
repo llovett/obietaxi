@@ -123,7 +123,7 @@ class RequestOptionsForm (forms.Form):
     '''
     Form for updating a RideRequest
     '''
-    
+    request_id = forms.CharField( widget=forms.HiddenInput )
     message = forms.CharField(
         required=False,
         max_length=300,
@@ -139,8 +139,8 @@ class RequestOptionsForm (forms.Form):
         self.helper.layout = Layout(
             Fieldset(
                 'Ride Request',
+                'request_id',
                 'message',
-                'repeat'
                 ),
             FormActions(
                 Submit('update', 'Update', css_id='update_button')
