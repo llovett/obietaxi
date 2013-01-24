@@ -3,7 +3,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from bson.objectid import ObjectId
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
-from forms import RideRequestOfferForm
+from forms import RideRequestOfferForm, AskForRideForm
 from datetime import datetime
 from random import random
 from time import strptime,mktime
@@ -22,7 +22,7 @@ import json
 def offer_propose( request ):
     ''' Asks for a ride from a particular offer '''
     data = json.loads( request.raw_post_data )
-    offer = RideOffer.objects.get( pk=ObjectId(data['id']) )
+    offer = RideOffer.objects.get( pk=ObjectId(data['offer_id']) )
     msg = data['msg']
     dest_email = offer.driver.user.username
     from_email = request.user.username
@@ -30,7 +30,7 @@ def offer_propose( request ):
         request.user.first_name,
         request.user.last_name
     )
-    send_email( from=from_email, to=dest_email, body=msg, subject=subject )
+    send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
     return HttpResponse()
 
 def trip_new( request ):
@@ -165,6 +165,7 @@ def offer_show( request ):
         ride_offer = RideOffer.objects.get( pk=ObjectId(request.GET['offer_id']) )
     except RideOffer.DoesNotExist:
         raise Http404
+    form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
     return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
 
 ############

@@ -1,10 +1,37 @@
 from django import forms
+from django.forms.widgets import Textarea
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset
 from crispy_forms.bootstrap import FormActions
 from django.core.urlresolvers import reverse
 from widgets import BootstrapSplitDateTimeWidget
 from datetime import datetime
+
+class AskForRideForm( forms.Form ):
+    '''
+    Form to facilitate asking for a ride from a posted RideOffer
+    '''
+    offer_id = forms.CharField( widget=forms.HiddenInput )
+    msg = forms.CharField( label="Your message", required=False, widget=Textarea )
+
+    def __init__( self, *args, **kwargs ):
+        self.helper = FormHelper()
+        self.helper.form_action = reverse( 'offer_propose' )
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'ask_for_ride_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Need a Ride?',
+                'offer_id',
+                'msg'
+            ),
+            FormActions(
+                Submit('ask', 'Ask for a Ride', css_id="ask_button" )
+            )
+        )
+
+        super( AskForRideForm, self ).__init__( *args, **kwargs )
+
 
 class RideRequestOfferForm (forms.Form):
     '''

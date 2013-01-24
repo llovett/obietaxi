@@ -2,12 +2,12 @@
 {% block title %}Offer from {{ ride_offer.start.title }} to {{ ride_offer.end.title }}{% endblock %}
 {% block heading %}Offer from {{ ride_offer.start.title }} to {{ ride_offer.end.title }}{% endblock %}
 {% block content %}
-  {{ ride_offer.passenger }} is offering rides from {{
-  ride_offer.start.title }} to {{ ride_offer.end.title }}. Does this itinerary fit any of your needs?
+  {{ ride_offer.driver }} is offering rides from {{ ride_offer.start.title }} to {{ ride_offer.end.title }}. Does this itinerary fit any of your needs?
   <!-- TODO: answer the above question if possible -->
   <strong>Intended departure:</strong> {{ ride_offer.date }}
 
-  <form method="POST" action="{% url trip_new %}">
-    <input type="submit" value="Ask for a Ride" />
-  </form>
+  {% load crispy_forms_tags %}
+  <!-- this renders the entire form, including start/end tags and submit buttons -->
+  {% crispy form %}
+
 {% endblock %}

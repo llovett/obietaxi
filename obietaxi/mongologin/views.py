@@ -200,7 +200,7 @@ def register( request ):
 
             email_to = [form.cleaned_data['username']]
             msg_body = "Welcome to Obietaxi! Your account has already been created with this email address, now all you need to do is confirm your accout by clicking on the link below. If there is no link, you should copy & paste the address into your browser's address bar and navigate there.\n\n{}".format( activate_link )
-            send_email( to=email_to, subject=email_subject, body=msg_body )
+            send_email( email_to=email_to, email_subject=email_subject, email_body=msg_body )
             
             messages.add_message( request, messages.SUCCESS, "Your account has been created. Check your email for a confirmation link to complete the registration process." )
             return HttpResponseRedirect( reverse('login') )
