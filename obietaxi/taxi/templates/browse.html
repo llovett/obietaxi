@@ -9,7 +9,11 @@
       {% for item in ride_requests %}
 	<li>
 	  <div class="rr_div" id="{{ item.id }}"><a href="#">Request from {{ item.start }} to
-	      {{ item.end }} on {{ item.date }}</a>
+	      {{ item.end }} on {{ item.date }}
+	      {% if item.repeat %}
+	      (repeats {{ item.repeat }})
+	      {% endif %}
+	    </a>
 	  </div>
 	</li>
       {% endfor %}

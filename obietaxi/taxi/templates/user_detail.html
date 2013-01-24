@@ -6,7 +6,9 @@
   {% if rides_requested %}
     <ul>
       {% for ride in rides_requested %}
-	<li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}</li>
+	<li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
+	  <a href="{% url request_options ride.id %}">settings</a>
+	</li>
       {% endfor %}
     </ul>
   {% else %}
@@ -17,7 +19,7 @@
     <ul>
       {% for ride in rides_offered %}
         <li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
-	  <a href="{% url offer_settings ride.id %}">settings</a>
+	  <a href="{% url offer_options ride.id %}">settings</a>
 	</li>
       {% endfor %}
     </ul>

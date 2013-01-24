@@ -45,6 +45,13 @@ class RideRequestOfferForm (forms.Form):
         label="Departure",
         input_formats = input_formats
     )   
+    REPEAT_OPTIONS = (
+        (None, ''),
+        ('weekly', 'Weekly'),
+        ('biweekly', 'Biweekly'),
+        ('monthly', 'Monthly'),
+    )
+    repeat = forms.ChoiceField(choices=REPEAT_OPTIONS)
 
     def __init__( self, *args, **kwargs ):
         self.helper = FormHelper()
@@ -61,6 +68,7 @@ class RideRequestOfferForm (forms.Form):
                 'start_location',
                 'end_location',
                 'date',
+                'repeat'
                 ),
             FormActions(
                 Submit('ask', 'Ask for a Ride', css_id="ask_button" ),

@@ -1,6 +1,6 @@
 import mongoengine as mdb
 from mongologin.models import OpenidAuthStub
-import math
+import math, unicodedata
 
 class Trust(mdb.EmbeddedDocument):
     message = mdb.StringField()
@@ -83,8 +83,8 @@ class RideOffer(mdb.Document):
     trip = mdb.ReferenceField('Trip')
     message = mdb.StringField()
     date = mdb.DateTimeField()
+    repeat = mdb.StringField()
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
     
     # fuzziness = mdb.StringField()
-    # repeat = mdb.StringField()

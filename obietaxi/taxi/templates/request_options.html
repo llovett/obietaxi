@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %} Ride Options {% endblock %}
+{% block heading %} Options {% endblock %}
+
+{% block content %}
+
+{% if ride_request.driver %}
+Driver is {{ride_request.driver}} <br>
+{% endif %}
+Start is {{ride_request.start}} <br>
+End is {{ride_request.end}} <br>
+Date is {{ride_request.date}}
+{% if ride_request.repeat %}
+<br> Trip repeats {{ride_request.repeat}}
+{% endif %}
+
+{% endblock %}

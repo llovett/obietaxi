@@ -41,7 +41,8 @@ def _process_ro_form( request, type ):
         startLocation = Location( position=startloc, title=data['start_location'] )
         endLocation = Location( position=endloc, title=data['end_location'] )
         date = data['date']
-        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date }
+        repeat = data['repeat']
+        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date, 'repeat':repeat }
 
         # Associate request/offer with user, if possible
         # TODO: make this mandatory!
@@ -145,9 +146,13 @@ def browse( request ):
 # USER TRIP SETTINGS #
 ######################
 
-def offer_settings(request, offer_id):
+def offer_options(request, offer_id):
     ride_offer = RideOffer.objects.get(pk=ObjectId(offer_id))
-    return render_to_response( 'offer_settings.html', locals(), context_instance=RequestContext(request) )
+    return render_to_response( 'offer_options.html', locals(), context_instance=RequestContext(request) )
+
+def request_options(request, request_id):
+    ride_request = RideRequest.objects.get(pk=ObjectId(request_id))
+    return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
 
 #####################
 # USER ACCOUNT INFO #
