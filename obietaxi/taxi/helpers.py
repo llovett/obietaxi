@@ -1,4 +1,5 @@
 import smtplib
+from random import choice
 from obietaxi import settings
 
 def _hostname( protocol="http" ):
@@ -7,6 +8,9 @@ def _hostname( protocol="http" ):
         basename = "{}://{}".format( protocol, basename )
     return basename
 
+def random_string( chars='abcdefghijklmnopqrstubwxyz1234567890', length=80 ):
+    return "".join( choice(chars) for i in xrange(length) )
+    
 def send_email( email_from="", email_subject="", email_to=[], email_body="" ):
     if len(email_from) == 0:
         email_from = 'noreply@{}'.format( hostname )

@@ -12,7 +12,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from Polygon.Shapes import Rectangle
 from encoders import RideRequestEncoder
-from helpers import send_email
+from helpers import send_email, _hostname, random_string
 import json
 
 
@@ -28,23 +28,50 @@ def offer_propose( request ):
         data = form.cleaned_data
         offer = RideOffer.objects.get( pk=ObjectId(data['offer_id']) )
         msg = data['msg']
+
+        # See if the logged-in user has already asked for a ride from this person
+        if request.user.username in offer.askers:
+            messages.add_message( request, messages.ERROR, "You have already asked to join this ride." )
+            return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
+
+        profile_id = UserProfile.objects.get( user=request.user ).id
+
+        # Stuff that we append to the message
+        appended = "This message has been sent to you because\
+ someone found your ride offer from {} to {} on {}. Please\
+ consider your safety when offering rides to people you don't\
+ know personally, but we hope you have a positive attitude in\
+ contributing to sharing your vehicle with others.\r\n\r\n you ARE WILLING\
+ to share a ride with this person, please follow {}.\r\n\r\n\
+ If you ARE NOT WILLING to share a ride with this person, follow {}.".format(
+            offer.start,
+            offer.end,
+            offer.date.strftime("%A, %B %d at %I:%M %p"),
+            '{}{}?response={}&rider={}'.format( _hostname(), reverse( 'process_offer_proposal' ), 'accept', str(profile_id) ),
+            '{}{}?response={}&rider={}'.format( _hostname(), reverse( 'process_offer_proposal' ), 'decline', str(profile_id) )
+        )
+        msg = "\r\n".join( (msg,30*'-',appended) )
+
+        # Save this asker in the offer's 'askers' field
+        offer.askers[request.user.username] = 
+        offer.save()
+        
         dest_email = offer.driver.user.username
-
-
-        import sys
-        sys.stderr.write("destination email: %s\n"%dest_email)
-
-
         from_email = request.user.username
         subject = "{} {} is asking you for a ride!".format(
             request.user.first_name,
             request.user.last_name
-            )
+        )
         send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
         messages.add_message( request, messages.SUCCESS, "Your request has been sent successfully." )
         return HttpResponseRedirect( reverse("browse") )
 
     return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
+
+def process_offer_proposal( request ):
+    ''' Processes a response YES/NO to a request from a ride from a particular RideOffer '''
+    
+    
 
 def trip_new( request ):
     ''' Creates a new trip '''

@@ -10,7 +10,7 @@ from mongoengine.django.auth import User
 from random import choice
 from models import RegistrationStub, OpenidAuthStub
 from taxi.models import UserProfile
-from taxi.helpers import _hostname, send_email
+from taxi.helpers import _hostname, send_email, random_string
 import smtplib
 from obietaxi import settings
 
@@ -132,8 +132,7 @@ def google_login_success( request ):
             profile = UserProfile.objects.get( user=user )
         except User.DoesNotExist:
             # 3) This person has never logged in before
-            random_password = lambda : ''.join( (choice('ABCDEFabcdef1234567890)(*&^%$#@!') for i in xrange(10)) )
-            user=User.create_user(email, random_password())
+            user=User.create_user(email, random_string())
             user.first_name = firstname
             user.last_name = lastname
             user.save()

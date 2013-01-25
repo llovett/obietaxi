@@ -83,6 +83,9 @@ class RideOffer(mdb.Document):
     trip = mdb.ReferenceField('Trip')
     message = mdb.StringField()
     date = mdb.DateTimeField()
+    # Holds those who are asking for rides (but have not yet been accepted/declined)
+    # from this offer
+    askers = mdb.DictField()
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
     
