@@ -16,6 +16,7 @@ def send_email( email_from="", email_subject="", email_to=[], email_body="" ):
         email_from = 'noreply@{}'.format( hostname )
     if not type(email_to) is list:
         email_to=[email_to]
+    email_subject = "Obietaxi: %s"%email_subject if len(email_subject) > 0 else "Message from Obietaxi!"
     
     hostname = _hostname( protocol="" )
     email_message = "\r\n".join( ["From: {}".format(email_from),
