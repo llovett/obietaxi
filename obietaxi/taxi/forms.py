@@ -89,7 +89,7 @@ class OfferOptionsForm (forms.Form):
 
     offer_id = forms.CharField( widget=forms.HiddenInput )
     message = forms.CharField(
-        required=False,
+        required=True,
         max_length=300,
         widget=forms.Textarea(
             attrs={'cols':5, 'rows':5}

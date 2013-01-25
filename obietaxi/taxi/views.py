@@ -180,17 +180,20 @@ def _process_offer_update(request):
 
     # Form validates
     if form.is_valid():
-        offer_id = data['offer_id']
         data = form.cleaned_data
-
+        
+        offer_id = data['offer_id']
+        
         # Parse out the form
         new_message = data['message']
         new_repeat = data['repeat']
         
         # Update RideOffer
-        ro = RideOffer.objects.get(offer_id) 
-        ro.message = new_message
-    
+        ride_offer = RideOffer.objects.get(pk=ObjectId(offer_id))
+        ride_offer.message = data['message']
+
+        new_message_type = type(new_message)
+
     # Render the form
     return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
 
