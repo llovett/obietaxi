@@ -146,76 +146,64 @@ def browse( request ):
 # USER TRIP SETTINGS #
 ######################
 
-def _process_request_update(request):
+def process_request_update(request, request_id):
     '''
-    Process the request update form
-    Not a view
-    '''
-    
-    form = RequestOptionsForm(request.POST)
-
-    # Form validates
-    if form.is_valid():
-        request_id = data['request_id']
-        data = form.cleaned_data
-
-        # Parse out the form
-        new_message = data['message']
-        new_repeat = data['repeat']
-        
-        # Update RideRequest
-        ro = RideRequest.objects.get(request_id)
-        ro.message = new_message
-
-    # Render the form
-    return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
-    
-def _process_offer_update(request):
-    '''
-    Process the offer update form
-    Not a view
-    '''
-    
-    form = OfferOptionsForm(request.POST)
-
-    # Form validates
-    if form.is_valid():
-        data = form.cleaned_data
-        
-        offer_id = data['offer_id']
-        
-        # Parse out the form
-        new_message = data['message']
-        
-        # Update RideOffer
-        ride_offer = RideOffer.objects.get(pk=ObjectId(offer_id))
-        ride_offer.message = data['message']
-
-        new_message_type = type(new_message)
-
-    # Render the form
-    return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
-
-def offer_options(request, offer_id):
-    '''
-    Renders the offer update form the first time
+    Render and process the request update form
     '''
 
     if request.method == 'POST':
-        return _process_offer_update( request )
+        form = OfferOptionsForm(request.POST)
 
-    ride_offer = RideOffer.objects.get(pk=ObjectId(offer_id))
-    form = OfferOptionsForm(initial={'offer_id':offer_id})
-    return render_to_response( 'offer_options.html', locals(), context_instance=RequestContext(request) )
+        # Form validates
+        if form.is_valid():
+            data = form.cleaned_data
+            ride_request = RideRequest.objects.get(pk=ObjectId(request_id))
+            
+            # Parse out the form and update RideRequest
+            if data['message']:
+                ride_request.message = data['message']
+                ride_request.save()
+        
+            return render_to_response('request_options.html'. locals(), context_instance=RequestContext(request))
 
-def request_options(request, request_id):
-    '''
-    Renders the request update form the first time
-    '''
+    if RideRequest.objects.get(pk=ObjectId(request_id)).message:
+        message = RideRequest.objects.get(pk=ObjectId(request_id))
+    else:
+        message = "No message"
 
-    ride_request = RideRequest.objects.get(pk=ObjectId(request_id))
-    form = RequestOptionsForm()
+    # Render the form
+    form = RequestOptionsForm(initial={'request_id':request_id, 'message':message})
     return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
+
+def process_offer_update(request, offer_id):
+    '''
+    Render and process the offer update form
+    '''
+    
+    if request.method =='POST':
+        form = OfferOptionsForm(request.POST)
+
+        # Form validates
+        if form.is_valid():
+            data = form.cleaned_data
+            ride_offer = RideOffer.objects.get(pk=ObjectId(data['offer_id']))
+            
+            # Parse out the form and update RideOffer
+            if data['message']:
+                ride_offer.message = data['message']
+                ride_offer.save()
+                
+            # Render the form
+            return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
+
+    if RideOffer.objects.get(pk=ObjectId(offer_id)).message:
+        message = RideOffer.objects.get(pk=ObjectId(offer_id)).message
+    else:
+        message = "No message"
+    
+    form = OfferOptionsForm(initial={'offer_id':offer_id, 'message':message})
+    return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
+
 
 #####################
 # USER ACCOUNT INFO #

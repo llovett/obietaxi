@@ -9,19 +9,4 @@
 <!-- this renders the form -->
 {% crispy form %}
 
-Message is {{ride_offer.message}} <br>
-New message is type {{new_message_type}} <br>
-Offer ID is {{offer_id}} <br>
-The offer is {{ride_offer.start}} to {{ride_offer.end}} on {{ride_offer.date}}
-
-<!--
-Driver is {{ride_offer.driver}} <br>
-Start is {{ride_offer.start}} <br>
-End is {{ride_offer.end}} <br>
-Date is {{ride_offer.date}}
-{% if ride_offer.repeat %}
-<br> Trip repeats {{ride_offer.repeat}}
-{% endif %}
--->
-
 {% endblock %}

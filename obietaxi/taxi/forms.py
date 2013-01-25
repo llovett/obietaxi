@@ -89,7 +89,8 @@ class OfferOptionsForm (forms.Form):
 
     offer_id = forms.CharField( widget=forms.HiddenInput )
     message = forms.CharField(
-        required=True,
+        label="Message",
+        required=False,
         max_length=300,
         widget=forms.Textarea(
             attrs={'cols':5, 'rows':5}
@@ -117,7 +118,7 @@ class OfferOptionsForm (forms.Form):
                 ),
             FormActions(
                 Submit('update', 'Update', css_id='update_button'),
-                Submit('cancel', 'Cancel Offer', css_id='cancel_button')
+#                Submit('cancel', 'Cancel Offer', css_id='cancel_button')
             )
         )
         
@@ -129,12 +130,22 @@ class RequestOptionsForm (forms.Form):
     '''
     request_id = forms.CharField( widget=forms.HiddenInput )
     message = forms.CharField(
+        label="Message",
         required=False,
         max_length=300,
         widget=forms.Textarea(
             attrs={'cols':40, 'rows':5}
         )
     )
+
+    def clean( self ):
+        cleaned_data = super( RequestOptionsForm, self ).clean()
+        try:
+            RideRequest.objects.get(id=ObjectId(cleaned_data['request_id']))
+        except RideOffer.DoesNotExist:
+            raise ValidationError("not a valid offer id")
+        return cleaned_data
+
     
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
@@ -148,7 +159,7 @@ class RequestOptionsForm (forms.Form):
                 ),
             FormActions(
                 Submit('update', 'Update', css_id='update_button'),
-                Submit('cancel', 'Cancel Request', css_id='cancel_button')
+#                Submit('cancel', 'Cancel Request', css_id='cancel_button')
             )
         )
 
