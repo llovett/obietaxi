@@ -25,7 +25,6 @@ class Location(mdb.EmbeddedDocument):
 class UserProfile(mdb.Document):
     """The basic model for a user."""
     phone_number = mdb.StringField()
-    trips = mdb.ListField(mdb.ReferenceField('Trip'))
     trust = mdb.ListField( Trust )
     active = mdb.BooleanField()
     reports = mdb.IntField(default=0)
@@ -38,23 +37,7 @@ class UserProfile(mdb.Document):
     openid_auth_stub = mdb.EmbeddedDocumentField( OpenidAuthStub )
 
     def __unicode__( self ):
-        return '{}'.format( self.user.first_name )
-
-class Trip(mdb.Document):
-    '''
-    Trip models a trip taken by a Driver and some number of Passengers
-    '''
-    start = mdb.EmbeddedDocumentField( Location )
-    end = mdb.EmbeddedDocumentField( Location )
-    driver = mdb.ReferenceField('UserProfile')
-    passengers = mdb.ListField(mdb.ReferenceField('UserProfile'))
-    date = mdb.DateTimeField()
-
-    meta = { "indexes" : ["*start.position", "*end.position"] }
-    
-    # not sure how to represent fuzziness
-    # fuzziness = mdb.StringField()
-    completed = mdb.BooleanField(default=False)
+        return '{} {}'.format( self.user.first_name, self.user.last_name )
 
 class RideRequest(mdb.Document):
     '''
@@ -63,7 +46,6 @@ class RideRequest(mdb.Document):
     passenger = mdb.ReferenceField('UserProfile')
     start = mdb.EmbeddedDocumentField( Location )
     end = mdb.EmbeddedDocumentField( Location )
-    trip = mdb.ReferenceField(Trip)
     message = mdb.StringField()
     date = mdb.DateTimeField()
 
@@ -75,17 +57,18 @@ class RideRequest(mdb.Document):
 class RideOffer(mdb.Document):
     '''
     RideOffer models an offer for a ride from a Driver, looking for Passengers.
+
     '''
-    driver = mdb.ReferenceField('UserProfile')
-    passenger = mdb.ReferenceField('UserProfile')
+    driver = mdb.ReferenceField(UserProfile)
+    passengers = mdb.ListField(mdb.ReferenceField('UserProfile'))
     start = mdb.EmbeddedDocumentField(Location)
     end = mdb.EmbeddedDocumentField(Location)
-    trip = mdb.ReferenceField('Trip')
     message = mdb.StringField()
     date = mdb.DateTimeField()
     # Holds those who are asking for rides (but have not yet been accepted/declined)
-    # from this offer
-    askers = mdb.DictField()
+    askers = mdb.ListField( mdb.ReferenceField(UserProfile) )
+    # Whether or not this trip has taken place already
+    completed = mdb.BooleanField(default=False)
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
     
