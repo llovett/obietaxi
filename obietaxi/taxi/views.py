@@ -146,6 +146,11 @@ def browse( request ):
 # USER TRIP SETTINGS #
 ######################
 
+def cancel_request(request):
+    
+def cancel_offer(request):
+    
+
 def process_request_update(request, request_id):
     '''
     Render and process the request update form
