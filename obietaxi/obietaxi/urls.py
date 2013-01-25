@@ -11,7 +11,6 @@ urlpatterns = patterns('',
                        url( r'^request/show/$', views.request_show, name="request_show" ),
                        url( r'^offer/propose/$', views.offer_propose, name="offer_propose" ),
                        url( r'^offer/proposal/$', views.process_offer_proposal, name="process_offer_proposal" ),
-#                       url( r'^trip/new/$', views.trip_new, name="trip_new" ),
                        url( r'^browse/$', views.browse, name="browse" ),
                        url( r'^accounts/', include( 'mongologin.urls' ) ),
 )

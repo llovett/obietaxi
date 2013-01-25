@@ -30,7 +30,7 @@ def offer_propose( request ):
         msg = data['msg']
 
         # See if the logged-in user has already asked for a ride from this person
-        profile = UserProfile.objects.get( user=request.user )
+        profile = request.session['profile']
         if profile in offer.askers:
             messages.add_message( request, messages.ERROR, "You have already asked to join this ride." )
             return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
@@ -156,27 +156,6 @@ name: %s\r\nphone: %s\r\nemail: %s"%(offer.driver,
             ) )
     return HttpResponseRedirect( reverse('user_home') )
 
-def trip_new( request ):
-    ''' Creates a new trip '''
-    data = json.loads( request.raw_post_data )
-
-    start_location = Location(
-        position = (float(data['start_lat']),float(data['start_lng'])),
-        title = data['start_title']
-    )
-    end_location = Location(
-        position = (float(data['end_lat']),float(data['end_lng'])),
-        title = data['end_title']
-    )
-    trip = Trip.objects.create(
-        start = start_location,
-        end = end_location,
-        driver = UserProfile.objects.get( pk=ObjectId(data['driver_id']) ),
-        passengers = [UserProfile.objects.get( pk=ObjectId(id) ) for id in data['passengers']],
-        date = datetime.strptime( data['date'], "%m/%d/%Y %I:%M %p" )
-    )
-    return HttpResponse()
-
 ###################
 # OFFERS/REQUESTS #
 ###################
@@ -208,7 +187,7 @@ def _process_ro_form( request, type ):
 
         # Associate request/offer with user, if possible
         # TODO: make this mandatory!
-        profile = UserProfile.objects.get( user=request.user ) if request.user.is_authenticated() else None
+        profile = request.session['profile']
         if profile:
             kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
 
@@ -315,7 +294,7 @@ def show_requests_and_offers( request ):
     if 'user_id' in request.GET:
         profile = UserProfile.objects.get( pk=ObjectId( request.GET['user_id'] ) )
     else:
-        profile = UserProfile.objects.get( user=request.user )
+        profile = request.session['profile']
     rides_requested = RideRequest.objects.filter( passenger=profile )
     rides_offered = RideOffer.objects.filter( driver=profile )
     return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )

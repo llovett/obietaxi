@@ -29,6 +29,8 @@ def login_view( request ):
             if user.check_password( request.POST['password'] ) and user.is_active:
                 user.backend = 'mongoengine.django.auth.MongoEngineBackend'
                 login( request, user )
+                # Put profile in the session
+                request.session['profile'] = UserProfile.objects.get(user=user)
                 return HttpResponseRedirect( reverse('user_home') )
             else:
                 return _fail_login( request, 'invalid login' )
