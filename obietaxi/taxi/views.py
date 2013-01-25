@@ -186,7 +186,6 @@ def _process_offer_update(request):
         
         # Parse out the form
         new_message = data['message']
-        new_repeat = data['repeat']
         
         # Update RideOffer
         ride_offer = RideOffer.objects.get(pk=ObjectId(offer_id))
@@ -201,6 +200,9 @@ def offer_options(request, offer_id):
     '''
     Renders the offer update form the first time
     '''
+
+    if request.method == 'POST':
+        return _process_offer_update( request )
 
     ride_offer = RideOffer.objects.get(pk=ObjectId(offer_id))
     form = OfferOptionsForm(initial={'offer_id':offer_id})

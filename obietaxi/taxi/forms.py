@@ -97,9 +97,12 @@ class OfferOptionsForm (forms.Form):
     )
     
     def clean( self ):
-        cleaned_data = super( RegisterForm, self ).clean()
-        if RideOffer.objects.count(id=ObjectId(cleaned_data['offer_id'])) == 0:
+        cleaned_data = super( OfferOptionsForm, self ).clean()
+        try:
+            RideOffer.objects.get(id=ObjectId(cleaned_data['offer_id']))
+        except RideOffer.DoesNotExist:
             raise ValidationError("not a valid offer id")
+        return cleaned_data
 
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
