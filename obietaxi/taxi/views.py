@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from bson.objectid import ObjectId
 from models import RideRequest, UserProfile, RideOffer, Location
-from forms import RideRequestOfferForm, AskForRideForm
+from forms import RideRequestOfferForm, AskForRideForm, OfferRideForm
 from datetime import datetime
 from random import random
 from time import strptime,mktime
@@ -19,6 +19,68 @@ import json
 #########
 # TRIPS #
 #########
+
+@login_required
+def request_propose( request ):
+    ''' Sends an offer for a ride to someone who has made a RideRequest '''
+    form = OfferRideForm( request.POST )
+    if form.is_valid():
+        data = form.cleaned_data
+        req = RideRequest.objects.get( pk=ObjectId(data['request_id']) )
+        msg = data['msg']
+
+        # See if the logged-in user has already offered a ride to this person
+        profile = request.session['profile']
+        if profile in request.askers:
+            messages.add_message( request, messages.ERROR, "You have already offered a ride to this person" )
+            return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
+
+        # Message to be sent to the passenger
+        appended = "This message has been sent to you because\
+ someone found your request from {} to {} on {}. Please note that\
+ the time and place from which your driver may want to depart may\
+ not match that of your request. !!TODO: put that info here.\r\n\r\n\
+ If you would like to accept this offer, please follow {}. If\
+ you would like to decline, follow {}.".format(
+            req.start,
+            req.end,
+            req.date.strftime("%A, %B %d at %I:%M %p"),
+            '{}{}?req={}&response={}&driver={}'.format(
+                _hostname(),
+                reverse( 'process_request_proposal' ),
+                data['request_id'],
+                'accept',
+                str(profile.id)
+            ),
+            '{}{}?req={}&response={}&driver={}'.format(
+                _hostname(),
+                reverse( 'process_request_proposal' ),
+                data['request_id'],
+                'decline',
+                str(profile.id)
+            ) )
+        msg = "\r\n".join( (msg,30*'-',appended) )
+
+        # Save this asker in the offer's 'askers' field
+        req.askers.append( profile )
+        req.save()
+        
+        dest_email = req.passenger.user.username
+        from_email = request.user.username
+        subject = "{} can drive you to {}".format(
+            profile,
+            request.end
+        )
+        send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
+        messages.add_message( request, messages.SUCCESS, "Your offer has been sent successfully." )
+        return HttpResponseRedirect( reverse("browse") )
+
+    return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
+
+
+@login_required
+def process_request_proposal( request ):
+    pass
 
 @login_required
 def offer_propose( request ):
@@ -260,6 +322,11 @@ def request_show( request ):
         ride_request = RideRequest.objects.get( pk=ObjectId(request.GET['request_id']) )
     except RideRequest.DoesNotExist:
         raise Http404
+    # This information is used in the template to determine if the user has already
+    # offered a ride to this RideRequest
+    user_profile = request.session.get("profile")
+    if not user_profile in ride_request.askers:
+        form = OfferRideForm(initial={'request_id':request.GET['request_id']})
     return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
 
 def offer_show( request ):

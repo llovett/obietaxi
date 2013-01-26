@@ -36,6 +36,34 @@ class AskForRideForm( forms.Form ):
 
         super( AskForRideForm, self ).__init__( *args, **kwargs )
 
+class OfferRideForm( forms.Form ):
+    '''
+    Form to facilitate proposing a ride to a RideRequest
+    '''
+    request_id = forms.CharField( widget=forms.HiddenInput )
+    msg = forms.CharField(
+        label="Your message",
+        required=False,
+        widget=Textarea( attrs={'rows':5, 'cols':50} )
+    )
+
+    def __init__( self, *args, **kwargs ):
+        self.helper = FormHelper()
+        self.helper.form_action = reverse( 'request_propose' )
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'offer_ride_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Can You Give a Ride?',
+                'request_id',
+                'msg'
+            ),
+            FormActions(
+                Submit('offer', 'Offer a Ride', css_id="offer_button" )
+            )
+        )
+
+        super( OfferRideForm, self ).__init__( *args, **kwargs )
 
 class RideRequestOfferForm (forms.Form):
     '''

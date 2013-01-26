@@ -48,6 +48,8 @@ class RideRequest(mdb.Document):
     end = mdb.EmbeddedDocumentField( Location )
     message = mdb.StringField()
     date = mdb.DateTimeField()
+    # Holds those who are proposing rides (but have not yet been accepted/declined)
+    askers = mdb.ListField( mdb.ReferenceField(UserProfile) )
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
     
