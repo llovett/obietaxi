@@ -31,7 +31,7 @@ def request_propose( request ):
 
         # See if the logged-in user has already offered a ride to this person
         profile = request.session['profile']
-        if profile in request.askers:
+        if profile in req.askers:
             messages.add_message( request, messages.ERROR, "You have already offered a ride to this person" )
             return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
 
@@ -40,7 +40,7 @@ def request_propose( request ):
  someone found your request from {} to {} on {}. Please note that\
  the time and place from which your driver may want to depart may\
  not match that of your request. !!TODO: put that info here.\r\n\r\n\
- If you would like to accept this offer, please follow {}. If\
+ If you would like to accept this offer, please follow {}.\r\nIf\
  you would like to decline, follow {}.".format(
             req.start,
             req.end,
@@ -69,7 +69,7 @@ def request_propose( request ):
         from_email = request.user.username
         subject = "{} can drive you to {}".format(
             profile,
-            request.end
+            req.end
         )
         send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
         messages.add_message( request, messages.SUCCESS, "Your offer has been sent successfully." )
@@ -80,7 +80,92 @@ def request_propose( request ):
 
 @login_required
 def process_request_proposal( request ):
-    pass
+    ''' Processes a response YES/NO to a request from a ride from a particular RideOffer '''
+    data = request.GET
+    request_id = data['req']
+    driver_id = data['driver']
+    response = data['response']
+    try:
+        req = RideRequest.objects.get( id=ObjectId(request_id) )
+        driver = UserProfile.objects.get( id=ObjectId(driver_id) )
+    # Offer or Passenger is not real
+    except (RideRequest.DoesNotExist, UserProfile.DoesNotExist):
+        messages.add_message( request, messages.ERROR, "Request or user does not exist" )
+        return HttpResponseRedirect( reverse('user_home') )
+    # Invalid value for "response" field--- must accept or decline
+    if response not in ('accept','decline'):
+        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link" )
+        return HttpResponseRedirect( reverse('user_home') )
+    # Accepting/declining someone who never asked for a ride
+    if driver not in req.askers:
+        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no such user has asked you for a ride)" )
+        return HttpResponseRedirect( reverse('user_home') )
+
+    # Update the RideOffer instance to accept/decline the request
+    if response == 'accept':
+        req.askers.remove( driver )
+
+        ## --------------------------------------------------
+        # TODO: Find other RideOffers this user has made, and try to link this offer to
+        # one of those, if possible. Otherwise, create a new offer and link this passenger
+        # to it.
+        if len(offer.passengers) == 0:
+            offer.passengers = [rider]
+        else:
+            offer.passengers.append( rider )
+        offer.save()
+        # Email the driver, confirming the fact that they've decided to give a ride.
+        # Also give them passenger's contact info.
+        body_driver = "Thank you for your helpfulness and generosity.\
+ Drivers like you who offer space in their car greatly increase\
+ mobility in Oberlin.\r\n\r\nYou are receiving this email to confirm\
+ your offer to give %s a ride from %s to %s on %s. To help you keep\
+ in contact with your passengers, we've provided you their information\
+ below:\r\n\r\nname: %s\r\nphone: %s\r\nemail: %s"%(rider,
+                                                    offer.start,
+                                                    offer.end,
+                                                    offer.date.strftime("%A, %B %d at %I:%M %p"),
+                                                    rider,
+                                                    rider.phone_number,
+                                                    rider.user.username)
+        send_email( email_from=rider.user.username,
+                    email_to=request.user.username,
+                    email_body=body_driver,
+                    email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
+
+        # Email the requester, telling them that they're request has been accepted, and
+        # give them the driver's contact info.
+        body_requester = "%s has accepted your request\
+ for a ride from %s to %s! The intended time of\
+ departure is %s. Be safe, and be sure to thank\
+ your driver and give them a little something\
+ for gas! Generosity is what makes ridesharing\
+ work.\r\n\r\nYour driver's contact information:\r\n\
+name: %s\r\nphone: %s\r\nemail: %s"%(offer.driver,
+                                     offer.start,
+                                     offer.end,
+                                     offer.date.strftime("%A, %B %d at %I:%M %p"),
+                                     offer.driver,
+                                     offer.driver.phone_number,
+                                     offer.driver.user.username)
+        send_email( email_from=request.user.username,
+                    email_to=rider.user.username,
+                    email_body=body_requester,
+                    email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
+    # Nothing happens when a driver declines a request?
+
+    messages.add_message( request, messages.SUCCESS, "You have {} {}'s request".format(
+            'accepted' if response == 'accept' else 'declined',
+            str(rider.user)
+            ) )
+    ## --------------------------------------------------
+
+
+    return HttpResponseRedirect( reverse('user_home') )
+
+
+
+
 
 @login_required
 def offer_propose( request ):
