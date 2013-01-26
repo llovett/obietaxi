@@ -106,10 +106,11 @@ def process_offer_proposal( request ):
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
         offer.askers.remove( rider )
-        offer.passengers = [rider]
+        if len(offer.passengers) == 0:
+            offer.passengers = [rider]
+        else:
+            offer.passengers.append( rider )
         offer.save()
-        # TODO: send an email to the requester, notifying them that they've been accepted
-
         # Email the driver, confirming the fact that they've decided to give a ride.
         # Also give them passenger's contact info.
         body_driver = "Thank you for your helpfulness and generosity.\
@@ -267,7 +268,11 @@ def offer_show( request ):
         ride_offer = RideOffer.objects.get( pk=ObjectId(request.GET['offer_id']) )
     except RideOffer.DoesNotExist:
         raise Http404
-    form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
+    # This information is used in the template to determine if the user has already
+    # requested a ride from this RideOffer
+    user_profile = request.session.get("profile")
+    if not user_profile in ride_offer.askers and not user_profile in ride_offer.passengers:
+        form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
     return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
 
 ############

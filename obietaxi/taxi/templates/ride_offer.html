@@ -6,8 +6,11 @@
   <!-- TODO: answer the above question if possible -->
   <strong>Intended departure:</strong> {{ ride_offer.date }}
 
-  {% load crispy_forms_tags %}
-  <!-- this renders the entire form, including start/end tags and submit buttons -->
-  {% crispy form %}
-
+  {% if form %}
+    {% load crispy_forms_tags %}
+    <!-- this renders the entire form, including start/end tags and submit buttons -->
+    {% crispy form %}
+  {% else %}
+    <p>You have already sent a message to this driver requesting a ride.</p>
+  {% endif %}
 {% endblock %}
