@@ -5,4 +5,11 @@
   {{ ride_request.passenger }} is looking for a ride from {{ ride_request.start.title }} to {{ ride_request.end.title }}. Can you help them out?
   <strong>Intended departure:</strong> {{ ride_request.date }}
   <!-- TODO: "offer a ride" button -->
+
+  {% if form %}
+    {% load crispy_forms_tags %}
+    <!-- this renders the entire form, including start/end tags and submit buttons -->
+    {% crispy form %}
+  {% endif %}
+
 {% endblock %}

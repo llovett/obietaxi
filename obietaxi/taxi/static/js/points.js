@@ -61,7 +61,23 @@ function initialize() {
     // What we do when the "Ask for a Ride" button is pressed
     $("#ask_button").click(
 	function( event ) {
-	    $("#offer_or_request_form").attr( {"action":"/request/new/"} );
+	    event.preventDefault();
+	    $("#offer_or_request_form").attr( {"action": "/request/new/"} );
+	    searchOffers(
+		function( results ) {
+		    if ( results.length == 0 ) {
+			console.log("No offer search results.");
+			$("#offer_or_request_form").submit();
+		    } else {
+			console.log("submitting request via AJAX");
+			$.ajax( {
+			    type: "POST",
+			    url: "/request/new/",
+			    data: $("#offer_or_request_form").serialize()
+			} );
+		    }
+		}
+	    );
 	}
     );
 	    
@@ -113,6 +129,21 @@ function clearBoxes() {
     routeBoxes = null;
 }
 
+// AJAX request to search offers
+function searchOffers( callback ) {
+    $.ajax( {
+	type: "POST",
+	url: "/offer/search/",
+	data: $("#offer_or_request_form").serialize(),
+	dataType: "text",
+	success: function( data ) {
+	    offers = ( $.parseJSON( data ) ).offers;
+	    showOffers( offers );
+	    callback( offers );
+	}
+    } );
+}
+
 // Find a route between two points. Find also all points we have
 // stored within a certain distance of that route.
 function route( callback ) {
@@ -139,6 +170,8 @@ function route( callback ) {
 	    // Make a request to the server -------
 	    // bounding boxes:
 	    var request = boxesToJSON( boxes );
+	    // Save the JSON'd boxes in the "polygon" field of the form
+	    $("#id_polygon").val( request );
 	    var startDate = Date.parse($("#id_date_0").val()+" "+$("#id_date_1").val());
 	    // Get approximate start/end times for this trip
 	    request.start_time = startDate;
@@ -177,6 +210,36 @@ function route( callback ) {
 	    $("#status").text("Directions query failed: "+status);
 	}
     } );
+}
+
+function showOffers( offers ) {
+    // Start out by emptying the current passenger listing
+    $("#ride_listing").empty();
+
+    for ( var i=0; i<offers.length; i++ ) {
+	// Display starting point of driver on the map, along with their name
+	var start_point = offers[i].location_start.point;
+	var end_point = offers[i].location_end.point;
+	var driver_name = offers[i].driver_first_name + " " + offers[i].driver_last_name;
+	displayPoint( new google.maps.LatLng(start_point[0], start_point[1]), driver_name);
+
+	// Put an item in the driver list
+	var newitem = $("<li></li>");
+	newitem.addClass("driver_item");
+	var userlink = $("<a></a>");
+	userlink.attr( {"href":"/accounts/profile/?user_id="+offers[i].driver_id} );
+	userlink.append( driver_name );
+	var itemdesc = $("<p>Going from <strong>"+
+			 offers[i].location_start.title+
+			 "</strong> to <strong>"+
+			 offers[i].location_end.title+
+			 "</strong></p>");
+	// TODO: add "ask for ride" button
+	newitem
+	    .append( userlink )
+	    .append( itemdesc );
+	$("#ride_listing").append( newitem );
+    }
 }
 
 // List the relevant ride requests beneath the map

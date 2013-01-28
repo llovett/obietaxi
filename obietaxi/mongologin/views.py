@@ -10,6 +10,7 @@ from mongoengine.django.auth import User
 from random import choice
 from models import RegistrationStub, OpenidAuthStub
 from taxi.models import UserProfile
+from taxi.helpers import _hostname, send_email, random_string
 import smtplib
 from obietaxi import settings
 
@@ -18,12 +19,6 @@ GOOGLE_GET_ENDPOINT_URL = 'https://www.google.com/accounts/o8/id'
 def _fail_login( request, msg ):
     messages.add_message( request, messages.ERROR, msg )
     return HttpResponseRedirect( reverse('login') )
-
-def _hostname( protocol="http" ):
-    basename = settings.HOSTNAME if 'HOSTNAME' in dir(settings) else 'localhost'
-    if protocol and len(protocol) > 0:
-        basename = "{}://{}".format( protocol, basename )
-    return basename
 
 def login_view( request ):
     # Login form submitted
@@ -34,6 +29,8 @@ def login_view( request ):
             if user.check_password( request.POST['password'] ) and user.is_active:
                 user.backend = 'mongoengine.django.auth.MongoEngineBackend'
                 login( request, user )
+                # Put profile in the session
+                request.session['profile'] = UserProfile.objects.get(user=user)
                 return HttpResponseRedirect( reverse('user_home') )
             else:
                 return _fail_login( request, 'invalid login' )
@@ -137,8 +134,7 @@ def google_login_success( request ):
             profile = UserProfile.objects.get( user=user )
         except User.DoesNotExist:
             # 3) This person has never logged in before
-            random_password = lambda : ''.join( (choice('ABCDEFabcdef1234567890)(*&^%$#@!') for i in xrange(10)) )
-            user=User.create_user(email, random_password())
+            user=User.create_user(email, random_string())
             user.first_name = firstname
             user.last_name = lastname
             user.save()
@@ -202,17 +198,10 @@ def register( request ):
             activate_uri = reverse( 'activate' )
             activate_link = '{}{}?key={}'.format( hostname, activate_uri, stub.activationCode )
             email_subject = "Welcome to Obietaxi!"
-            email_from = 'noreply@{}'.format( hostname )
-            email_to = form.cleaned_data['username']
+
+            email_to = [form.cleaned_data['username']]
             msg_body = "Welcome to Obietaxi! Your account has already been created with this email address, now all you need to do is confirm your accout by clicking on the link below. If there is no link, you should copy & paste the address into your browser's address bar and navigate there.\n\n{}".format( activate_link )
-            email_message = "\r\n".join( ["From: {}".format(email_from),
-                                          "To: {}".format(email_to),
-                                          "Subject: {}".format(email_subject),
-                                          "",
-                                          msg_body] )
-            server = smtplib.SMTP( 'localhost' )
-            server.sendmail( email_from, [email_to], email_message )
-            server.quit()
+            send_email( email_to=email_to, email_subject=email_subject, email_body=msg_body )
             
             messages.add_message( request, messages.SUCCESS, "Your account has been created. Check your email for a confirmation link to complete the registration process." )
             return HttpResponseRedirect( reverse('login') )
