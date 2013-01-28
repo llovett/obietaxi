@@ -69,7 +69,12 @@ function initialize() {
 			console.log("No offer search results.");
 			$("#offer_or_request_form").submit();
 		    } else {
-			console.log("found some results... TODO: submit new rr via ajax");
+			console.log("submitting request via AJAX");
+			$.ajax( {
+			    type: "POST",
+			    url: "/request/new/",
+			    data: $("#offer_or_request_form").serialize()
+			} );
 		    }
 		}
 	    );
@@ -132,7 +137,8 @@ function searchOffers( callback ) {
 	data: $("#offer_or_request_form").serialize(),
 	dataType: "text",
 	success: function( data ) {
-	    callback( data );
+	    offers = ( $.parseJSON( data ) ).offers;
+	    callback( offers );
 	}
     } );
 }

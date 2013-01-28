@@ -375,9 +375,6 @@ def offer_search( request ):
     # Use the form data
     form = RideRequestOfferForm( request.POST )
 
-    import sys
-    sys.stderr.write("about to check ride offer search form validity\n")
-
     if form.is_valid():
         # Find all offers that match our time constraints
         # TODO: make this work with time fuzziness
@@ -386,16 +383,10 @@ def offer_search( request ):
         earliest_offer = request_date - timedelta(hours=1)
         latest_offer = request_date + timedelta(hours=1)
 
-        import sys
-        sys.stderr.write("form was valid... about to query for date\n")
-
-
         offers = RideOffer.objects.filter(
             date__gte=earliest_offer,
             date__lte=latest_offer
         )
-
-        sys.stderr.write("offer found by date query: %s"%str(offers))
 
         # Filter offers further:
         # 1. Must have start point near req. start and end point near req. end --OR--
@@ -411,15 +402,13 @@ def offer_search( request ):
             if start_dist < 5 and end_dist < 5:
                 filtered_offers.append( offer )
             elif len(offer.polygon) > 0:
-                sys.stderr.write("offer polygon is %s\n"%str(offer.polygon))
                 polygon = Polygon( offer.polygon )
                 if polygon.isInside( *req_start ) and polygon.isInside( *req_end ):
                     filtered_offers.append( offer )
 
-        return HttpResponse( json.dumps(filtered_offers, cls=RideOfferEncoder),
+        return HttpResponse( json.dumps({"offers":filtered_offers}, cls=RideOfferEncoder),
                              mimetype='application/json' )
 
-    sys.stderr.write(str(form._errors))
     # Something went wrong.... return an empty response?
     return HttpResponse()
 
