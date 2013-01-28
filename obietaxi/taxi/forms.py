@@ -74,6 +74,9 @@ class RideRequestOfferForm (forms.Form):
     start_lng = forms.DecimalField( widget=forms.HiddenInput )
     end_lat = forms.DecimalField( widget=forms.HiddenInput )
     end_lng = forms.DecimalField( widget=forms.HiddenInput )
+    # This is used to store the "bounding box" polygon. It's value is
+    # rendered by the JavaScript in points.js
+    polygon = forms.CharField( widget=forms.HiddenInput, required=False )
 
     start_location = forms.CharField()
     end_location = forms.CharField()
@@ -117,6 +120,7 @@ class RideRequestOfferForm (forms.Form):
                 'start_lng',
                 'end_lat',
                 'end_lng',
+                'polygon',
                 'start_location',
                 'end_location',
                 'date',

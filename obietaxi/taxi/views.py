@@ -5,14 +5,14 @@ from django.contrib import messages
 from bson.objectid import ObjectId
 from models import RideRequest, UserProfile, RideOffer, Location
 from forms import RideRequestOfferForm, AskForRideForm, OfferRideForm
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import random
 from time import strptime,mktime
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse, Http404
-from Polygon.Shapes import Rectangle
-from encoders import RideRequestEncoder
-from helpers import send_email, _hostname
+from Polygon.Shapes import Rectangle, Polygon
+from encoders import RideRequestEncoder, RideOfferEncoder
+from helpers import send_email, _hostname, geospatial_distance
 import json
 
 
@@ -341,6 +341,10 @@ def _process_ro_form( request, type ):
 
         # Create offer/request object in database
         if type == 'offer':
+            # Also grab "polygon" field, merge boxes into polygon
+            boxes = json.loads( data['polygon'] )
+            polygon, contour = _merge_boxes( boxes['rectangles'] )
+            kwargs['polygon'] = contour
             ro = RideOffer.objects.create( **kwargs )
             ride_requests = RideRequest.objects.all()
         elif type == 'request':
@@ -362,6 +366,64 @@ def offer_new( request ):
     '''
     return _process_ro_form( request, 'offer' )
 
+def offer_search( request ):
+    '''
+    Searches for and returns any RideOffers whose driving area encompasses that
+    of this RideRequest.
+    '''
+
+    # Use the form data
+    form = RideRequestOfferForm( request.POST )
+
+    import sys
+    sys.stderr.write("about to check ride offer search form validity\n")
+
+    if form.is_valid():
+        # Find all offers that match our time constraints
+        # TODO: make this work with time fuzziness
+        request_date = form.cleaned_data['date']
+        # For now, assume a 2-hour window that the passenger would be ok with
+        earliest_offer = request_date - timedelta(hours=1)
+        latest_offer = request_date + timedelta(hours=1)
+
+        import sys
+        sys.stderr.write("form was valid... about to query for date\n")
+
+
+        offers = RideOffer.objects.filter(
+            date__gte=earliest_offer,
+            date__lte=latest_offer
+        )
+
+        sys.stderr.write("offer found by date query: %s"%str(offers))
+
+        # Filter offers further:
+        # 1. Must have start point near req. start and end point near req. end --OR--
+        # 2. Must have polygon field that overlays start & end of this request
+        filtered_offers = []
+        for offer in offers:
+            req_start = (float(form.cleaned_data['start_lat']),
+                         float(form.cleaned_data['start_lng']))
+            req_end = (float(form.cleaned_data['end_lat']),
+                       float(form.cleaned_data['end_lng']))
+            start_dist = geospatial_distance( offer.start.position, req_start )
+            end_dist = geospatial_distance( offer.end.position, req_end )
+            if start_dist < 5 and end_dist < 5:
+                filtered_offers.append( offer )
+            elif len(offer.polygon) > 0:
+                sys.stderr.write("offer polygon is %s\n"%str(offer.polygon))
+                polygon = Polygon( offer.polygon )
+                if polygon.isInside( *req_start ) and polygon.isInside( *req_end ):
+                    filtered_offers.append( offer )
+
+        return HttpResponse( json.dumps(filtered_offers, cls=RideOfferEncoder),
+                             mimetype='application/json' )
+
+
+    sys.stderr.write(str(form._errors))
+    # Something went wrong.... return an empty response?
+    return HttpResponse()
+
 @login_required
 def request_new( request ):
     '''
@@ -370,6 +432,27 @@ def request_new( request ):
     '''
     return _process_ro_form( request, 'request' )
 
+def _merge_boxes( boxes ):
+    '''
+    Merges a list of points specifying contiguous boxes into a single
+    Polygon.  Returns the polygon, list of points on the polygon.
+    '''
+    # bboxArea = the union of all the bounding boxes on the route
+    bboxArea = None
+    # union all the boxes together
+    for i in xrange(0,len(boxes),4):
+        # Make a Rectangle out of the width/height of a bounding box
+        # longitude = x, latitude = y
+        theRect = Rectangle( abs(boxes[i] - boxes[i+2]),
+                             abs(boxes[i+1] - boxes[i+3]) )
+        theRect.shift( boxes[i+2], boxes[i+3] )
+        bboxArea = bboxArea + theRect if bboxArea else theRect
+
+    # turn bboxArea into a list of points
+    bboxContour = [list(t) for t in bboxArea.contour( 0 )]
+
+    return bboxArea, bboxContour
+    
 def request_search( request ):
     '''
     Searches for and returns any RideRequests within the bounds of the rectangles given
@@ -379,19 +462,7 @@ def request_search( request ):
     postData = json.loads( request.raw_post_data )
     rectangles = postData['rectangles']
 
-    # bboxArea = the union of all the bounding boxes on the route
-    bboxArea = None
-    # union all the boxes together
-    for i in xrange(0,len(rectangles),4):
-        # Make a Rectangle out of the width/height of a bounding box
-        # longitude = x, latitude = y
-        theRect = Rectangle( abs(rectangles[i] - rectangles[i+2]),
-                             abs(rectangles[i+1] - rectangles[i+3]) )
-        theRect.shift( rectangles[i+2], rectangles[i+3] )
-        bboxArea = bboxArea + theRect if bboxArea else theRect
-
-    # turn bboxArea into a list of points
-    bboxContour = [list(t) for t in bboxArea.contour( 0 )]
+    bboxArea, bboxContour = _merge_boxes( rectangles )
 
     # RideRequests within the bounds
     requestEncoder = RideRequestEncoder()

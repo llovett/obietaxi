@@ -61,7 +61,18 @@ function initialize() {
     // What we do when the "Ask for a Ride" button is pressed
     $("#ask_button").click(
 	function( event ) {
-	    $("#offer_or_request_form").attr( {"action":"/request/new/"} );
+	    event.preventDefault();
+	    $("#offer_or_request_form").attr( {"action": "/request/new/"} );
+	    searchOffers(
+		function( results ) {
+		    if ( results.length == 0 ) {
+			console.log("No offer search results.");
+			$("#offer_or_request_form").submit();
+		    } else {
+			console.log("found some results... TODO: submit new rr via ajax");
+		    }
+		}
+	    );
 	}
     );
 	    
@@ -113,6 +124,19 @@ function clearBoxes() {
     routeBoxes = null;
 }
 
+// AJAX request to search offers
+function searchOffers( callback ) {
+    $.ajax( {
+	type: "POST",
+	url: "/offer/search/",
+	data: $("#offer_or_request_form").serialize(),
+	dataType: "text",
+	success: function( data ) {
+	    callback( data );
+	}
+    } );
+}
+
 // Find a route between two points. Find also all points we have
 // stored within a certain distance of that route.
 function route( callback ) {
@@ -139,6 +163,8 @@ function route( callback ) {
 	    // Make a request to the server -------
 	    // bounding boxes:
 	    var request = boxesToJSON( boxes );
+	    // Save the JSON'd boxes in the "polygon" field of the form
+	    $("#id_polygon").val( request );
 	    var startDate = Date.parse($("#id_date_0").val()+" "+$("#id_date_1").val());
 	    // Get approximate start/end times for this trip
 	    request.start_time = startDate;

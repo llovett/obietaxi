@@ -5,6 +5,7 @@ from taxi import views
 urlpatterns = patterns('',
                        url( r'^$', views.request_or_offer_ride, name="main_page" ),
                        url( r'^offer/new/$', views.offer_new, name="offer_ride_new" ),
+                       url( r'^offer/search/$', views.offer_search, name="offer_search" ),
                        url( r'^offer/show/$', views.offer_show, name="offer_show" ),
                        url( r'^request/propose/$', views.request_propose, name="request_propose" ),
                        url( r'^request/proposal/$', views.process_request_proposal, name="process_request_proposal" ),

@@ -71,6 +71,8 @@ class RideOffer(mdb.Document):
     askers = mdb.ListField( mdb.ReferenceField(UserProfile) )
     # Whether or not this trip has taken place already
     completed = mdb.BooleanField(default=False)
+    # Stores the polygon over the driver's route from start --> end
+    polygon = mdb.ListField(mdb.GeoPointField())
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
     
