@@ -112,9 +112,11 @@ def request_propose( request ):
     appended = "This message has been sent to you because\
  someone found your request from {} to {} on {}. Please note that\
  the time and place from which your driver may want to depart may\
- not match that of your request. !!TODO: put that info here.\r\n\r\n\
- If you would like to accept this offer, please follow {}.\r\nIf\
- you would like to decline, follow {}.".format(
+ not match that of your request; find ride information at the bottom\
+ of this message. If you would like to accept this offer, please\
+ follow {}.\r\nIf you would like to decline, follow {}.\r\n\r\n\
+ departing from: {}\r\n\
+ time: {}".format(
         req.start,
         req.end,
         req.date.strftime("%A, %B %d at %I:%M %p"),
@@ -124,14 +126,17 @@ def request_propose( request ):
             data['request_id'],
             'accept',
             str(profile.id)
-            ),
+        ),
         '{}{}?req={}&response={}&driver={}'.format(
             _hostname(),
             reverse( 'process_request_proposal' ),
             data['request_id'],
             'decline',
             str(profile.id)
-            ) )
+        ),
+        offer.start,
+        offer.time()
+    )
 
     msg = "\r\n".join( (msg,30*'-',appended) )
 

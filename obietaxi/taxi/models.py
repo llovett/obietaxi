@@ -52,7 +52,13 @@ class RideRequest(mdb.Document):
     askers = mdb.ListField( mdb.ReferenceField(UserProfile) )
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
-    
+
+    def time( self ):
+        return self.date.strftime("%m/%d/%Y at %I:%M %p")
+
+    def __unicode__( self ):
+        return "from {} to {} on {}".format( self.start, self.end, self.time() )
+
     # fuzziness = mdb.StringField()
     # repeat = mdb.StringField()
 
@@ -76,8 +82,11 @@ class RideOffer(mdb.Document):
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
 
+    def time( self ):
+        return self.date.strftime("%m/%d/%Y at %I:%M %p")
+
     def __unicode__( self ):
-        return "from {} to {} on {}".format( self.start, self.end, self.date.strftime("%m/%d/%Y at %I:%M %p") )
+        return "from {} to {} on {}".format( self.start, self.end, self.time() )
     
     # fuzziness = mdb.StringField()
     # repeat = mdb.StringField()
