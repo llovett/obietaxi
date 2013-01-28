@@ -14,7 +14,7 @@ def random_string( chars='abcdefghijklmnopqrstubwxyz1234567890', length=80 ):
     
 def send_email( email_from="", email_subject="", email_to=[], email_body="" ):
     if len(email_from) == 0:
-        email_from = 'noreply@{}'.format( hostname )
+        email_from = 'noreply@{}'.format( _hostname(protocol="") )
     if not type(email_to) is list:
         email_to=[email_to]
     email_subject = "Obietaxi: %s"%email_subject if len(email_subject) > 0 else "Message from Obietaxi!"

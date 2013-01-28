@@ -16,6 +16,64 @@ from helpers import send_email, _hostname, geospatial_distance
 import json
 
 
+####################
+# HELPERS TO VIEWS #
+####################
+
+def _offer_search( **kwargs ):
+    '''
+    Searches for RideOffers that meet the criteria specified in **kargs.
+    The criteria are:
+
+    start_lat : the starting latitude of the request
+    start_lng : the starting longitude of the request
+    end_lat
+    end_lng
+    date : a datetime object giving the departure date and time
+    other_filters : a dictionary containing other filters to apply in the query
+
+    Returns a list of RideOffers that match
+    '''
+
+    # Find all offers that match our time constraints
+    # TODO: make this work with time fuzziness
+    request_date = kwargs['date']
+    # For now, assume a 2-hour window that the passenger would be ok with
+    earliest_offer = request_date - timedelta(hours=1)
+    latest_offer = request_date + timedelta(hours=1)
+
+    if 'other_filters' in kwargs:
+        offers = RideOffer.objects.filter(
+            date__gte=earliest_offer,
+            date__lte=latest_offer,
+            **(kwargs['other_filters'])
+        )
+    else:
+        offers = RideOffer.objects.filter(
+            date__gte=earliest_offer,
+            date__lte=latest_offer
+        )
+
+    # Filter offers further:
+    # 1. Must have start point near req. start and end point near req. end --OR--
+    # 2. Must have polygon field that overlays start & end of this request
+    filtered_offers = []
+    for offer in offers:
+        req_start = (float(kwargs['start_lat']),
+                     float(kwargs['start_lng']))
+        req_end = (float(kwargs['end_lat']),
+                   float(kwargs['end_lng']))
+        start_dist = geospatial_distance( offer.start.position, req_start )
+        end_dist = geospatial_distance( offer.end.position, req_end )
+        if start_dist < 5 and end_dist < 5:
+            filtered_offers.append( offer )
+        elif len(offer.polygon) > 0:
+            polygon = Polygon( offer.polygon )
+            if polygon.isInside( *req_start ) and polygon.isInside( *req_end ):
+                filtered_offers.append( offer )
+    return filtered_offers
+
+
 #########
 # TRIPS #
 #########
@@ -340,16 +398,21 @@ def _process_ro_form( request, type ):
             kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
 
         # Create offer/request object in database
+        profile = request.session.get("profile")
         if type == 'offer':
             # Also grab "polygon" field, merge boxes into polygon
             boxes = json.loads( data['polygon'] )
             polygon, contour = _merge_boxes( boxes['rectangles'] )
             kwargs['polygon'] = contour
             ro = RideOffer.objects.create( **kwargs )
+            profile.offers.append( ro )
             ride_requests = RideRequest.objects.all()
         elif type == 'request':
-            ro = RideRequest.objects.create( **kwargs )
+            rr = RideRequest.objects.create( **kwargs )
+            profile.requests.append( rr )
             ride_offers = RideOffer.objects.all()
+
+        profile.save()
 
         # Return listings of the other type
         return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
@@ -365,59 +428,6 @@ def offer_new( request ):
 
     '''
     return _process_ro_form( request, 'offer' )
-
-def _offer_search( **kwargs ):
-    '''
-    Searches for RideOffers that meet the criteria specified in **kargs.
-    The criteria are:
-
-    start_lat : the starting latitude of the request
-    start_lng : the starting longitude of the request
-    end_lat
-    end_lng
-    date : a datetime object giving the departure date and time
-    other_filters : a dictionary containing other filters to apply in the query
-
-    Returns a list of RideOffers that match
-    '''
-
-    # Find all offers that match our time constraints
-    # TODO: make this work with time fuzziness
-    request_date = kwargs['date']
-    # For now, assume a 2-hour window that the passenger would be ok with
-    earliest_offer = request_date - timedelta(hours=1)
-    latest_offer = request_date + timedelta(hours=1)
-
-    if 'other_filters' in kwargs:
-        offers = RideOffer.objects.filter(
-            date__gte=earliest_offer,
-            date__lte=latest_offer,
-            **other_filters
-        )
-    else:
-        offers = RideOffer.objects.filter(
-            date__gte=earliest_offer,
-            date__lte=latest_offer
-        )
-
-    # Filter offers further:
-    # 1. Must have start point near req. start and end point near req. end --OR--
-    # 2. Must have polygon field that overlays start & end of this request
-    filtered_offers = []
-    for offer in offers:
-        req_start = (float(kwargs['start_lat']),
-                     float(kwargs['start_lng']))
-        req_end = (float(kwargs['end_lat']),
-                   float(kwargs['end_lng']))
-        start_dist = geospatial_distance( offer.start.position, req_start )
-        end_dist = geospatial_distance( offer.end.position, req_end )
-        if start_dist < 5 and end_dist < 5:
-            filtered_offers.append( offer )
-        elif len(offer.polygon) > 0:
-            polygon = Polygon( offer.polygon )
-            if polygon.isInside( *req_start ) and polygon.isInside( *req_end ):
-                filtered_offers.append( offer )
-    return filtered_offers
 
 def offer_search( request ):
     '''
@@ -494,7 +504,24 @@ def request_show( request ):
     # offered a ride to this RideRequest
     user_profile = request.session.get("profile")
     if not user_profile in ride_request.askers:
-        form = OfferRideForm(initial={'request_id':request.GET['request_id']})
+        # Find RideOffers the logged-in user has made that would work well with this request
+        if user_profile:
+            searchParams = {}
+            searchParams['start_lat'],searchParams['start_lng'] = ride_request.start.position
+            searchParams['end_lat'],searchParams['end_lng'] = ride_request.end.position
+            searchParams['date'] = ride_request.date
+            
+            import sys
+            sys.stderr.write("my other offers: %s\n"%str(user_profile.offers))
+
+            searchParams['other_filters'] = { 'id__in' : tuple([offer.id for offer in user_profile.offers]) }
+            offers = _offer_search( **searchParams )
+            offers = [(str(offer.id),str(offer)) for offer in offers]
+            form = OfferRideForm(initial={'request_id':request.GET['request_id']},
+                                 offer_choices=offers)
+        else:
+            form = OfferRideForm(initial={'request_id':request.GET['request_id']})
+
     return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
 
 def offer_show( request ):

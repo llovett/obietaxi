@@ -75,6 +75,9 @@ class RideOffer(mdb.Document):
     polygon = mdb.ListField(mdb.GeoPointField())
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
+
+    def __unicode__( self ):
+        return "from {} to {} on {}".format( self.start, self.end, self.date.strftime("%m/%d/%Y at %I:%M %p") )
     
     # fuzziness = mdb.StringField()
     # repeat = mdb.StringField()

@@ -48,22 +48,31 @@ class OfferRideForm( forms.Form ):
     )
 
     def __init__( self, *args, **kwargs ):
+        # Create a choice field with all relevant RideOffers made by logged-in user
+        if 'offer_choices' in kwargs:
+            OfferChoices = kwargs.get("offer_choices")
+            del kwargs['offer_choices']
+
+        super( OfferRideForm, self ).__init__( *args, **kwargs )
+
+        # Fieldset fields
+        Fields = ['Can You Give a Ride', 'request_id', 'msg']
+        if OfferChoices:
+            OfferChoices.insert( 0, ("new","Make a new trip") )
+            self.fields['offer_choices'] = forms.ChoiceField(
+                choices=OfferChoices,
+                label="Add this person to an existing trip"
+            )
+            Fields.append( 'offer_choices' )
+
         self.helper = FormHelper()
         self.helper.form_action = reverse( 'request_propose' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'offer_ride_form'
         self.helper.layout = Layout(
-            Fieldset(
-                'Can You Give a Ride?',
-                'request_id',
-                'msg'
-            ),
-            FormActions(
-                Submit('offer', 'Offer a Ride', css_id="offer_button" )
-            )
+            Fieldset( *Fields ),
+            FormActions( Submit('offer', 'Offer a Ride', css_id="offer_button" ) )
         )
-
-        super( OfferRideForm, self ).__init__( *args, **kwargs )
 
 class RideRequestOfferForm (forms.Form):
     '''
