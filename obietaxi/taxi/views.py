@@ -81,60 +81,70 @@ def _offer_search( **kwargs ):
 @login_required
 def request_propose( request ):
     ''' Sends an offer for a ride to someone who has made a RideRequest '''
-    form = OfferRideForm( request.POST )
-    if form.is_valid():
-        data = form.cleaned_data
-        req = RideRequest.objects.get( pk=ObjectId(data['request_id']) )
-        msg = data['msg']
 
-        # See if the logged-in user has already offered a ride to this person
-        profile = request.session['profile']
-        if profile in req.askers:
-            messages.add_message( request, messages.ERROR, "You have already offered a ride to this person" )
-            return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
+    data = request.POST
+    profile = request.session.get("profile")
+    req = RideRequest.objects.get( pk=ObjectId(data['request_id']) )
+    msg = data['msg']
+    offer_choices = data['offer_choices']
 
-        # Message to be sent to the passenger
-        appended = "This message has been sent to you because\
+    # Add the passenger to the Offer selected
+    if offer_choices == 'new':
+        offer = RideOffer.objects.create(
+            driver = profile,
+            passengers = [req.passenger],
+            start = req.start,
+            end = req.end,
+            date = req.date,
+        )
+        profile.offers.append( offer )
+        profile.save()
+    else:
+        offer = RideOffer.objects.get( pk=ObjectId(offer_choices) )
+        offer.passengers.append( req.passenger )
+        offer.save()
+
+    if profile in req.askers:
+        messages.add_message( request, messages.ERROR, "You have already offered a ride to this person" )
+        return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
+    
+    # Message to be sent to the passenger
+    appended = "This message has been sent to you because\
  someone found your request from {} to {} on {}. Please note that\
  the time and place from which your driver may want to depart may\
  not match that of your request. !!TODO: put that info here.\r\n\r\n\
  If you would like to accept this offer, please follow {}.\r\nIf\
  you would like to decline, follow {}.".format(
-            req.start,
-            req.end,
-            req.date.strftime("%A, %B %d at %I:%M %p"),
-            '{}{}?req={}&response={}&driver={}'.format(
-                _hostname(),
-                reverse( 'process_request_proposal' ),
-                data['request_id'],
-                'accept',
-                str(profile.id)
+        req.start,
+        req.end,
+        req.date.strftime("%A, %B %d at %I:%M %p"),
+        '{}{}?req={}&response={}&driver={}'.format(
+            _hostname(),
+            reverse( 'process_request_proposal' ),
+            data['request_id'],
+            'accept',
+            str(profile.id)
             ),
-            '{}{}?req={}&response={}&driver={}'.format(
-                _hostname(),
-                reverse( 'process_request_proposal' ),
-                data['request_id'],
-                'decline',
-                str(profile.id)
+        '{}{}?req={}&response={}&driver={}'.format(
+            _hostname(),
+            reverse( 'process_request_proposal' ),
+            data['request_id'],
+            'decline',
+            str(profile.id)
             ) )
-        msg = "\r\n".join( (msg,30*'-',appended) )
 
-        # Save this asker in the offer's 'askers' field
-        req.askers.append( profile )
-        req.save()
+    msg = "\r\n".join( (msg,30*'-',appended) )
+
+    # Save this asker in the offer's 'askers' field
+    req.askers.append( profile )
+    req.save()
         
-        dest_email = req.passenger.user.username
-        from_email = request.user.username
-        subject = "{} can drive you to {}".format(
-            profile,
-            req.end
-        )
-        send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
-        messages.add_message( request, messages.SUCCESS, "Your offer has been sent successfully." )
-        return HttpResponseRedirect( reverse("browse") )
-
-    return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
-
+    dest_email = req.passenger.user.username
+    from_email = request.user.username
+    subject = "{} can drive you to {}".format( profile, req.end )
+    send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
+    messages.add_message( request, messages.SUCCESS, "Your offer has been sent successfully." )
+    return HttpResponseRedirect( reverse("browse") )
 
 @login_required
 def process_request_proposal( request ):

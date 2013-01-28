@@ -49,6 +49,7 @@ class OfferRideForm( forms.Form ):
 
     def __init__( self, *args, **kwargs ):
         # Create a choice field with all relevant RideOffers made by logged-in user
+        OfferChoices = None
         if 'offer_choices' in kwargs:
             OfferChoices = kwargs.get("offer_choices")
             del kwargs['offer_choices']
