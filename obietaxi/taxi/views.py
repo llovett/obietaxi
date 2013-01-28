@@ -142,15 +142,36 @@ def browse( request ):
 
     return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
 
-######################
-# USER TRIP SETTINGS #
-######################
+#########################
+# REQUEST/OFFER OPTIONS #
+#########################
 
-def cancel_request(request):
-    
-def cancel_offer(request):
-    
+def cancel_ride(request, ride_id):
+    '''
+    Render and process a RideRequest cancellation
+    '''
 
+    if request.method == 'POST':
+        if RideRequest.objects.get(pk=ObjectId(ride_id)):
+            ride_request = RideRequest.objects.get(pk=ObjectId(ride_id))
+            ride_request.remove()
+
+        elif RideOffer.objects.get(pk=ObjectId(ride_id)):
+            ride_offer = RideOffer.objects.get(pk=ObjectId(ride_id))
+            ride_offer.remove()
+
+        return ride_cancelled(request)
+
+    form = CancellationForm(initial={'ride_id':ride_id,'reason':'Give a reason for cancellation.'})
+    return render_to_response('cancel_ride', locals(), context_instance=RequestContext(request))
+
+    
+def ride_cancelled(request):
+    rides_requested = RideRequest.objects.all()
+    rides_offered = RideOffer.objects.all()
+    
+    return render_to_response('user_detail.html', locals(), context_instance=RequestContext(request))
+    
 def process_request_update(request, request_id):
     '''
     Render and process the request update form

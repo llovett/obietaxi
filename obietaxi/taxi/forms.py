@@ -164,6 +164,35 @@ class RequestOptionsForm (forms.Form):
         )
 
         super(RequestOptionsForm, self).__init__(*args, **kwargs)
+
+class CancellationForm(forms.Form):
+    '''
+    Form for cancelling a RideRequest or RideOffer
+    '''
     
-    
+    ride_id = forms.CharField( widget=forms.HiddenInput )
+    reason_msg = forms.CharField(
+        label="Reason for cancellation",
+        required=True,
+        widget=forms.Textarea(
+            attrs={'cols':40, 'rows':5}
+        )
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = '.'
+        self.helper.form_id = 'cancellation_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Submit Cancellation',
+                'ride_id',
+                'reason',
+            ),
+            FormActions(
+                Submit('cancel', 'Cancel', css_id='cancel_button'),
+            )
+        )
+
+        super(RequestOptionsForm, self).__init__(*args, **kwargs)
     
