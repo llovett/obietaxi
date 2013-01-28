@@ -515,10 +515,11 @@ def request_show( request ):
         ride_request = RideRequest.objects.get( pk=ObjectId(request.GET['request_id']) )
     except RideRequest.DoesNotExist:
         raise Http404
+
     # This information is used in the template to determine if the user has already
     # offered a ride to this RideRequest
     user_profile = request.session.get("profile")
-    if not user_profile in ride_request.askers:
+    if not user_profile in ride_request.askers and user_profile != ride_request.passenger:
         # Find RideOffers the logged-in user has made that would work well with this request
         if user_profile:
             searchParams = {}
@@ -545,10 +546,11 @@ def offer_show( request ):
         ride_offer = RideOffer.objects.get( pk=ObjectId(request.GET['offer_id']) )
     except RideOffer.DoesNotExist:
         raise Http404
+
     # This information is used in the template to determine if the user has already
     # requested a ride from this RideOffer
     user_profile = request.session.get("profile")
-    if not user_profile in ride_offer.askers and not user_profile in ride_offer.passengers:
+    if not user_profile in ride_offer.askers and user_profile != ride_offer.driver:
         form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
     return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
 
