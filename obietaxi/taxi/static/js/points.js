@@ -138,6 +138,7 @@ function searchOffers( callback ) {
 	dataType: "text",
 	success: function( data ) {
 	    offers = ( $.parseJSON( data ) ).offers;
+	    showOffers( offers );
 	    callback( offers );
 	}
     } );
@@ -209,6 +210,36 @@ function route( callback ) {
 	    $("#status").text("Directions query failed: "+status);
 	}
     } );
+}
+
+function showOffers( offers ) {
+    // Start out by emptying the current passenger listing
+    $("#ride_listing").empty();
+
+    for ( var i=0; i<offers.length; i++ ) {
+	// Display starting point of driver on the map, along with their name
+	var start_point = offers[i].location_start.point;
+	var end_point = offers[i].location_end.point;
+	var driver_name = offers[i].driver_first_name + " " + offers[i].driver_last_name;
+	displayPoint( new google.maps.LatLng(start_point[0], start_point[1]), driver_name);
+
+	// Put an item in the driver list
+	var newitem = $("<li></li>");
+	newitem.addClass("driver_item");
+	var userlink = $("<a></a>");
+	userlink.attr( {"href":"/accounts/profile/?user_id="+offers[i].driver_id} );
+	userlink.append( driver_name );
+	var itemdesc = $("<p>Going from <strong>"+
+			 offers[i].location_start.title+
+			 "</strong> to <strong>"+
+			 offers[i].location_end.title+
+			 "</strong></p>");
+	// TODO: add "ask for ride" button
+	newitem
+	    .append( userlink )
+	    .append( itemdesc );
+	$("#ride_listing").append( newitem );
+    }
 }
 
 // List the relevant ride requests beneath the map

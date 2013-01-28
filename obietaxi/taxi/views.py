@@ -366,6 +366,59 @@ def offer_new( request ):
     '''
     return _process_ro_form( request, 'offer' )
 
+def _offer_search( **kwargs ):
+    '''
+    Searches for RideOffers that meet the criteria specified in **kargs.
+    The criteria are:
+
+    start_lat : the starting latitude of the request
+    start_lng : the starting longitude of the request
+    end_lat
+    end_lng
+    date : a datetime object giving the departure date and time
+    other_filters : a dictionary containing other filters to apply in the query
+
+    Returns a list of RideOffers that match
+    '''
+
+    # Find all offers that match our time constraints
+    # TODO: make this work with time fuzziness
+    request_date = kwargs['date']
+    # For now, assume a 2-hour window that the passenger would be ok with
+    earliest_offer = request_date - timedelta(hours=1)
+    latest_offer = request_date + timedelta(hours=1)
+
+    if 'other_filters' in kwargs:
+        offers = RideOffer.objects.filter(
+            date__gte=earliest_offer,
+            date__lte=latest_offer,
+            **other_filters
+        )
+    else:
+        offers = RideOffer.objects.filter(
+            date__gte=earliest_offer,
+            date__lte=latest_offer
+        )
+
+    # Filter offers further:
+    # 1. Must have start point near req. start and end point near req. end --OR--
+    # 2. Must have polygon field that overlays start & end of this request
+    filtered_offers = []
+    for offer in offers:
+        req_start = (float(kwargs['start_lat']),
+                     float(kwargs['start_lng']))
+        req_end = (float(kwargs['end_lat']),
+                   float(kwargs['end_lng']))
+        start_dist = geospatial_distance( offer.start.position, req_start )
+        end_dist = geospatial_distance( offer.end.position, req_end )
+        if start_dist < 5 and end_dist < 5:
+            filtered_offers.append( offer )
+        elif len(offer.polygon) > 0:
+            polygon = Polygon( offer.polygon )
+            if polygon.isInside( *req_start ) and polygon.isInside( *req_end ):
+                filtered_offers.append( offer )
+    return filtered_offers
+
 def offer_search( request ):
     '''
     Searches for and returns any RideOffers whose driving area encompasses that
@@ -376,36 +429,7 @@ def offer_search( request ):
     form = RideRequestOfferForm( request.POST )
 
     if form.is_valid():
-        # Find all offers that match our time constraints
-        # TODO: make this work with time fuzziness
-        request_date = form.cleaned_data['date']
-        # For now, assume a 2-hour window that the passenger would be ok with
-        earliest_offer = request_date - timedelta(hours=1)
-        latest_offer = request_date + timedelta(hours=1)
-
-        offers = RideOffer.objects.filter(
-            date__gte=earliest_offer,
-            date__lte=latest_offer
-        )
-
-        # Filter offers further:
-        # 1. Must have start point near req. start and end point near req. end --OR--
-        # 2. Must have polygon field that overlays start & end of this request
-        filtered_offers = []
-        for offer in offers:
-            req_start = (float(form.cleaned_data['start_lat']),
-                         float(form.cleaned_data['start_lng']))
-            req_end = (float(form.cleaned_data['end_lat']),
-                       float(form.cleaned_data['end_lng']))
-            start_dist = geospatial_distance( offer.start.position, req_start )
-            end_dist = geospatial_distance( offer.end.position, req_end )
-            if start_dist < 5 and end_dist < 5:
-                filtered_offers.append( offer )
-            elif len(offer.polygon) > 0:
-                polygon = Polygon( offer.polygon )
-                if polygon.isInside( *req_start ) and polygon.isInside( *req_end ):
-                    filtered_offers.append( offer )
-
+        filtered_offers = _offer_search( **form.cleaned_data )
         return HttpResponse( json.dumps({"offers":filtered_offers}, cls=RideOfferEncoder),
                              mimetype='application/json' )
 
