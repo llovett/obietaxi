@@ -1,5 +1,6 @@
 import models
 import json
+from datetime import datetime
 
 class RideRequestEncoder( json.JSONEncoder ):
     ''' Encodes a RideRequest as JSON '''
@@ -10,7 +11,8 @@ class RideRequestEncoder( json.JSONEncoder ):
                 'passenger_last_name' : o.passenger.user.last_name if o.passenger else "no one",
                 'passenger_id': str(o.passenger.id) if o.passenger else 0,
                 'location_start': { 'point': o.start.position, 'title': o.start.title },
-                'location_end' : { 'point': o.end.position, 'title': o.end.title }
+                'location_end' : { 'point': o.end.position, 'title': o.end.title },
+                'date': datetime.strftime( o.date, "%m/%d/%Y %I:%M %p" )
             }
         else:
             return json.JSONEncoder.default( self, o )
@@ -25,7 +27,8 @@ class RideOfferEncoder( json.JSONEncoder ):
                 'driver_id': str(o.driver.id) if o.driver else 0,
                 'location_start': { 'point': o.start.position, 'title': o.start.title },
                 'location_end' : { 'point': o.end.position, 'title': o.end.title },
-                'passengers': [requestEncoder.default(r) for r in o.passengers]
+                'passengers': [requestEncoder.default(r) for r in o.passengers],
+                'date': datetime.strftime( o.date, "%m/%d/%Y %I:%M %p" )
             }
         else:
             return json.JSONEncoder.default( self, o )            

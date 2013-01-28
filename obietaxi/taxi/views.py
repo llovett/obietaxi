@@ -419,7 +419,6 @@ def offer_search( request ):
         return HttpResponse( json.dumps(filtered_offers, cls=RideOfferEncoder),
                              mimetype='application/json' )
 
-
     sys.stderr.write(str(form._errors))
     # Something went wrong.... return an empty response?
     return HttpResponse()
