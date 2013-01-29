@@ -26,12 +26,16 @@ def _offer_search( **kwargs ):
     Searches for RideOffers that meet the criteria specified in **kargs.
     The criteria are:
 
+    REQUIRED:
     start_lat : the starting latitude of the request
     start_lng : the starting longitude of the request
     end_lat
     end_lng
     date : a datetime object giving the departure date and time
+
+    NOT REQUIRED:
     other_filters : a dictionary containing other filters to apply in the query
+    repeat : what kind of repeat this request has (if not present, no repeating is assumed)
 
     Returns a list of RideOffers that match
     '''
@@ -39,20 +43,25 @@ def _offer_search( **kwargs ):
     # Find all offers that match our time constraints
     # TODO: make this work with time fuzziness
     request_date = kwargs['date']
+    request_repeat = kwargs.get('repeat')
     # For now, assume a 2-hour window that the passenger would be ok with
     earliest_offer = request_date - timedelta(hours=1)
     latest_offer = request_date + timedelta(hours=1)
 
-    if 'other_filters' in kwargs:
-        offers = RideOffer.objects.filter(
-            Q( date__gte=earliest_offer, date__lte=latest_offer, **kwargs['other_filters'] ) |
-            Q( repeat__ne="", **kwargs['other_filters'] )
-        )
+    if not request_repeat:
+        if 'other_filters' in kwargs:
+            offers = RideOffer.objects.filter(
+                Q( date__gte=earliest_offer, date__lte=latest_offer, **kwargs['other_filters'] ) |
+                Q( repeat__ne="", **kwargs['other_filters'] )
+            )
+        else:
+            offers = RideOffer.objects.filter(
+                Q( date__gte=earliest_offer, date__lte=latest_offer ) |
+                Q( repeat__ne="" )
+            )
     else:
-        offers = RideOffer.objects.filter(
-            Q( date__gte=earliest_offer, date__lte=latest_offer ) |
-            Q( repeat__ne="" )
-        )
+        # TODO: flesh this out more!
+        offers = RideOffer.objects.all()
 
     # Filter offers further:
     # 1. Must have start point near req. start and end point near req. end --OR--
@@ -499,6 +508,7 @@ def request_search( request ):
     '''
     postData = json.loads( request.raw_post_data )
     rectangles = postData['rectangles']
+    repeat = postData['repeat']
 
     bboxArea, bboxContour = _merge_boxes( rectangles )
 
@@ -514,10 +524,20 @@ def request_search( request ):
     requests_within_start = RideRequest.objects.filter(
         start__position__within_polygon=bboxContour,
     )
+
+    import sys
+    sys.stderr.write("searching for requests, just positions: %s\n"%str([r.passenger for r in requests_within_start]))
+    
     # Filter dates
     def in_date( req ):
+        # TODO: flesh this out!
+        if len(repeat) > 0:
+            return True
         return (req.date >= earliest_request and req.date <= latest_request) or (req.repeat and len(req.repeat)) > 0
-    requests_within_start = [req for req in requests_within_start if in_date(req)]
+    # Don't show this user's requests
+    def is_me( req ):
+        return req.passenger == request.session.get("profile")
+    requests_within_start = [req for req in requests_within_start if in_date(req) and not is_me(req)]
 
     # Can't do two geospatial queries at once :(
     requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
