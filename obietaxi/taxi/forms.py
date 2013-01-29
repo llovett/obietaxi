@@ -118,7 +118,7 @@ class OfferOptionsForm (forms.Form):
                 ),
             FormActions(
                 Submit('update', 'Update', css_id='update_button'),
-#                Submit('cancel', 'Cancel Offer', css_id='cancel_button')
+                Submit('cancel', 'Cancel Offer', css_id='cancel_button')
             )
         )
         
@@ -150,6 +150,7 @@ class RequestOptionsForm (forms.Form):
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_action = '.'
+        self.helper.form_method = 'POST'
         self.helper.form_id = 'request_options_form'
         self.helper.layout = Layout(
             Fieldset(
@@ -159,7 +160,7 @@ class RequestOptionsForm (forms.Form):
                 ),
             FormActions(
                 Submit('update', 'Update', css_id='update_button'),
-#                Submit('cancel', 'Cancel Request', css_id='cancel_button')
+                Submit('cancel', 'Cancel Request', css_id='cancel_button')
             )
         )
 
@@ -171,8 +172,8 @@ class CancellationForm(forms.Form):
     '''
     
     ride_id = forms.CharField( widget=forms.HiddenInput )
-    reason_msg = forms.CharField(
-        label="Reason for cancellation",
+    reason = forms.CharField(
+        label="",
         required=True,
         widget=forms.Textarea(
             attrs={'cols':40, 'rows':5}
@@ -185,7 +186,7 @@ class CancellationForm(forms.Form):
         self.helper.form_id = 'cancellation_form'
         self.helper.layout = Layout(
             Fieldset(
-                'Submit Cancellation',
+                'Reason for Cancelling',
                 'ride_id',
                 'reason',
             ),
@@ -193,6 +194,6 @@ class CancellationForm(forms.Form):
                 Submit('cancel', 'Cancel', css_id='cancel_button'),
             )
         )
-
-        super(RequestOptionsForm, self).__init__(*args, **kwargs)
+        
+        super(CancellationForm, self).__init__(*args, **kwargs)
     

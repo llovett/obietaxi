@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block scripts %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/options.js"></script>
+{% endblock %}
+
 {% block title %} Offer Options {% endblock %}
 {% block heading %} Options {% endblock %}
 
@@ -8,7 +12,5 @@
 {% load crispy_forms_tags %}
 <!-- this renders the form -->
 {% crispy form %}
-
-<a href="{% url cancel_offer offer_id %}">cancel offer</a>
 
 {% endblock %}

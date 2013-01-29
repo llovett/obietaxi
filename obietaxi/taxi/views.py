@@ -3,7 +3,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from bson.objectid import ObjectId
 from models import RideRequest, Trip, UserProfile, RideOffer, Location
-from forms import RideRequestOfferForm, OfferOptionsForm, RequestOptionsForm
+from forms import RideRequestOfferForm, OfferOptionsForm, RequestOptionsForm, CancellationForm
 from datetime import datetime
 from random import random
 from time import strptime,mktime
@@ -151,27 +151,36 @@ def cancel_ride(request, ride_id):
     Render and process a RideRequest cancellation
     '''
 
+    # Form has been submitted, else...
     if request.method == 'POST':
-        if RideRequest.objects.get(pk=ObjectId(ride_id)):
-            ride_request = RideRequest.objects.get(pk=ObjectId(ride_id))
-            ride_request.remove()
+        form = CancellationForm(request.POST)
+        
+        # Check for valid form
+        if form.is_valid():
+            data = form.cleaned_data
+            
+            try:
+                ride_request = RideRequest.objects.get(pk=ObjectId(ride_id))
+            except RideRequest.DoesNotExist:
+                ride_request = None
 
-        elif RideOffer.objects.get(pk=ObjectId(ride_id)):
-            ride_offer = RideOffer.objects.get(pk=ObjectId(ride_id))
-            ride_offer.remove()
-
-        return ride_cancelled(request)
+            try:
+                ride_offer = RideOffer.objects.get(pk=ObjectId(ride_id))
+            except RideOffer.DoesNotExist:
+                ride_offer = None
+            
+            if not ride_request == None:
+                ride_request.delete()
+            elif not ride_offer == None:
+                reason_msg = data['reason']
+                # TODO: send email to all riders, text body is reason_msg
+                ride_offer.delete()
+                
+            return HttpResponseRedirect(reverse('user_home'))
 
     form = CancellationForm(initial={'ride_id':ride_id,'reason':'Give a reason for cancellation.'})
-    return render_to_response('cancel_ride', locals(), context_instance=RequestContext(request))
+    return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
 
-    
-def ride_cancelled(request):
-    rides_requested = RideRequest.objects.all()
-    rides_offered = RideOffer.objects.all()
-    
-    return render_to_response('user_detail.html', locals(), context_instance=RequestContext(request))
-    
 def process_request_update(request, request_id):
     '''
     Render and process the request update form
@@ -219,7 +228,7 @@ def process_offer_update(request, offer_id):
                 ride_offer.message = data['message']
                 ride_offer.save()
                 
-            # Render the form
+            # render the form
             return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
 
     if RideOffer.objects.get(pk=ObjectId(offer_id)).message:
