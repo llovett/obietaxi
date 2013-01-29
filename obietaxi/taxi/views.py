@@ -614,7 +614,15 @@ def cancel_ride(request, ride_id):
                 ride_request.delete()
             elif not ride_offer == None:
                 reason_msg = data['reason']
-                # TODO: send email to all riders, text body is reason_msg
+                # This is a rock'n mess. Clean up*
+                email_message = "Hello,\r\n\nThis is an email concerning ride "+str(ride_offer)+".\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n"+reason_msg+"\r\n\nTo follow up, contact "+str(ride_offer.driver.user.first_name)+" at "+str(ride_offer.driver.user.username)+". Please do not respond to this email.\r\n\nObieTaxi"
+                
+                list_o_emails = [profile.user.username for profile in ride_offer.passengers]
+                send_email(
+                    email_subject='Ride Cancellation', 
+                    email_to=list_o_emails, 
+                    email_body=email_message
+                )
                 ride_offer.delete()
                 
             return HttpResponseRedirect(reverse('user_home'))
@@ -628,7 +636,7 @@ def process_request_update(request, request_id):
     '''
 
     if request.method == 'POST':
-        form = OfferOptionsForm(request.POST)
+        form = RequestOptionsForm(request.POST)
 
         # Form validates
         if form.is_valid():
@@ -640,7 +648,7 @@ def process_request_update(request, request_id):
                 ride_request.message = data['message']
                 ride_request.save()
         
-            return render_to_response('request_options.html'. locals(), context_instance=RequestContext(request))
+            return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
 
     if RideRequest.objects.get(pk=ObjectId(request_id)).message:
         message = RideRequest.objects.get(pk=ObjectId(request_id))
