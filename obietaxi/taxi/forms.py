@@ -10,10 +10,11 @@ from datetime import datetime
 from models import RideOffer, RideRequest
 
 REPEAT_OPTIONS = (
-    (None, ''),
-    ('weekly', 'Weekly'),
-    ('biweekly', 'Biweekly'),
-    ('monthly', 'Monthly'),
+    (None, '(no repeat)'),
+    ('daily', 'every day'),
+    ('weekly', 'every week'),
+    ('month-per-week', 'monthly (every nth x-day)'),
+    ('month-per-day', 'monthly (on the nth)'),
 )
 
 

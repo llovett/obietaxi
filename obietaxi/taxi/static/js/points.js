@@ -80,7 +80,28 @@ function initialize() {
 	    );
 	}
     );
-	    
+
+    // Update the "repeat" options when date, so we can be clear what
+    // the repeat options mean.
+    var updateRepeat = function() {
+	var day = parseInt($("#id_date_0").val().split('/')[1], 10);
+	var suffix = "";
+	if ( day%10 == 1 && day%100 != 11 ) {
+	    suffix = "st";
+	} else if ( day%10 == 2 ) {
+	    suffix = "nd";
+	} else if ( day%10 == 3 ) {
+	    suffix = "rd";
+	} else {
+	    suffix = "th";
+	}
+	var monthPerDayOption = $('#id_repeat option[value="month-per-day"]').text(
+	    'monthly (on the '+day+suffix+')'
+	);
+    }
+    $("#id_date_0").blur( updateRepeat );
+    // Set the repeat dates at load time
+    updateRepeat();
 }
 
 // This will submit the point's location to the server for storage in
