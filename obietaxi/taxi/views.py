@@ -3,6 +3,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from bson.objectid import ObjectId
+from mongoengine.queryset import Q
 from models import RideRequest, UserProfile, RideOffer, Location
 from forms import RideRequestOfferForm, AskForRideForm, OfferRideForm, OfferOptionsForm, RequestOptionsForm
 from datetime import datetime, timedelta
@@ -44,14 +45,13 @@ def _offer_search( **kwargs ):
 
     if 'other_filters' in kwargs:
         offers = RideOffer.objects.filter(
-            date__gte=earliest_offer,
-            date__lte=latest_offer,
-            **(kwargs['other_filters'])
+            Q( date__gte=earliest_offer, date__lte=latest_offer, **kwargs['other_filters'] ) |
+            Q( repeat__ne="", **kwargs['other_filters'] )
         )
     else:
         offers = RideOffer.objects.filter(
-            date__gte=earliest_offer,
-            date__lte=latest_offer
+            Q( date__gte=earliest_offer, date__lte=latest_offer ) |
+            Q( repeat__ne="" )
         )
 
     # Filter offers further:
@@ -513,10 +513,12 @@ def request_search( request ):
     requestEncoder = RideRequestEncoder()
     requests_within_start = RideRequest.objects.filter(
         start__position__within_polygon=bboxContour,
-        date__gte=earliest_request,
-        date__lte=latest_request
     )
-        
+    # Filter dates
+    def in_date( req ):
+        return (req.date >= earliest_request and req.date <= latest_request) or (req.repeat and len(req.repeat)) > 0
+    requests_within_start = [req for req in requests_within_start if in_date(req)]
+
     # Can't do two geospatial queries at once :(
     requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
     requests = { "requests" : [requestEncoder.default(r) for r in requests_on_route] }
