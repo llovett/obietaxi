@@ -502,9 +502,21 @@ def request_search( request ):
 
     bboxArea, bboxContour = _merge_boxes( rectangles )
 
+    # TODO: make this work with time fuzziness
+    offer_start_time = datetime.fromtimestamp( float(postData['start_time'])/1000 )
+    offer_end_time = datetime.fromtimestamp( float(postData['end_time'])/1000 )
+    # For now, assume a 2-hour window that the passenger would be ok with
+    earliest_request = offer_start_time - timedelta(hours=1)
+    latest_request = offer_end_time + timedelta(hours=1)
+
     # RideRequests within the bounds
     requestEncoder = RideRequestEncoder()
-    requests_within_start = RideRequest.objects.filter( start__position__within_polygon=bboxContour )
+    requests_within_start = RideRequest.objects.filter(
+        start__position__within_polygon=bboxContour,
+        date__gte=earliest_request,
+        date__lte=latest_request
+    )
+        
     # Can't do two geospatial queries at once :(
     requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
     requests = { "requests" : [requestEncoder.default(r) for r in requests_on_route] }

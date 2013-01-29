@@ -201,7 +201,7 @@ function route( callback ) {
 	    // bounding boxes:
 	    var request = boxesToJSON( boxes );
 	    // Save the JSON'd boxes in the "polygon" field of the form
-	    $("#id_polygon").val( request );
+	    $("#id_polygon").val( JSON.stringify(request) );
 	    var startDate = Date.parse($("#id_date_0").val()+" "+$("#id_date_1").val());
 	    // Get approximate start/end times for this trip
 	    request.start_time = startDate;
@@ -211,11 +211,13 @@ function route( callback ) {
 	    }
 	    var endDate = startDate + 1000.0*rideLength;
 	    request.end_time = endDate;
+
+	    console.log( request );
 	    
 	    $.ajax( {
 		type: "POST",
 		url: "/request/search/",
-		data: request,
+		data: JSON.stringify( request ),
 		dataType: "text",
 		success: function( data ) {
 		    // Convert to object from JSON string
@@ -317,7 +319,7 @@ function boxesToJSON( boxes ) {
 	box_list[i*4 + 3] = sw.lng();
     }
 
-    return JSON.stringify( { "rectangles" : box_list } );
+    return { "rectangles" : box_list };
 }
 
 // Draw some boxes
