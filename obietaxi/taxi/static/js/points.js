@@ -204,6 +204,8 @@ function route( callback ) {
 	    var startDate = Date.parse($("#id_date_0").val()+" "+$("#id_date_1").val());
 	    // Get approximate start/end times for this trip
 	    request.start_time = startDate;
+	    // Get repeat
+	    request.repeat = $("#id_repeat option:selected").val();
 	    var rideLength = 0;
 	    for ( var i=0; i<result.routes[0].legs.length; i++ ) {
 		rideLength += result.routes[i].legs[0].duration.value;
