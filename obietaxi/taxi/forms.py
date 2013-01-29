@@ -1,5 +1,6 @@
 from django import forms
 from bson.objectid import ObjectId
+from django.forms.widgets import Textarea
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset
 from crispy_forms.bootstrap import FormActions
@@ -9,12 +10,81 @@ from datetime import datetime
 from models import RideOffer, RideRequest
 
 REPEAT_OPTIONS = (
-    (None, ''),
-    ('weekly', 'Weekly'),
-    ('biweekly', 'Biweekly'),
-    ('monthly', 'Monthly'),
+    (None, '(no repeat)'),
+    ('daily', 'every day'),
+    ('weekly', 'every week'),
+    ('month-per-week', 'monthly (every nth x-day)'),
+    ('month-per-day', 'monthly (on the nth)'),
 )
 
+
+class AskForRideForm( forms.Form ):
+    '''
+    Form to facilitate asking for a ride from a posted RideOffer
+    '''
+    offer_id = forms.CharField( widget=forms.HiddenInput )
+    msg = forms.CharField(
+        label="Your message",
+        required=False,
+        widget=Textarea( attrs={'rows':5, 'cols':50} )
+    )
+
+    def __init__( self, *args, **kwargs ):
+        self.helper = FormHelper()
+        self.helper.form_action = reverse( 'offer_propose' )
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'ask_for_ride_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Need a Ride?',
+                'offer_id',
+                'msg'
+            ),
+            FormActions(
+                Submit('ask', 'Ask for a Ride', css_id="ask_button" )
+            )
+        )
+
+        super( AskForRideForm, self ).__init__( *args, **kwargs )
+
+class OfferRideForm( forms.Form ):
+    '''
+    Form to facilitate proposing a ride to a RideRequest
+    '''
+    request_id = forms.CharField( widget=forms.HiddenInput )
+    msg = forms.CharField(
+        label="Your message",
+        required=False,
+        widget=Textarea( attrs={'rows':5, 'cols':50} )
+    )
+
+    def __init__( self, *args, **kwargs ):
+        # Create a choice field with all relevant RideOffers made by logged-in user
+        OfferChoices = None
+        if 'offer_choices' in kwargs:
+            OfferChoices = kwargs.get("offer_choices")
+            del kwargs['offer_choices']
+
+        super( OfferRideForm, self ).__init__( *args, **kwargs )
+
+        # Fieldset fields
+        Fields = ['Can You Give a Ride', 'request_id', 'msg']
+        if OfferChoices:
+            OfferChoices.insert( 0, ("new","Make a new trip") )
+            self.fields['offer_choices'] = forms.ChoiceField(
+                choices=OfferChoices,
+                label="Add this person to an existing trip"
+            )
+            Fields.append( 'offer_choices' )
+
+        self.helper = FormHelper()
+        self.helper.form_action = reverse( 'request_propose' )
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'offer_ride_form'
+        self.helper.layout = Layout(
+            Fieldset( *Fields ),
+            FormActions( Submit('offer', 'Offer a Ride', css_id="offer_button" ) )
+        )
 
 class RideRequestOfferForm (forms.Form):
     '''
@@ -25,6 +95,9 @@ class RideRequestOfferForm (forms.Form):
     start_lng = forms.DecimalField( widget=forms.HiddenInput )
     end_lat = forms.DecimalField( widget=forms.HiddenInput )
     end_lng = forms.DecimalField( widget=forms.HiddenInput )
+    # This is used to store the "bounding box" polygon. It's value is
+    # rendered by the JavaScript in points.js
+    polygon = forms.CharField( widget=forms.HiddenInput, required=False )
 
     start_location = forms.CharField()
     end_location = forms.CharField()
@@ -69,6 +142,7 @@ class RideRequestOfferForm (forms.Form):
                 'start_lng',
                 'end_lat',
                 'end_lng',
+                'polygon',
                 'start_location',
                 'end_location',
                 'date',
