@@ -296,7 +296,9 @@ function showRides( requests ){
 			 requests[i].location_start.title+
 			 "</strong> to <strong>"+
 			 requests[i].location_end.title+
-			 "</strong></p>");
+			 "</strong></p>"+
+			 "<p><strong>"+requests[i].date+"</strong></p>");
+
 	// TODO: add "offer ride" button
 	newitem
 	    .append( userlink )

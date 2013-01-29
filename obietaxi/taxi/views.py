@@ -514,6 +514,10 @@ def request_search( request ):
     requests_within_start = RideRequest.objects.filter(
         start__position__within_polygon=bboxContour,
     )
+
+    import sys
+    sys.stderr.write("searching for requests, just positions: %s\n"%str([r.passenger for r in requests_within_start]))
+    
     # Filter dates
     def in_date( req ):
         return (req.date >= earliest_request and req.date <= latest_request) or (req.repeat and len(req.repeat)) > 0
