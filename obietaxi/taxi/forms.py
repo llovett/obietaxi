@@ -10,7 +10,7 @@ from datetime import datetime
 from models import RideOffer, RideRequest
 
 REPEAT_OPTIONS = (
-    (None, '(no repeat)'),
+    ('', '(no repeat)'),
     ('daily', 'every day'),
     ('weekly', 'every week'),
     ('month-per-week', 'monthly (every nth x-day)'),

@@ -74,9 +74,9 @@ class RideOffer(mdb.Document):
     date = mdb.DateTimeField()
 
     # repeat --- will be one of the following:
+    # no repeat         None
     # every day         "daily"
     # every week        "weekly"
-    # bimonthly         "bimonthly"
     # monthly (every nth x-day of the month)    "month-per-week"
     # monthly (the nth day of every month)      "month-per-day""
     repeat = mdb.StringField()

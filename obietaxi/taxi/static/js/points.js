@@ -18,7 +18,6 @@ function initialize() {
     });
     $('.timepicker-default').timepicker();
 
-
     // Map & directions initialization code
     var latLng = new google.maps.LatLng(41.2939, -82.2175);    // Oberlin, OH
     var mapOptions = {
