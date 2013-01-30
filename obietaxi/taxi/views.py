@@ -52,7 +52,6 @@ def _dates_match( date1, fuzzy1, date2, fuzzy2 ):
             return False
 
     return True
-    
 
 def _offer_search( **kwargs ):
     '''
@@ -535,6 +534,43 @@ def _merge_boxes( boxes ):
 
     return bboxArea, bboxContour
     
+def _request_search( **kwargs ):
+    '''
+    Searches for RideRequests that meet the criteria specified in **kargs.
+    The criteria are:
+
+    REQUIRED:
+    polygon : a list of coordinates giving the route of the offer
+    date : a datetime object giving the departure date and time
+    fuzziness : the fuzziness to search with
+
+    NOT REQUIRED:
+    other_filters : a dictionary containing other filters to apply in the query
+
+    Returns a list of RideOffers that match
+
+    '''
+    polygon = kwargs['polygon']
+    offer_start_time = kwargs['date']
+    offer_fuzziness = kwargs['fuzziness']
+
+    # RideRequests within the bounds
+    if not 'other_filters' in kwargs:
+        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon )
+    else:
+        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon,
+                                                            **kwargs['other_filters'] )
+
+    # Filter by date
+    def in_date( req ):
+        return _dates_match( req.date, req.fuzziness, offer_start_time, offer_fuzziness )
+    requests_within_start = [req for req in requests_within_start if in_date(req)]
+
+    # Can't do two geospatial queries at once :(
+    bboxArea = Polygon( polygon )
+    requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
+    return requests_on_route
+
 def request_search( request ):
     '''
     Searches for and returns any RideRequests within the bounds of the rectangles given
@@ -543,32 +579,17 @@ def request_search( request ):
     '''
     postData = json.loads( request.raw_post_data )
     rectangles = postData['rectangles']
-
     bboxArea, bboxContour = _merge_boxes( rectangles )
 
     # TODO: make this work with time fuzziness
     offer_start_time = datetime.fromtimestamp( float(postData['start_time'])/1000 )
-    offer_end_time = datetime.fromtimestamp( float(postData['end_time'])/1000 )
     offer_fuzziness = postData['fuzziness']
-    # For now, assume a 2-hour window that the passenger would be ok with
-    earliest_request = offer_start_time - timedelta(hours=1)
-    latest_request = offer_end_time + timedelta(hours=1)
 
-    # RideRequests within the bounds
     requestEncoder = RideRequestEncoder()
-    requests_within_start = RideRequest.objects.filter( start__position__within_polygon=bboxContour )
-    
-    # Filter by date
-    def in_date( req ):
-        return _dates_match( req.date, req.fuzziness, offer_start_time, offer_fuzziness )
-    # Don't show this user's requests
-    def is_me( req ):
-        return req.passenger == request.session.get("profile")
-    requests_within_start = [req for req in requests_within_start if in_date(req) and not is_me(req)]
+    requests = { "requests" : [requestEncoder.default(r) for r in _request_search( polygon=bboxContour,
+                                                                                   date=offer_start_time,
+                                                                                   fuzziness=offer_fuzziness )] }
 
-    # Can't do two geospatial queries at once :(
-    requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
-    requests = { "requests" : [requestEncoder.default(r) for r in requests_on_route] }
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
     
 def request_show( request ):
@@ -616,7 +637,26 @@ def offer_show( request ):
     # requested a ride from this RideOffer
     user_profile = request.session.get("profile")
     if not user_profile in ride_offer.askers and user_profile != ride_offer.driver:
-        form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
+
+        # Find RideOffers the logged-in user has made that would work well with this request
+        if user_profile:
+            searchParams = {
+                'polygon': ride_offer.polygon,
+                'date': ride_offer.date,
+                'fuzziness': ride_offer.fuzziness,
+                'other_filters': {'passenger':user_profile}
+            }
+
+            requests = _request_search( **searchParams )
+
+            import sys
+            sys.stderr.write("request search in offer_show returned the following: %s"%str(requests))
+            
+            requests = [(str(req.id),str(req)) for req in requests]
+            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']},
+                                  request_choices=requests)
+        else:
+            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
     return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
 
 ############
