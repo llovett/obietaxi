@@ -99,6 +99,10 @@ def _offer_search( **kwargs ):
     # 2. Must have polygon field that overlays start & end of this request
     filtered_offers = []
     for offer in offers:
+        # Results might be less fuzzy than we are, so do some checking here
+        if not _dates_match( offer.date, offer.fuzziness, request_date, request_fuzzy ):
+            continue
+        # Geographical constraints
         req_start = (float(kwargs['start_lat']),
                      float(kwargs['start_lng']))
         req_end = (float(kwargs['end_lat']),
