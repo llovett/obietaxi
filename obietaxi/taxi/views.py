@@ -557,15 +557,18 @@ def request_show( request ):
     if not user_profile in ride_request.askers and user_profile != ride_request.passenger:
         # Find RideOffers the logged-in user has made that would work well with this request
         if user_profile:
+            # TODO: Make this neater?
             searchParams = {}
             searchParams['start_lat'],searchParams['start_lng'] = ride_request.start.position
             searchParams['end_lat'],searchParams['end_lng'] = ride_request.end.position
             searchParams['date'] = ride_request.date
+            searchParams['repeat'] = ride_request.repeat
             
             import sys
-            sys.stderr.write("my other offers: %s\n"%str(user_profile.offers))
+            sys.stderr.write("my other offers: %s\n"%str([offer for offer in user_profile.offers]))
 
             searchParams['other_filters'] = { 'id__in' : tuple([offer.id for offer in user_profile.offers]) }
+
             offers = _offer_search( **searchParams )
             offers = [(str(offer.id),str(offer)) for offer in offers]
             form = OfferRideForm(initial={'request_id':request.GET['request_id']},
