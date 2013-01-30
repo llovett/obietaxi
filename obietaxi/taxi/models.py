@@ -50,7 +50,17 @@ class RideRequest(mdb.Document):
     date = mdb.DateTimeField()
     # Holds those who are proposing rides (but have not yet been accepted/declined)
     askers = mdb.ListField( mdb.ReferenceField(UserProfile) )
-    fuzziness = mdb.IntField()
+    # Possible values for fuzziness:
+    # 1. +/- an hour (default)  "1-hours"
+    # 2. +/- 2 hours            "2-hours"
+    # 3. +/- 3 hours            "3-hours"
+    # 4. +/- 4 hours            ...
+    # 5. +/- 5 hours
+    # 6. +/- a day              "day"
+    # 7. +/- a week             "week"
+    # 8. anytime                "anytime"
+    fuzziness = mdb.StringField()
+    # N.B.: This is unused. Could be a feature in the future
     repeat = mdb.StringField()
     ride_offer = mdb.ReferenceField('RideOffer')
 
@@ -73,13 +83,8 @@ class RideOffer(mdb.Document):
     end = mdb.EmbeddedDocumentField(Location)
     message = mdb.StringField()
     date = mdb.DateTimeField()
-
-    # repeat --- will be one of the following:
-    # no repeat         None
-    # every day         "daily"
-    # every week        "weekly"
-    # monthly (every nth x-day of the month)    "month-per-week"
-    # monthly (the nth day of every month)      "month-per-day""
+    fuzziness = mdb.StringField()
+    # N.B.: This is unused. Could be a feature in the future
     repeat = mdb.StringField()
 
     # Holds those who are asking for rides (but have not yet been accepted/declined)
@@ -96,5 +101,3 @@ class RideOffer(mdb.Document):
 
     def __unicode__( self ):
         return "from {} to {} on {}".format( self.start, self.end, self.time() )
-    
-    # fuzziness = mdb.StringField()

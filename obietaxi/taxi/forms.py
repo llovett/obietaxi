@@ -9,14 +9,16 @@ from widgets import BootstrapSplitDateTimeWidget
 from datetime import datetime
 from models import RideOffer, RideRequest
 
-REPEAT_OPTIONS = (
-    ('', '(no repeat)'),
-    ('daily', 'every day'),
-    ('weekly', 'every week'),
-    ('month-per-week', 'monthly (every nth x-day)'),
-    ('month-per-day', 'monthly (on the nth)'),
+FUZZY_OPTIONS = (
+    ('1-hours', '+/- an hour'),
+    ('2-hours', '+/- 2 hours'),
+    ('3-hours', '+/- 3 hours'),
+    ('4-hours', '+/- 4 hours'),
+    ('5-hours', '+/- 5 hours'),
+    ('day', 'any time of day'),
+    ('week', 'within the week'),
+    ('anytime', 'anytime at all')
 )
-
 
 class AskForRideForm( forms.Form ):
     '''
@@ -30,22 +32,34 @@ class AskForRideForm( forms.Form ):
     )
 
     def __init__( self, *args, **kwargs ):
+        # Create a choice field with all relevant RideRequests made by logged-in user
+        ReqChoices = None
+        if 'request_choices' in kwargs:
+            ReqChoices = kwargs.get("request_choices")
+            del kwargs['request_choices']
+
+        super( AskForRideForm, self ).__init__( *args, **kwargs )
+
+        # Fieldset fields
+        Fields = ['Need a Ride?', 'offer_id', 'msg']
+        if ReqChoices:
+            ReqChoices.insert( 0, ("new","Ask for a new ride") )
+            self.fields['request_choices'] = forms.ChoiceField(
+                choices=ReqChoices,
+                label="Make this part of an existing request"
+            )
+            Fields.append( 'request_choices' )
+
         self.helper = FormHelper()
         self.helper.form_action = reverse( 'offer_propose' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'ask_for_ride_form'
         self.helper.layout = Layout(
-            Fieldset(
-                'Need a Ride?',
-                'offer_id',
-                'msg'
-            ),
+            Fieldset( *Fields ),
             FormActions(
                 Submit('ask', 'Ask for a Ride', css_id="ask_button" )
             )
         )
-
-        super( AskForRideForm, self ).__init__( *args, **kwargs )
 
 class OfferRideForm( forms.Form ):
     '''
@@ -68,7 +82,7 @@ class OfferRideForm( forms.Form ):
         super( OfferRideForm, self ).__init__( *args, **kwargs )
 
         # Fieldset fields
-        Fields = ['Can You Give a Ride', 'request_id', 'msg']
+        Fields = ['Can You Give a Ride?', 'request_id', 'msg']
         if OfferChoices:
             OfferChoices.insert( 0, ("new","Make a new trip") )
             self.fields['offer_choices'] = forms.ChoiceField(
@@ -128,7 +142,7 @@ class RideRequestOfferForm (forms.Form):
         label="Departure",
         input_formats = input_formats
     )   
-    repeat = forms.ChoiceField(choices=REPEAT_OPTIONS)
+    fuzziness = forms.ChoiceField(choices=FUZZY_OPTIONS)
 
     def __init__( self, *args, **kwargs ):
         self.helper = FormHelper()
@@ -146,7 +160,7 @@ class RideRequestOfferForm (forms.Form):
                 'start_location',
                 'end_location',
                 'date',
-                'repeat'
+                'fuzziness'
                 ),
             FormActions(
                 Submit('ask', 'Ask for a Ride', css_id="ask_button" ),

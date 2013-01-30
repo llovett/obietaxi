@@ -21,6 +21,38 @@ import json
 # HELPERS TO VIEWS #
 ####################
 
+def _dates_match( date1, fuzzy1, date2, fuzzy2 ):
+    '''
+    Determines if there is an overlap between two sets of dates (including fuzziness).
+    Returns True or False.
+    '''
+    
+    # What fuzzy trumps? It is the lesser of the two fuzzies :)
+    for fuzz_option in ('1-hours','2-hours','3-hours','4-hours','5-hours','day','week','anytime'):
+        if fuzz_option in (fuzzy1, fuzzy2):
+            fuzzy = fuzz_option
+    
+    # Larger fuzzy times: check date
+    if fuzzy == 'anytime':
+        return True
+    elif fuzzy == 'week' and abs( (date1.date() - date2.date()).days ) > 7:
+        return False
+    elif fuzzy == 'day' and date1.date() != date2.date():
+        return False
+    
+    # Check times for small fuzzies
+    if '-' in fuzzy:
+        numHours = int(fuzzy.split('-')[0])
+        lowerBound = (date1 - timedelta(hours=numHours)).replace(tzinfo=None)
+        upperBound = (date1 + timedelta(hours=numHours)).replace(tzinfo=None)
+        date2 = date2.replace(tzinfo=None)
+        date1 = date1.replace(tzinfo=None)
+        
+        if date2 < lowerBound or date2 > upperBound:
+            return False
+
+    return True
+
 def _offer_search( **kwargs ):
     '''
     Searches for RideOffers that meet the criteria specified in **kargs.
@@ -32,42 +64,47 @@ def _offer_search( **kwargs ):
     end_lat
     end_lng
     date : a datetime object giving the departure date and time
+    fuzziness : the fuzziness to search with
 
     NOT REQUIRED:
     other_filters : a dictionary containing other filters to apply in the query
-    repeat : what kind of repeat this request has (if not present, no repeating is assumed)
 
     Returns a list of RideOffers that match
     '''
 
     # Find all offers that match our time constraints
-    # TODO: make this work with time fuzziness
     request_date = kwargs['date']
-    request_repeat = kwargs.get('repeat')
-    # For now, assume a 2-hour window that the passenger would be ok with
-    earliest_offer = request_date - timedelta(hours=1)
-    latest_offer = request_date + timedelta(hours=1)
+    request_fuzzy = kwargs['fuzziness']
+    if '-' in request_fuzzy:
+        delta = timedelta(hours=int(request_fuzzy.split('-')[0]))
+        earliest_offer = request_date - delta
+        latest_offer = request_date + delta
+    elif request_fuzzy == 'day':
+        earliest_offer = datetime(request_date.year, request_date.month, request_date.day)
+        next_day = request_date + timedelta(days=1)
+        latest_offer = datetime(next_day.year, next_day.month, next_day.day)
+    elif request_fuzzy == 'week':
+        delta = timedelta(days=3, hours=12)
+        earliest_offer = request_date - delta
+        latest_offer = request_date + delta
 
-    if not request_repeat:
-        if 'other_filters' in kwargs:
-            offers = RideOffer.objects.filter(
-                Q( date__gte=earliest_offer, date__lte=latest_offer, **kwargs['other_filters'] ) |
-                Q( repeat__ne="", **kwargs['other_filters'] )
-            )
-        else:
-            offers = RideOffer.objects.filter(
-                Q( date__gte=earliest_offer, date__lte=latest_offer ) |
-                Q( repeat__ne="" )
-            )
+    if 'other_filters' in kwargs:
+        offers = RideOffer.objects.filter( date__gte=earliest_offer,
+                                           date__lte=latest_offer,
+                                           **kwargs['other_filters'] )
     else:
-        # TODO: flesh this out more!
-        offers = RideOffer.objects.all()
+        offers = RideOffer.objects.filter( date__gte=earliest_offer,
+                                           date__lte=latest_offer )
 
     # Filter offers further:
     # 1. Must have start point near req. start and end point near req. end --OR--
     # 2. Must have polygon field that overlays start & end of this request
     filtered_offers = []
     for offer in offers:
+        # Results might be less fuzzy than we are, so do some checking here
+        if not _dates_match( offer.date, offer.fuzziness, request_date, request_fuzzy ):
+            continue
+        # Geographical constraints
         req_start = (float(kwargs['start_lat']),
                      float(kwargs['start_lng']))
         req_end = (float(kwargs['end_lat']),
@@ -413,17 +450,14 @@ def _process_ro_form( request, type ):
         startLocation = Location( position=startloc, title=data['start_location'] )
         endLocation = Location( position=endloc, title=data['end_location'] )
         date = data['date']
-        repeat = data['repeat']
-        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date, 'repeat':repeat }
+        fuzziness = data['fuzziness']
+        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date, 'fuzziness':fuzziness }
 
-        # Associate request/offer with user, if possible
-        # TODO: make this mandatory!
-        profile = request.session['profile']
-        if profile:
-            kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
+        # Associate request/offer with user
+        profile = request.session.get('profile')
+        kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
 
         # Create offer/request object in database
-        profile = request.session.get("profile")
         if type == 'offer':
             # Also grab "polygon" field, merge boxes into polygon
             boxes = json.loads( data['polygon'] )
@@ -500,6 +534,43 @@ def _merge_boxes( boxes ):
 
     return bboxArea, bboxContour
     
+def _request_search( **kwargs ):
+    '''
+    Searches for RideRequests that meet the criteria specified in **kargs.
+    The criteria are:
+
+    REQUIRED:
+    polygon : a list of coordinates giving the route of the offer
+    date : a datetime object giving the departure date and time
+    fuzziness : the fuzziness to search with
+
+    NOT REQUIRED:
+    other_filters : a dictionary containing other filters to apply in the query
+
+    Returns a list of RideOffers that match
+
+    '''
+    polygon = kwargs['polygon']
+    offer_start_time = kwargs['date']
+    offer_fuzziness = kwargs['fuzziness']
+
+    # RideRequests within the bounds
+    if not 'other_filters' in kwargs:
+        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon )
+    else:
+        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon,
+                                                            **kwargs['other_filters'] )
+
+    # Filter by date
+    def in_date( req ):
+        return _dates_match( req.date, req.fuzziness, offer_start_time, offer_fuzziness )
+    requests_within_start = [req for req in requests_within_start if in_date(req)]
+
+    # Can't do two geospatial queries at once :(
+    bboxArea = Polygon( polygon )
+    requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
+    return requests_on_route
+
 def request_search( request ):
     '''
     Searches for and returns any RideRequests within the bounds of the rectangles given
@@ -508,40 +579,17 @@ def request_search( request ):
     '''
     postData = json.loads( request.raw_post_data )
     rectangles = postData['rectangles']
-    repeat = postData['repeat']
-
     bboxArea, bboxContour = _merge_boxes( rectangles )
 
     # TODO: make this work with time fuzziness
     offer_start_time = datetime.fromtimestamp( float(postData['start_time'])/1000 )
-    offer_end_time = datetime.fromtimestamp( float(postData['end_time'])/1000 )
-    # For now, assume a 2-hour window that the passenger would be ok with
-    earliest_request = offer_start_time - timedelta(hours=1)
-    latest_request = offer_end_time + timedelta(hours=1)
+    offer_fuzziness = postData['fuzziness']
 
-    # RideRequests within the bounds
     requestEncoder = RideRequestEncoder()
-    requests_within_start = RideRequest.objects.filter(
-        start__position__within_polygon=bboxContour,
-    )
+    requests = { "requests" : [requestEncoder.default(r) for r in _request_search( polygon=bboxContour,
+                                                                                   date=offer_start_time,
+                                                                                   fuzziness=offer_fuzziness )] }
 
-    import sys
-    sys.stderr.write("searching for requests, just positions: %s\n"%str([r.passenger for r in requests_within_start]))
-    
-    # Filter dates
-    def in_date( req ):
-        # TODO: flesh this out!
-        if len(repeat) > 0:
-            return True
-        return (req.date >= earliest_request and req.date <= latest_request) or (req.repeat and len(req.repeat)) > 0
-    # Don't show this user's requests
-    def is_me( req ):
-        return req.passenger == request.session.get("profile")
-    requests_within_start = [req for req in requests_within_start if in_date(req) and not is_me(req)]
-
-    # Can't do two geospatial queries at once :(
-    requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
-    requests = { "requests" : [requestEncoder.default(r) for r in requests_on_route] }
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
     
 def request_show( request ):
@@ -557,15 +605,18 @@ def request_show( request ):
     if not user_profile in ride_request.askers and user_profile != ride_request.passenger:
         # Find RideOffers the logged-in user has made that would work well with this request
         if user_profile:
+            # TODO: Make this neater?
             searchParams = {}
             searchParams['start_lat'],searchParams['start_lng'] = ride_request.start.position
             searchParams['end_lat'],searchParams['end_lng'] = ride_request.end.position
             searchParams['date'] = ride_request.date
-            
+            searchParams['fuzziness'] = ride_request.fuzziness
+
             import sys
-            sys.stderr.write("my other offers: %s\n"%str(user_profile.offers))
+            sys.stderr.write("my other offers: %s\n"%str([offer for offer in user_profile.offers]))
 
             searchParams['other_filters'] = { 'id__in' : tuple([offer.id for offer in user_profile.offers]) }
+
             offers = _offer_search( **searchParams )
             offers = [(str(offer.id),str(offer)) for offer in offers]
             form = OfferRideForm(initial={'request_id':request.GET['request_id']},
@@ -586,7 +637,26 @@ def offer_show( request ):
     # requested a ride from this RideOffer
     user_profile = request.session.get("profile")
     if not user_profile in ride_offer.askers and user_profile != ride_offer.driver:
-        form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
+
+        # Find RideOffers the logged-in user has made that would work well with this request
+        if user_profile:
+            searchParams = {
+                'polygon': ride_offer.polygon,
+                'date': ride_offer.date,
+                'fuzziness': ride_offer.fuzziness,
+                'other_filters': {'passenger':user_profile}
+            }
+
+            requests = _request_search( **searchParams )
+
+            import sys
+            sys.stderr.write("request search in offer_show returned the following: %s"%str(requests))
+            
+            requests = [(str(req.id),str(req)) for req in requests]
+            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']},
+                                  request_choices=requests)
+        else:
+            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
     return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
 
 ############
