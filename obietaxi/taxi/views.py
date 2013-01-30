@@ -661,9 +661,11 @@ def process_request_update(request, request_id):
     '''
     Render and process the request update form
     '''
-
-    if request.method == 'POST':
-        form = RequestOptionsForm(request.POST)
+    
+    # Allow only the RideRequest creator to access the optinos form
+    if request.session.get('profile') == RideRequest.objects.get(pk=ObjectId(request_id)).passenger:
+        if request.method == 'POST':
+            form = RequestOptionsForm(request.POST)
 
         # Form validates
         if form.is_valid():
@@ -677,45 +679,50 @@ def process_request_update(request, request_id):
         
             return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
 
-    if RideRequest.objects.get(pk=ObjectId(request_id)).message:
-        message = RideRequest.objects.get(pk=ObjectId(request_id))
+        if RideRequest.objects.get(pk=ObjectId(request_id)).message:
+            message = RideRequest.objects.get(pk=ObjectId(request_id))
+        else:
+            message = "No message"
+            
+        # Render the form
+        form = RequestOptionsForm(initial={'request_id':request_id, 'message':message})
+        return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
     else:
-        message = "No message"
-
-    # Render the form
-    form = RequestOptionsForm(initial={'request_id':request_id, 'message':message})
-    return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
+        raise PermissionDenied
 
 def process_offer_update(request, offer_id):
     '''
     Render and process the offer update form
     '''
-    
-    if request.method =='POST':
-        form = OfferOptionsForm(request.POST)
-
-        # Form validates
-        if form.is_valid():
-            data = form.cleaned_data
-            ride_offer = RideOffer.objects.get(pk=ObjectId(data['offer_id']))
+   
+    # Allow only the RideOffer creator to access the options form
+    if request.session.get('profile') == RideOffer.objects.get(pk=ObjectId(offer_id)).passenger:
+        if request.method =='POST':
+            form = OfferOptionsForm(request.POST)
             
-            # Parse out the form and update RideOffer
-            if data['message']:
-                ride_offer.message = data['message']
-                ride_offer.save()
+            # Form validates
+            if form.is_valid():
+                data = form.cleaned_data
+                ride_offer = RideOffer.objects.get(pk=ObjectId(data['offer_id']))
                 
-            # render the form
-            return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
+                # Parse out the form and update RideOffer
+                if data['message']:
+                    ride_offer.message = data['message']
+                    ride_offer.save()
+                    
+                # render the form
+                return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
 
-    if RideOffer.objects.get(pk=ObjectId(offer_id)).message:
-        message = RideOffer.objects.get(pk=ObjectId(offer_id)).message
-    else:
-        message = "No message"
+            if RideOffer.objects.get(pk=ObjectId(offer_id)).message:
+                message = RideOffer.objects.get(pk=ObjectId(offer_id)).message
+            else:
+                message = "No message"
     
-    rider_list = RideOffer.objects.get(pk=ObjectId(offer_id)).passengers
-    form = OfferOptionsForm(initial={'offer_id':offer_id, 'message':message})
-    return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
-
+            rider_list = RideOffer.objects.get(pk=ObjectId(offer_id)).passengers
+            form = OfferOptionsForm(initial={'offer_id':offer_id, 'message':message})
+            return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
+    else:
+        raise PermissionDenied
 
 #####################
 # USER ACCOUNT INFO #
