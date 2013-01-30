@@ -52,6 +52,7 @@ class RideRequest(mdb.Document):
     askers = mdb.ListField( mdb.ReferenceField(UserProfile) )
     fuzziness = mdb.IntField()
     repeat = mdb.StringField()
+    ride_offer = mdb.ReferenceField('RideOffer')
 
     meta = { "indexes" : ["*start.position", "*end.position"] }
 
