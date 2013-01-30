@@ -294,6 +294,7 @@ def offer_propose( request ):
         data = form.cleaned_data
         offer = RideOffer.objects.get( pk=ObjectId(data['offer_id']) )
         msg = data['msg']
+        request_id = data['request_choices']
 
         # See if the logged-in user has already asked for a ride from this person
         profile = request.session['profile']
@@ -313,19 +314,19 @@ def offer_propose( request ):
             offer.end,
             offer.date.strftime("%A, %B %d at %I:%M %p"),
             # This renders accept/decline links
-            '{}{}?offer={}&response={}&rider={}'.format(
+            '{}{}?offer={}&response={}&request={}'.format(
                 _hostname(),
                 reverse( 'process_offer_proposal' ),
                 data['offer_id'],
                 'accept',
-                str(profile.id)
+                request_id
             ),
-            '{}{}?offer={}&response={}&rider={}'.format(
+            '{}{}?offer={}&response={}&request={}'.format(
                 _hostname(),
                 reverse( 'process_offer_proposal' ),
                 data['offer_id'],
                 'decline',
-                str(profile.id)
+                request_id
             )
         )
         msg = "\r\n".join( (msg,30*'-',appended) )
@@ -348,17 +349,18 @@ def offer_propose( request ):
 
 @login_required
 def process_offer_proposal( request ):
-    ''' Processes a response YES/NO to a request from a ride from a particular RideOffer '''
+    ''' Processes a response YES/NO to a request for a ride from a particular RideOffer '''
     data = request.GET
     offer_id = data['offer']
-    rider_id = data['rider']
+    request_id = data['request']
     response = data['response']
     try:
         offer = RideOffer.objects.get( id=ObjectId(offer_id) )
-        rider = UserProfile.objects.get( id=ObjectId(rider_id) )
+        req = RideRequest.objects.get( pk=ObjectId(request_id) )
+        rider = req.passenger
     # Offer or Passenger is not real
-    except (RideOffer.DoesNotExist, UserProfile.DoesNotExist):
-        messages.add_message( request, messages.ERROR, "Offer or user does not exist" )
+    except (RideOffer.DoesNotExist, RideRequest.DoesNotExist):
+        messages.add_message( request, messages.ERROR, "Rideoffer or request does not exist" )
         return HttpResponseRedirect( reverse('user_home') )
     # Invalid value for "response" field--- must accept or decline
     if response not in ('accept','decline'):
@@ -377,6 +379,9 @@ def process_offer_proposal( request ):
         else:
             offer.passengers.append( rider )
         offer.save()
+        # Save this offer inside of the RideRequest
+        req.ride_offer = offer
+        req.save()
         # Email the driver, confirming the fact that they've decided to give a ride.
         # Also give them passenger's contact info.
         body_driver = "Thank you for your helpfulness and generosity.\

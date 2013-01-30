@@ -43,7 +43,7 @@ class AskForRideForm( forms.Form ):
         # Fieldset fields
         Fields = ['Need a Ride?', 'offer_id', 'msg']
         if ReqChoices:
-            ReqChoices.insert( 0, ("new","Ask for a new ride") )
+            ReqChoices.append( ("new","Ask for a new ride") )
             self.fields['request_choices'] = forms.ChoiceField(
                 choices=ReqChoices,
                 label="Make this part of an existing request"
@@ -84,7 +84,7 @@ class OfferRideForm( forms.Form ):
         # Fieldset fields
         Fields = ['Can You Give a Ride?', 'request_id', 'msg']
         if OfferChoices:
-            OfferChoices.insert( 0, ("new","Make a new trip") )
+            OfferChoices.append( ("new","Make a new trip") )
             self.fields['offer_choices'] = forms.ChoiceField(
                 choices=OfferChoices,
                 label="Add this person to an existing trip"
