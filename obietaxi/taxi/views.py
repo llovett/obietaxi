@@ -223,7 +223,7 @@ def process_request_proposal( request ):
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
         req.askers.remove( driver )
-
+        req.ride_offer = RideOffer.objects.get(pk=ObjectId(driver_id))
         ## --------------------------------------------------
         # TODO: Find other RideOffers this user has made, and try to link this offer to
         # one of those, if possible. Otherwise, create a new offer and link this passenger
@@ -334,7 +334,7 @@ def offer_propose( request ):
         offer.askers.append( profile )
         offer.save()
         
-        dest_email = offer.driver.user.username
+        dest_email = offer.offer.user.username
         from_email = request.user.username
         subject = "{} {} is asking you for a ride!".format(
             request.user.first_name,
@@ -701,11 +701,18 @@ def cancel_ride(request, ride_id):
                 ride_offer = None
             
             if not ride_request == None:
+                reason_msg = data['reason']
+                email_message = "Hello,\r\n\nThis is an email concerning your upcoming trip %s.\r\n\nPlease note: %s has left your passenger group for the following reason:\r\n\n %s \r\n\nTo follow up, you can contact them at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_request), str(ride_request.passenger), reason_msg, ride_request.user.username )
+                send_email(
+                    email_subject='Rider Cancellation',
+                    email_to=ride_request.ride_offer.driver.user.username,
+                    email_body=email_message
+                )
                 ride_request.delete()
             elif not ride_offer == None:
                 reason_msg = data['reason']
                 # This is a rock'n mess. Clean up*
-                email_message = "Hello,\r\n\nThis is an email concerning ride "+str(ride_offer)+".\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n"+reason_msg+"\r\n\nTo follow up, contact "+str(ride_offer.driver.user.first_name)+" at "+str(ride_offer.driver.user.username)+". Please do not respond to this email.\r\n\nObieTaxi"
+                email_message = "Hello,\r\n\nThis is an email concerning your upcoming ride %s.\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n %s \r\n\nTo follow up, contact %s at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_offer), reason_msg, str(ride_offer.driver.user.first_name), str(ride_offer.driver.user.username) )
                 
                 list_o_emails = [profile.user.username for profile in ride_offer.passengers]
                 send_email(
@@ -775,6 +782,7 @@ def process_offer_update(request, offer_id):
     else:
         message = "No message"
     
+    rider_list = RideOffer.objects.get(pk=ObjectId(offer_id)).passengers
     form = OfferOptionsForm(initial={'offer_id':offer_id, 'message':message})
     return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
 
