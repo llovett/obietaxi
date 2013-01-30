@@ -62,6 +62,7 @@ def _offer_search( **kwargs ):
     end_lat
     end_lng
     date : a datetime object giving the departure date and time
+    fuzziness : the fuzziness to search with
 
     NOT REQUIRED:
     other_filters : a dictionary containing other filters to apply in the query
@@ -70,11 +71,20 @@ def _offer_search( **kwargs ):
     '''
 
     # Find all offers that match our time constraints
-    # TODO: make this work with time fuzziness
     request_date = kwargs['date']
-    # For now, assume a 2-hour window that the passenger would be ok with
-    earliest_offer = request_date - timedelta(hours=1)
-    latest_offer = request_date + timedelta(hours=1)
+    request_fuzzy = kwargs['fuzziness']
+    if '-' in request_fuzzy:
+        delta = timedelta(hours=int(request_fuzzy.split('-')[0]))
+        earliest_offer = request_date - delta
+        latest_offer = request_date + delta
+    elif request_fuzzy == 'day':
+        earliest_offer = datetime(request_date.year, request_date.month, request_date.day)
+        next_day = request_date + timedelta(days=1)
+        latest_offer = datetime(next_day.year, next_day.month, next_day.day)
+    elif request_fuzzy == 'week':
+        delta = timedelta(days=3, hours=12)
+        earliest_offer = request_date - delta
+        latest_offer = request_date + delta
 
     if 'other_filters' in kwargs:
         offers = RideOffer.objects.filter( date__gte=earliest_offer,
