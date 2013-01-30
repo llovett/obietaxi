@@ -549,23 +549,18 @@ def request_search( request ):
     # TODO: make this work with time fuzziness
     offer_start_time = datetime.fromtimestamp( float(postData['start_time'])/1000 )
     offer_end_time = datetime.fromtimestamp( float(postData['end_time'])/1000 )
+    offer_fuzziness = postData['fuzziness']
     # For now, assume a 2-hour window that the passenger would be ok with
     earliest_request = offer_start_time - timedelta(hours=1)
     latest_request = offer_end_time + timedelta(hours=1)
 
     # RideRequests within the bounds
     requestEncoder = RideRequestEncoder()
-    requests_within_start = RideRequest.objects.filter(
-        start__position__within_polygon=bboxContour,
-    )
-
-    import sys
-    sys.stderr.write("searching for requests, just positions: %s\n"%str([r.passenger for r in requests_within_start]))
+    requests_within_start = RideRequest.objects.filter( start__position__within_polygon=bboxContour )
     
-    # Filter dates
+    # Filter by date
     def in_date( req ):
-        # TODO: flesh this out!
-        return (req.date >= earliest_request and req.date <= latest_request)
+        return _dates_match( req.date, req.fuzziness, offer_start_time, offer_fuzziness )
     # Don't show this user's requests
     def is_me( req ):
         return req.passenger == request.session.get("profile")
@@ -594,6 +589,7 @@ def request_show( request ):
             searchParams['start_lat'],searchParams['start_lng'] = ride_request.start.position
             searchParams['end_lat'],searchParams['end_lng'] = ride_request.end.position
             searchParams['date'] = ride_request.date
+            searchParams['fuzziness'] = ride_request.fuzziness
 
             import sys
             sys.stderr.write("my other offers: %s\n"%str([offer for offer in user_profile.offers]))
