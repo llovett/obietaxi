@@ -9,14 +9,16 @@ from widgets import BootstrapSplitDateTimeWidget
 from datetime import datetime
 from models import RideOffer, RideRequest
 
-REPEAT_OPTIONS = (
-    ('', '(no repeat)'),
-    ('daily', 'every day'),
-    ('weekly', 'every week'),
-    ('month-per-week', 'monthly (every nth x-day)'),
-    ('month-per-day', 'monthly (on the nth)'),
+FUZZY_OPTIONS = (
+    ('1-hours', '+/- an hour'),
+    ('2-hours', '+/- 2 hours'),
+    ('3-hours', '+/- 3 hours'),
+    ('4-hours', '+/- 4 hours'),
+    ('5-hours', '+/- 5 hours'),
+    ('day', 'any time of day'),
+    ('week', 'within the week'),
+    ('anytime', 'anytime at all')
 )
-
 
 class AskForRideForm( forms.Form ):
     '''
@@ -128,7 +130,7 @@ class RideRequestOfferForm (forms.Form):
         label="Departure",
         input_formats = input_formats
     )   
-    repeat = forms.ChoiceField(choices=REPEAT_OPTIONS)
+    fuzziness = forms.ChoiceField(choices=FUZZY_OPTIONS)
 
     def __init__( self, *args, **kwargs ):
         self.helper = FormHelper()
@@ -146,7 +148,7 @@ class RideRequestOfferForm (forms.Form):
                 'start_location',
                 'end_location',
                 'date',
-                'repeat'
+                'fuzziness'
                 ),
             FormActions(
                 Submit('ask', 'Ask for a Ride', css_id="ask_button" ),

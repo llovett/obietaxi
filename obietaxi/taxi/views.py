@@ -21,6 +21,36 @@ import json
 # HELPERS TO VIEWS #
 ####################
 
+def _dates_match( date1, fuzzy1, date2, fuzzy2 ):
+    '''
+    Determines if there is an overlap between two sets of dates (including fuzziness).
+    Returns True or False.
+    '''
+    
+    # What fuzzy trumps? It is the lesser of the two fuzzies :)
+    for fuzz_option in ('1-hours','2-hours','3-hours','4-hours','5-hours','day','week','anytime'):
+        if fuzz_option in (fuzzy1, fuzzy2):
+            fuzzy = fuzz_option
+    
+    # Larger fuzzy times: check date
+    if fuzzy == 'anytime':
+        return True
+    elif fuzzy == 'week' and abs( (date1.date() - date2.date()).days ) > 7:
+        return False
+    elif fuzzy == 'day' and date1.date() != date2.date():
+        return False
+    
+    # Check times for small fuzzies
+    if '-' in fuzzy:
+        numHours = int(fuzzy.split('-')[0])
+        lowerBound = date1 - timedelta(hours=numHours)
+        upperBound = date1 + timedelta(hours=numHours)
+        if date2 < lowerBound or date2 > upperBound:
+            return False
+
+    return True
+    
+
 def _offer_search( **kwargs ):
     '''
     Searches for RideOffers that meet the criteria specified in **kargs.
@@ -35,7 +65,6 @@ def _offer_search( **kwargs ):
 
     NOT REQUIRED:
     other_filters : a dictionary containing other filters to apply in the query
-    repeat : what kind of repeat this request has (if not present, no repeating is assumed)
 
     Returns a list of RideOffers that match
     '''
@@ -43,25 +72,17 @@ def _offer_search( **kwargs ):
     # Find all offers that match our time constraints
     # TODO: make this work with time fuzziness
     request_date = kwargs['date']
-    request_repeat = kwargs.get('repeat')
     # For now, assume a 2-hour window that the passenger would be ok with
     earliest_offer = request_date - timedelta(hours=1)
     latest_offer = request_date + timedelta(hours=1)
 
-    if not request_repeat:
-        if 'other_filters' in kwargs:
-            offers = RideOffer.objects.filter(
-                Q( date__gte=earliest_offer, date__lte=latest_offer, **kwargs['other_filters'] ) |
-                Q( repeat__ne="", **kwargs['other_filters'] )
-            )
-        else:
-            offers = RideOffer.objects.filter(
-                Q( date__gte=earliest_offer, date__lte=latest_offer ) |
-                Q( repeat__ne="" )
-            )
+    if 'other_filters' in kwargs:
+        offers = RideOffer.objects.filter( date__gte=earliest_offer,
+                                           date__lte=latest_offer,
+                                           **kwargs['other_filters'] )
     else:
-        # TODO: flesh this out more!
-        offers = RideOffer.objects.all()
+        offers = RideOffer.objects.filter( date__gte=earliest_offer,
+                                           date__lte=latest_offer )
 
     # Filter offers further:
     # 1. Must have start point near req. start and end point near req. end --OR--
@@ -413,8 +434,7 @@ def _process_ro_form( request, type ):
         startLocation = Location( position=startloc, title=data['start_location'] )
         endLocation = Location( position=endloc, title=data['end_location'] )
         date = data['date']
-        repeat = data['repeat']
-        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date, 'repeat':repeat }
+        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date }
 
         # Associate request/offer with user, if possible
         # TODO: make this mandatory!
@@ -508,7 +528,6 @@ def request_search( request ):
     '''
     postData = json.loads( request.raw_post_data )
     rectangles = postData['rectangles']
-    repeat = postData['repeat']
 
     bboxArea, bboxContour = _merge_boxes( rectangles )
 
@@ -531,9 +550,7 @@ def request_search( request ):
     # Filter dates
     def in_date( req ):
         # TODO: flesh this out!
-        if len(repeat) > 0:
-            return True
-        return (req.date >= earliest_request and req.date <= latest_request) or (req.repeat and len(req.repeat)) > 0
+        return (req.date >= earliest_request and req.date <= latest_request)
     # Don't show this user's requests
     def is_me( req ):
         return req.passenger == request.session.get("profile")
@@ -562,8 +579,7 @@ def request_show( request ):
             searchParams['start_lat'],searchParams['start_lng'] = ride_request.start.position
             searchParams['end_lat'],searchParams['end_lng'] = ride_request.end.position
             searchParams['date'] = ride_request.date
-            searchParams['repeat'] = ride_request.repeat
-            
+
             import sys
             sys.stderr.write("my other offers: %s\n"%str([offer for offer in user_profile.offers]))
 
