@@ -43,8 +43,11 @@ def _dates_match( date1, fuzzy1, date2, fuzzy2 ):
     # Check times for small fuzzies
     if '-' in fuzzy:
         numHours = int(fuzzy.split('-')[0])
-        lowerBound = date1 - timedelta(hours=numHours)
-        upperBound = date1 + timedelta(hours=numHours)
+        lowerBound = (date1 - timedelta(hours=numHours)).replace(tzinfo=None)
+        upperBound = (date1 + timedelta(hours=numHours)).replace(tzinfo=None)
+        date2 = date2.replace(tzinfo=None)
+        date1 = date1.replace(tzinfo=None)
+        
         if date2 < lowerBound or date2 > upperBound:
             return False
 
@@ -448,16 +451,14 @@ def _process_ro_form( request, type ):
         startLocation = Location( position=startloc, title=data['start_location'] )
         endLocation = Location( position=endloc, title=data['end_location'] )
         date = data['date']
-        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date }
+        fuzziness = data['fuzziness']
+        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date, 'fuzziness':fuzziness }
 
-        # Associate request/offer with user, if possible
-        # TODO: make this mandatory!
-        profile = request.session['profile']
-        if profile:
-            kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
+        # Associate request/offer with user
+        profile = request.session.get('profile')
+        kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
 
         # Create offer/request object in database
-        profile = request.session.get("profile")
         if type == 'offer':
             # Also grab "polygon" field, merge boxes into polygon
             boxes = json.loads( data['polygon'] )
