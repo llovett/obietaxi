@@ -237,6 +237,8 @@ def process_offer_ride( request ):
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
         req.ride_offer = offer
+        req.askers.remove( driver )
+        req.save()
 
         passenger = request.session.get("profile")
         if len(offer.passengers) == 0:
@@ -282,10 +284,6 @@ name: %s\r\nphone: %s\r\nemail: %s"%(passenger,
         send_email( email_to=passenger.user.username,
                     email_body=body_requester,
                     email_subject="Your ride %s"%str(req) )
-
-    # Whether accepting or declining, remove driver from askers and save riderequest
-    req.askers.remove( driver )
-    req.save()
 
     messages.add_message( request, messages.SUCCESS, "You have {} {}'s offer".format(
             'accepted' if response == 'accept' else 'declined',
