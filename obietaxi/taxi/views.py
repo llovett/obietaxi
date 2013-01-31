@@ -758,7 +758,6 @@ def cancel_ride(request, ride_id):
                     reason_msg = data['reason']
                     # This is a rock'n mess. Clean up*
                     email_message = "Hello,\r\n\nThis is an email concerning your upcoming ride %s.\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n %s \r\n\nTo follow up, contact %s at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_offer), reason_msg, str(ride_offer.driver.user.first_name), str(ride_offer.driver.user.username) )
-                
                     list_o_emails = [profile.user.username for profile in ride_offer.passengers]
                     if list_o_emails:
                         send_email(
@@ -767,6 +766,9 @@ def cancel_ride(request, ride_id):
                             email_body=email_message
                             )
                 
+                    for each_ride in RideRequests.objects.filter(ride_offer=ride_offer):
+                        each_ride.ride_offer = None
+                        each_request.save()
                     ride_offer.delete()
                 
                 return HttpResponseRedirect(reverse('user_home'))
