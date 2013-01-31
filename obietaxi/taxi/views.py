@@ -775,7 +775,7 @@ def cancel_ride(request, ride_id):
                 
                 return HttpResponseRedirect(reverse('user_home'))
 
-        form = CancellationForm(initial={'ride_id':ride_id,'reason':'Give a reason for cancellation.'})
+        form = CancellationForm(initial={'ride_id':ride_id})
         return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
     else:
         raise PermissionDenied

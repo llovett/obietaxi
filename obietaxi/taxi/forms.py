@@ -264,7 +264,7 @@ class CancellationForm(forms.Form):
         label="",
         required=True,
         widget=forms.Textarea(
-            attrs={'cols':40, 'rows':5}
+            attrs={'cols':40, 'rows':5, 'placeholder':'Please give a reason for cancelling.'},
         )
     )
 
