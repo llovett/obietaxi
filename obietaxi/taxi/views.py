@@ -89,15 +89,21 @@ def _offer_search( **kwargs ):
         delta = timedelta(days=3, hours=12)
         earliest_offer = request_date - delta
         latest_offer = request_date + delta
-
+    
     if 'other_filters' in kwargs:
-        offers = RideOffer.objects.filter( date__gte=earliest_offer,
-                                           date__lte=latest_offer,
-                                           **kwargs['other_filters'] )
+        if request_fuzzy == 'anytime':
+            offers = RideOffer.objects.filter( **kwargs['other_filters'] )
+        else:
+            offers = RideOffer.objects.filter( date__gte=earliest_offer,
+                                               date__lte=latest_offer,
+                                               **kwargs['other_filters'] )
     else:
-        offers = RideOffer.objects.filter( date__gte=earliest_offer,
-                                           date__lte=latest_offer )
-
+        if request_fuzzy == 'anytime':
+            offers = RideOffer.objects.all()
+        else:
+            offers = RideOffer.objects.filter( date__gte=earliest_offer,
+                                               date__lte=latest_offer )
+            
     # Filter offers further:
     # 1. Must have start point near req. start and end point near req. end --OR--
     # 2. Must have polygon field that overlays start & end of this request
