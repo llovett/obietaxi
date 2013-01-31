@@ -756,7 +756,7 @@ def cancel_ride(request, ride_id):
                             email_body=email_message
                             )
                 
-                    for each_ride in RideRequests.objects.filter(ride_offer=ride_offer):
+                    for each_ride in RideRequest.objects.filter(ride_offer=ride_offer):
                         each_ride.ride_offer = None
                         each_request.save()
                     ride_offer.delete()
