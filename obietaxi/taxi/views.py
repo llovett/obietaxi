@@ -125,20 +125,19 @@ def _offer_search( **kwargs ):
 #########
 
 @login_required
-def request_propose( request ):
+def offer_ride( request ):
     ''' Sends an offer for a ride to someone who has made a RideRequest '''
 
     data = request.POST
     profile = request.session.get("profile")
     req = RideRequest.objects.get( pk=ObjectId(data['request_id']) )
     msg = data['msg']
-    offer_choices = data['offer_choices']
+    offer_choices = data['offer_choices'] if 'offer_choices' in data else 'new'
 
-    # Add the passenger to the Offer selected
+    # Get or create the offer that this request should be associated with
     if offer_choices == 'new':
         offer = RideOffer.objects.create(
             driver = profile,
-            passengers = [req.passenger],
             start = req.start,
             end = req.end,
             date = req.date,
@@ -166,19 +165,19 @@ def request_propose( request ):
         req.start,
         req.end,
         req.date.strftime("%A, %B %d at %I:%M %p"),
-        '{}{}?req={}&response={}&driver={}'.format(
+        '{}{}?req={}&response={}&offer={}'.format(
             _hostname(),
-            reverse( 'process_request_proposal' ),
+            reverse( 'process_offer_ride' ),
             data['request_id'],
             'accept',
-            str(profile.id)
+            str(offer.id)
         ),
-        '{}{}?req={}&response={}&driver={}'.format(
+        '{}{}?req={}&response={}&offer={}'.format(
             _hostname(),
-            reverse( 'process_request_proposal' ),
+            reverse( 'process_offer_ride' ),
             data['request_id'],
             'decline',
-            str(profile.id)
+            str(offer.id)
         ),
         offer.start,
         offer.time()
@@ -198,18 +197,23 @@ def request_propose( request ):
     return HttpResponseRedirect( reverse("browse") )
 
 @login_required
-def process_request_proposal( request ):
-    ''' Processes a response YES/NO to a request from a ride from a particular RideOffer '''
+def process_offer_ride( request ):
+    '''
+    Handles the 'accept' or 'decline' links sent to a passenger when a
+    driver finds their RideRequest and submits an offer.
+    '''
+
     data = request.GET
     request_id = data['req']
-    driver_id = data['driver']
+    offer_id = data['offer']
     response = data['response']
     try:
         req = RideRequest.objects.get( id=ObjectId(request_id) )
-        driver = UserProfile.objects.get( id=ObjectId(driver_id) )
+        offer = RideOffer.objects.get( pk=ObjectId(offer_id) )
+        driver = offer.driver
     # Offer or Passenger is not real
-    except (RideRequest.DoesNotExist, UserProfile.DoesNotExist):
-        messages.add_message( request, messages.ERROR, "Request or user does not exist" )
+    except (RideRequest.DoesNotExist, RideOffer.DoesNotExist):
+        messages.add_message( request, messages.ERROR, "Ride request or offer does not exist" )
         return HttpResponseRedirect( reverse('user_home') )
     # Invalid value for "response" field--- must accept or decline
     if response not in ('accept','decline'):
@@ -217,21 +221,23 @@ def process_request_proposal( request ):
         return HttpResponseRedirect( reverse('user_home') )
     # Accepting/declining someone who never asked for a ride
     if driver not in req.askers:
-        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no such user has asked you for a ride)" )
+        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no such user has offered you a ride)" )
+        return HttpResponseRedirect( reverse('user_home') )
+    if request.session.get("profile") != req.passenger:
+        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no offer request has been sent to this account)" )
         return HttpResponseRedirect( reverse('user_home') )
 
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
         req.askers.remove( driver )
-        req.ride_offer = RideOffer.objects.get(pk=ObjectId(driver_id))
-        ## --------------------------------------------------
-        # TODO: Find other RideOffers this user has made, and try to link this offer to
-        # one of those, if possible. Otherwise, create a new offer and link this passenger
-        # to it.
+        req.ride_offer = offer
+        req.save()
+
+        passenger = request.session.get("profile")
         if len(offer.passengers) == 0:
-            offer.passengers = [rider]
+            offer.passengers = [passenger]
         else:
-            offer.passengers.append( rider )
+            offer.passengers.append( passenger )
         offer.save()
         # Email the driver, confirming the fact that they've decided to give a ride.
         # Also give them passenger's contact info.
@@ -240,27 +246,29 @@ def process_request_proposal( request ):
  mobility in Oberlin.\r\n\r\nYou are receiving this email to confirm\
  your offer to give %s a ride from %s to %s on %s. To help you keep\
  in contact with your passengers, we've provided you their information\
- below:\r\n\r\nname: %s\r\nphone: %s\r\nemail: %s"%(rider,
+ below:\r\n\r\nname: %s\r\nphone: %s\r\nemail: %s"%(passenger,
                                                     offer.start,
                                                     offer.end,
                                                     offer.date.strftime("%A, %B %d at %I:%M %p"),
-                                                    rider,
-                                                    rider.phone_number,
-                                                    rider.user.username)
-        send_email( email_from=rider.user.username,
+                                                    passenger,
+                                                    passenger.phone_number,
+                                                    passenger.user.username)
+        send_email( email_from=passenger.user.username,
                     email_to=request.user.username,
                     email_body=body_driver,
-                    email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
+                    email_subject="Your ride %s"%(offer) )
 
         # Email the requester, telling them that they're request has been accepted, and
         # give them the driver's contact info.
-        body_requester = "%s has accepted your request\
- for a ride from %s to %s! The intended time of\
+        body_requester = "Hey there, %s!\r\n\r\n\
+This email is confirming your ride with %s has accepted your request\
+ from %s to %s! The intended time of\
  departure is %s. Be safe, and be sure to thank\
  your driver and give them a little something\
  for gas! Generosity is what makes ridesharing\
  work.\r\n\r\nYour driver's contact information:\r\n\
-name: %s\r\nphone: %s\r\nemail: %s"%(offer.driver,
+name: %s\r\nphone: %s\r\nemail: %s"%(passenger,
+                                     offer.driver,
                                      offer.start,
                                      offer.end,
                                      offer.date.strftime("%A, %B %d at %I:%M %p"),
@@ -268,17 +276,16 @@ name: %s\r\nphone: %s\r\nemail: %s"%(offer.driver,
                                      offer.driver.phone_number,
                                      offer.driver.user.username)
         send_email( email_from=request.user.username,
-                    email_to=rider.user.username,
+                    email_to=passenger.user.username,
                     email_body=body_requester,
-                    email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
+                    email_subject="Your ride %s"%str(req) )
     # Nothing happens when a driver declines a request?
 
-    messages.add_message( request, messages.SUCCESS, "You have {} {}'s request".format(
+    messages.add_message( request, messages.SUCCESS, "You have {} {}'s offer".format(
             'accepted' if response == 'accept' else 'declined',
-            str(rider.user)
+            str(driver)
             ) )
     ## --------------------------------------------------
-
 
     return HttpResponseRedirect( reverse('user_home') )
 
