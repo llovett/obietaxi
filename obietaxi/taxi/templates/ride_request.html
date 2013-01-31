@@ -1,10 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Request from {{ ride_request.start.title }} to {{ ride_request.end.title }}{% endblock %}
-{% block heading %}Request from {{ ride_request.start.title }} to {{ ride_request.end.title }}{% endblock %}
+{% block title %}{{ ride_request.start.title }} to {{ ride_request.end.title }}{% endblock %}
+{% block heading %}{{ ride_request.start.title }} to {{ ride_request.end.title }}{% endblock %}
 {% block content %}
-  {{ ride_request.passenger }} is looking for a ride from {{ ride_request.start.title }} to {{ ride_request.end.title }}. Can you help them out?
-  <strong>Intended departure:</strong> {{ ride_request.date }}
-  <!-- TODO: "offer a ride" button -->
+  <h3>Details</h3>
+  <table name="offer_details" id="offer_details" class="item_detail">
+    <tr><th>Passenger</th><td>{{ ride_request.passenger }}</td></tr>
+    <tr><th>Departing at</th><td>{{ ride_request.date }}</td></tr>
+    <tr><th>Departing from</th><td>{{ ride_request.start }}</td></tr>
+    <tr><th>Going to</th><td>{{ ride_request.end }}</td></tr>
+  </table>
 
   {% if form %}
     {% load crispy_forms_tags %}
