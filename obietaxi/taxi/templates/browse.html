@@ -4,31 +4,24 @@
 {% block heading %}Browse{% endblock %}
 {% block content %}
 
-  {% if ride_requests %}  
-    <ul>
+  {% if ride_requests %}
+    <h2>Ride Requests</h2>
+    <table name="ride_requests" id="ride_request_table" class="browse_table">
+      <tr><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
       {% for item in ride_requests %}
-	<li>
-	  <div class="rr_div" id="{{ item.id }}"><a href="#">Request from {{ item.start }} to
-	      {{ item.end }} on {{ item.date }}
-	      {% if item.repeat %}
-	      (repeats {{ item.repeat }})
-	      {% endif %}
-	    </a>
-	  </div>
-	</li>
+	<tr id="ride_request_listing_{{ item.id }}"><td>{{ item.start }}</td><td>{{ item.end }}</td><td>{{ item.date }}</td><td>{{ item.passenger }}</td></tr>
       {% endfor %}
-    </ul>
+    </table>      
   {% endif %}
 
   {% if ride_offers %}
-    <ul>
+    <h2>Ride Offers</h2>
+    <table name="ride_offers" id="ride_offer_table" class="browse_table">
+      <tr><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
       {% for item in ride_offers %}
-	<li>
-	  <div class="ro_div" id="{{ item.id }}"><a href="#">Offer from {{ item.start }} to {{ item.end }} on {{ item.date }}</a>
-	  </div>	      
-	</li>
+	<tr id="ride_offer_listing_{{ item.id }}"><td>{{ item.start }}</td><td>{{ item.end }}</td><td>{{ item.date }}</td><td>{{ item.driver }}</td></tr>
       {% endfor %}
-    </ul>
+    </table>      
   {% endif %}
 
 {% endblock %}
