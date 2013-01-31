@@ -11,4 +11,8 @@
     <!-- this renders the entire form, including start/end tags and submit buttons -->
     {% crispy form %}
   {% endif %}
+
+  {% if user_profile in ride_offer.passengers %}
+    <p>You are a passenger on this trip.</p>
+  {% endif %}    
 {% endblock %}

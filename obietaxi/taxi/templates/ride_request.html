@@ -12,4 +12,10 @@
     {% crispy form %}
   {% endif %}
 
+  {% with offer=ride_request.ride_offer %}
+    {% if offer and user_profile == offer.driver %}
+      <p>You are the driver for this trip.</p>
+    {% endif %}
+  {% endwith %}
+
 {% endblock %}

@@ -192,9 +192,8 @@ def offer_ride( request ):
     req.save()
         
     dest_email = req.passenger.user.username
-    from_email = request.user.username
     subject = "{} can drive you to {}".format( profile, req.end )
-    send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
+    send_email( email_to=dest_email, email_body=msg, email_subject=subject )
     messages.add_message( request, messages.SUCCESS, "Your offer has been sent successfully." )
     return HttpResponseRedirect( reverse("browse") )
 
@@ -616,7 +615,11 @@ def request_show( request ):
     # This information is used in the template to determine if the user has already
     # offered a ride to this RideRequest
     user_profile = request.session.get("profile")
-    if not user_profile in ride_request.askers and user_profile != ride_request.passenger:
+    def is_driver():
+        if not ride_request.ride_offer:
+            return False
+        return user_profile == ride_request.ride_offer.driver
+    if not user_profile in ride_request.askers and user_profile != ride_request.passenger and not is_driver():
         # Find RideOffers the logged-in user has made that would work well with this request
         if user_profile:
             # TODO: Make this neater?
@@ -650,7 +653,7 @@ def offer_show( request ):
     # This information is used in the template to determine if the user has already
     # requested a ride from this RideOffer
     user_profile = request.session.get("profile")
-    if not user_profile in ride_offer.askers and user_profile != ride_offer.driver:
+    if not user_profile in ride_offer.askers+ride_offer.passengers and user_profile != ride_offer.driver:
 
         # Find RideOffers the logged-in user has made that would work well with this request
         if user_profile:
@@ -827,7 +830,7 @@ def process_offer_update(request, offer_id):
 #####################
 
 @login_required
-def show_requests_and_offers( request ):
+def userprofile_show( request ):
     ''' Shows all RideRequests and RideOffers for a particular user '''
     if 'user_id' in request.GET:
         profile = UserProfile.objects.get( pk=ObjectId( request.GET['user_id'] ) )
@@ -835,4 +838,10 @@ def show_requests_and_offers( request ):
         profile = request.session['profile']
     rides_requested = RideRequest.objects.filter( passenger=profile )
     rides_offered = RideOffer.objects.filter( driver=profile )
-    return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )
+    # Show detail page (not user home page) if specific user was given and it's not the logged-in user
+    if 'user_id' in request.GET and request.GET.get("user_id") != str(request.session.get("profile").id):
+        # Additional context for detail pages here...
+        return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )
+
+    # Put other context variables for a user's home page here...
+    return render_to_response( "user_home.html", locals(), context_instance=RequestContext(request) )
