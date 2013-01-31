@@ -51,7 +51,7 @@ class AskForRideForm( forms.Form ):
             Fields.append( 'request_choices' )
 
         self.helper = FormHelper()
-        self.helper.form_action = reverse( 'offer_propose' )
+        self.helper.form_action = reverse( 'ask_for_ride' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'ask_for_ride_form'
         self.helper.layout = Layout(
@@ -92,7 +92,7 @@ class OfferRideForm( forms.Form ):
             Fields.append( 'offer_choices' )
 
         self.helper = FormHelper()
-        self.helper.form_action = reverse( 'request_propose' )
+        self.helper.form_action = reverse( 'offer_ride' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'offer_ride_form'
         self.helper.layout = Layout(
@@ -264,7 +264,7 @@ class CancellationForm(forms.Form):
         label="",
         required=True,
         widget=forms.Textarea(
-            attrs={'cols':40, 'rows':5}
+            attrs={'cols':40, 'rows':5, 'placeholder':'Please give a reason for cancelling.'},
         )
     )
 
