@@ -1,10 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Offer from {{ ride_offer.start.title }} to {{ ride_offer.end.title }}{% endblock %}
-{% block heading %}Offer from {{ ride_offer.start.title }} to {{ ride_offer.end.title }}{% endblock %}
+{% block title %}{{ ride_offer.start.title }} to {{ ride_offer.end.title }}{% endblock %}
+{% block heading %}{{ ride_offer.start.title }} to {{ ride_offer.end.title }}{% endblock %}
 {% block content %}
-  {{ ride_offer.driver }} is offering rides from {{ ride_offer.start.title }} to {{ ride_offer.end.title }}. Does this itinerary fit any of your needs?
-  <!-- TODO: answer the above question if possible -->
-  <strong>Intended departure:</strong> {{ ride_offer.date }}
+  <h2>Details</h2>
+  <table name="offer_details" id="offer_details" class="item_detail">
+    <tr><th>Driver</th><td>{{ ride_offer.driver }}</td></tr>
+    <tr><th>Departing at</th><td>{{ ride_offer.date }}</td></tr>
+    <tr><th>Departing from</th><td>{{ ride_offer.start }}</td></tr>
+    <tr><th>Going to</th><td>{{ ride_offer.end }}</td></tr>
+  </table>
 
   {% if form %}
     {% load crispy_forms_tags %}
@@ -14,5 +18,5 @@
 
   {% if user_profile in ride_offer.passengers %}
     <p>You are a passenger on this trip.</p>
-  {% endif %}    
+  {% endif %}
 {% endblock %}

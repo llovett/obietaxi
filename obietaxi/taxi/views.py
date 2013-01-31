@@ -214,25 +214,26 @@ def process_offer_ride( request ):
     request_id = data['req']
     offer_id = data['offer']
     response = data['response']
+
+    # Do some error checking
+    def fail( msg ):
+        messages.add_message( request, messages.ERROR, msg )
+        return HttpResponseRedirect( reverse('user_home') )
     try:
         req = RideRequest.objects.get( id=ObjectId(request_id) )
         offer = RideOffer.objects.get( pk=ObjectId(offer_id) )
         driver = offer.driver
     # Offer or Passenger is not real
     except (RideRequest.DoesNotExist, RideOffer.DoesNotExist):
-        messages.add_message( request, messages.ERROR, "Ride request or offer does not exist" )
-        return HttpResponseRedirect( reverse('user_home') )
+        return fail( "Ride request or offer does not exist" )
     # Invalid value for "response" field--- must accept or decline
     if response not in ('accept','decline'):
-        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link" )
-        return HttpResponseRedirect( reverse('user_home') )
+        return fail( "Not a valid accept or decline request link" )
     # Accepting/declining someone who never asked for a ride
     if driver not in req.askers:
-        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no such user has offered you a ride)" )
-        return HttpResponseRedirect( reverse('user_home') )
+        return fail( "Not a valid accept or decline request link (no such user has offered you a ride)" )
     if request.session.get("profile") != req.passenger:
-        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no offer request has been sent to this account)" )
-        return HttpResponseRedirect( reverse('user_home') )
+        return fail( "Not a valid accept or decline request link (no offer request has been sent to this account)" )
 
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
@@ -292,10 +293,6 @@ name: %s\r\nphone: %s\r\nemail: %s"%(passenger,
     ## --------------------------------------------------
 
     return HttpResponseRedirect( reverse('user_home') )
-
-
-
-
 
 @login_required
 def ask_for_ride( request ):
@@ -378,25 +375,26 @@ def process_ask_for_ride( request ):
     request_id = data['request']
     response = data['response']
     profile = request.session.get("profile")
+
+    # Do some error checking
+    def fail( msg ):
+        messages.add_message( request, messages.ERROR, msg )
+        return HttpResponseRedirect( reverse('user_home') )
     try:
         offer = RideOffer.objects.get( id=ObjectId(offer_id) )
         req = RideRequest.objects.get( pk=ObjectId(request_id) )
         rider = req.passenger
     # Offer or Passenger is not real
     except (RideOffer.DoesNotExist, RideRequest.DoesNotExist):
-        messages.add_message( request, messages.ERROR, "Rideoffer or request does not exist" )
-        return HttpResponseRedirect( reverse('user_home') )
+        return fail( "Rideoffer or request does not exist" )
     # Invalid value for "response" field--- must accept or decline
     if response not in ('accept','decline'):
-        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link" )
-        return HttpResponseRedirect( reverse('user_home') )
+        return fail( "Not a valid accept or decline request link" )
     # Accepting/declining someone who never asked for a ride
     if rider not in offer.askers:
-        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no such user has asked you for a ride)" )
-        return HttpResponseRedirect( reverse('user_home') )
+        return fail( "Not a valid accept or decline request link (no such user has asked you for a ride)" )
     if profile != offer.driver:
-        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no ride request has been sent to this account)" )
-        return HttpResponseRedirect( reverse('user_home') )
+        return fail( "Not a valid accept or decline request link (no ride request has been sent to this account)" )
 
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
