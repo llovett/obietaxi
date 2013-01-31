@@ -379,6 +379,7 @@ def process_ask_for_ride( request ):
     offer_id = data['offer']
     request_id = data['request']
     response = data['response']
+    profile = request.session.get("profile")
     try:
         offer = RideOffer.objects.get( id=ObjectId(offer_id) )
         req = RideRequest.objects.get( pk=ObjectId(request_id) )
@@ -394,6 +395,9 @@ def process_ask_for_ride( request ):
     # Accepting/declining someone who never asked for a ride
     if rider not in offer.askers:
         messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no such user has asked you for a ride)" )
+        return HttpResponseRedirect( reverse('user_home') )
+    if profile != offer.driver:
+        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no ride request has been sent to this account)" )
         return HttpResponseRedirect( reverse('user_home') )
 
     # Update the RideOffer instance to accept/decline the request
