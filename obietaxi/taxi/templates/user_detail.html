@@ -1,29 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Your Account{% endblock %}
-{% block heading %}Your Account{% endblock %}
+{% block title %}{{profile}}{% endblock %}
+{% block heading %}{{profile}}{% endblock %}
 {% block content %}
-  <h2>Rides that You Requested</h2>
-  {% if rides_requested %}
-    <ul>
-      {% for ride in rides_requested %}
-	<li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
-	  <a href="{% url request_options ride.id %}">options</a>
-	</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>You haven't requested any rides yet.</p>
-  {% endif %}
-  <h2>Rides You Have Offered</h2>
-  {% if rides_offered %}
-    <ul>
-      {% for ride in rides_offered %}
-        <li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
-	  <a href="{% url offer_options ride.id %}">options</a>
-	</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>You haven't offered any rides yet.</p>
-  {% endif %}
+  <h2>Activity</h2>
+  <p>{{ rides_requested|length }} ride{{ rides_requested|pluralize }} asked for</p>
+  <p>{{ rides_offered|length }} ride{{ rides_offered|pluralize }} offered</p>
 {% endblock %}

@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from random import random
 from time import strptime,mktime
 from django.core.urlresolvers import reverse
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from Polygon.Shapes import Rectangle, Polygon
 from encoders import RideRequestEncoder, RideOfferEncoder
@@ -17,9 +18,42 @@ from helpers import send_email, _hostname, geospatial_distance
 import json
 
 
+
 ####################
 # HELPERS TO VIEWS #
 ####################
+
+def _dates_match( date1, fuzzy1, date2, fuzzy2 ):
+    '''
+    Determines if there is an overlap between two sets of dates (including fuzziness).
+    Returns True or False.
+    '''
+    
+    # What fuzzy trumps? It is the lesser of the two fuzzies :)
+    for fuzz_option in ('1-hours','2-hours','3-hours','4-hours','5-hours','day','week','anytime'):
+        if fuzz_option in (fuzzy1, fuzzy2):
+            fuzzy = fuzz_option
+    
+    # Larger fuzzy times: check date
+    if fuzzy == 'anytime':
+        return True
+    elif fuzzy == 'week' and abs( (date1.date() - date2.date()).days ) > 7:
+        return False
+    elif fuzzy == 'day' and date1.date() != date2.date():
+        return False
+    
+    # Check times for small fuzzies
+    if '-' in fuzzy:
+        numHours = int(fuzzy.split('-')[0])
+        lowerBound = (date1 - timedelta(hours=numHours)).replace(tzinfo=None)
+        upperBound = (date1 + timedelta(hours=numHours)).replace(tzinfo=None)
+        date2 = date2.replace(tzinfo=None)
+        date1 = date1.replace(tzinfo=None)
+        
+        if date2 < lowerBound or date2 > upperBound:
+            return False
+
+    return True
 
 def _offer_search( **kwargs ):
     '''
@@ -32,42 +66,47 @@ def _offer_search( **kwargs ):
     end_lat
     end_lng
     date : a datetime object giving the departure date and time
+    fuzziness : the fuzziness to search with
 
     NOT REQUIRED:
     other_filters : a dictionary containing other filters to apply in the query
-    repeat : what kind of repeat this request has (if not present, no repeating is assumed)
 
     Returns a list of RideOffers that match
     '''
 
     # Find all offers that match our time constraints
-    # TODO: make this work with time fuzziness
     request_date = kwargs['date']
-    request_repeat = kwargs.get('repeat')
-    # For now, assume a 2-hour window that the passenger would be ok with
-    earliest_offer = request_date - timedelta(hours=1)
-    latest_offer = request_date + timedelta(hours=1)
+    request_fuzzy = kwargs['fuzziness']
+    if '-' in request_fuzzy:
+        delta = timedelta(hours=int(request_fuzzy.split('-')[0]))
+        earliest_offer = request_date - delta
+        latest_offer = request_date + delta
+    elif request_fuzzy == 'day':
+        earliest_offer = datetime(request_date.year, request_date.month, request_date.day)
+        next_day = request_date + timedelta(days=1)
+        latest_offer = datetime(next_day.year, next_day.month, next_day.day)
+    elif request_fuzzy == 'week':
+        delta = timedelta(days=3, hours=12)
+        earliest_offer = request_date - delta
+        latest_offer = request_date + delta
 
-    if not request_repeat:
-        if 'other_filters' in kwargs:
-            offers = RideOffer.objects.filter(
-                Q( date__gte=earliest_offer, date__lte=latest_offer, **kwargs['other_filters'] ) |
-                Q( repeat__ne="", **kwargs['other_filters'] )
-            )
-        else:
-            offers = RideOffer.objects.filter(
-                Q( date__gte=earliest_offer, date__lte=latest_offer ) |
-                Q( repeat__ne="" )
-            )
+    if 'other_filters' in kwargs:
+        offers = RideOffer.objects.filter( date__gte=earliest_offer,
+                                           date__lte=latest_offer,
+                                           **kwargs['other_filters'] )
     else:
-        # TODO: flesh this out more!
-        offers = RideOffer.objects.all()
+        offers = RideOffer.objects.filter( date__gte=earliest_offer,
+                                           date__lte=latest_offer )
 
     # Filter offers further:
     # 1. Must have start point near req. start and end point near req. end --OR--
     # 2. Must have polygon field that overlays start & end of this request
     filtered_offers = []
     for offer in offers:
+        # Results might be less fuzzy than we are, so do some checking here
+        if not _dates_match( offer.date, offer.fuzziness, request_date, request_fuzzy ):
+            continue
+        # Geographical constraints
         req_start = (float(kwargs['start_lat']),
                      float(kwargs['start_lng']))
         req_end = (float(kwargs['end_lat']),
@@ -88,20 +127,19 @@ def _offer_search( **kwargs ):
 #########
 
 @login_required
-def request_propose( request ):
+def offer_ride( request ):
     ''' Sends an offer for a ride to someone who has made a RideRequest '''
 
     data = request.POST
     profile = request.session.get("profile")
     req = RideRequest.objects.get( pk=ObjectId(data['request_id']) )
     msg = data['msg']
-    offer_choices = data['offer_choices']
+    offer_choices = data['offer_choices'] if 'offer_choices' in data else 'new'
 
-    # Add the passenger to the Offer selected
+    # Get or create the offer that this request should be associated with
     if offer_choices == 'new':
         offer = RideOffer.objects.create(
             driver = profile,
-            passengers = [req.passenger],
             start = req.start,
             end = req.end,
             date = req.date,
@@ -129,19 +167,19 @@ def request_propose( request ):
         req.start,
         req.end,
         req.date.strftime("%A, %B %d at %I:%M %p"),
-        '{}{}?req={}&response={}&driver={}'.format(
+        '{}{}?req={}&response={}&offer={}'.format(
             _hostname(),
-            reverse( 'process_request_proposal' ),
+            reverse( 'process_offer_ride' ),
             data['request_id'],
             'accept',
-            str(profile.id)
+            str(offer.id)
         ),
-        '{}{}?req={}&response={}&driver={}'.format(
+        '{}{}?req={}&response={}&offer={}'.format(
             _hostname(),
-            reverse( 'process_request_proposal' ),
+            reverse( 'process_offer_ride' ),
             data['request_id'],
             'decline',
-            str(profile.id)
+            str(offer.id)
         ),
         offer.start,
         offer.time()
@@ -154,25 +192,29 @@ def request_propose( request ):
     req.save()
         
     dest_email = req.passenger.user.username
-    from_email = request.user.username
     subject = "{} can drive you to {}".format( profile, req.end )
-    send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
+    send_email( email_to=dest_email, email_body=msg, email_subject=subject )
     messages.add_message( request, messages.SUCCESS, "Your offer has been sent successfully." )
     return HttpResponseRedirect( reverse("browse") )
 
 @login_required
-def process_request_proposal( request ):
-    ''' Processes a response YES/NO to a request from a ride from a particular RideOffer '''
+def process_offer_ride( request ):
+    '''
+    Handles the 'accept' or 'decline' links sent to a passenger when a
+    driver finds their RideRequest and submits an offer.
+    '''
+
     data = request.GET
     request_id = data['req']
-    driver_id = data['driver']
+    offer_id = data['offer']
     response = data['response']
     try:
         req = RideRequest.objects.get( id=ObjectId(request_id) )
-        driver = UserProfile.objects.get( id=ObjectId(driver_id) )
+        offer = RideOffer.objects.get( pk=ObjectId(offer_id) )
+        driver = offer.driver
     # Offer or Passenger is not real
-    except (RideRequest.DoesNotExist, UserProfile.DoesNotExist):
-        messages.add_message( request, messages.ERROR, "Request or user does not exist" )
+    except (RideRequest.DoesNotExist, RideOffer.DoesNotExist):
+        messages.add_message( request, messages.ERROR, "Ride request or offer does not exist" )
         return HttpResponseRedirect( reverse('user_home') )
     # Invalid value for "response" field--- must accept or decline
     if response not in ('accept','decline'):
@@ -180,21 +222,23 @@ def process_request_proposal( request ):
         return HttpResponseRedirect( reverse('user_home') )
     # Accepting/declining someone who never asked for a ride
     if driver not in req.askers:
-        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no such user has asked you for a ride)" )
+        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no such user has offered you a ride)" )
+        return HttpResponseRedirect( reverse('user_home') )
+    if request.session.get("profile") != req.passenger:
+        messages.add_message( request, messages.ERROR, "Not a valid accept or decline request link (no offer request has been sent to this account)" )
         return HttpResponseRedirect( reverse('user_home') )
 
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
         req.askers.remove( driver )
-        req.ride_offer = RideOffer.objects.get(pk=ObjectId(driver_id))
-        ## --------------------------------------------------
-        # TODO: Find other RideOffers this user has made, and try to link this offer to
-        # one of those, if possible. Otherwise, create a new offer and link this passenger
-        # to it.
+        req.ride_offer = offer
+        req.save()
+
+        passenger = request.session.get("profile")
         if len(offer.passengers) == 0:
-            offer.passengers = [rider]
+            offer.passengers = [passenger]
         else:
-            offer.passengers.append( rider )
+            offer.passengers.append( passenger )
         offer.save()
         # Email the driver, confirming the fact that they've decided to give a ride.
         # Also give them passenger's contact info.
@@ -203,27 +247,29 @@ def process_request_proposal( request ):
  mobility in Oberlin.\r\n\r\nYou are receiving this email to confirm\
  your offer to give %s a ride from %s to %s on %s. To help you keep\
  in contact with your passengers, we've provided you their information\
- below:\r\n\r\nname: %s\r\nphone: %s\r\nemail: %s"%(rider,
+ below:\r\n\r\nname: %s\r\nphone: %s\r\nemail: %s"%(passenger,
                                                     offer.start,
                                                     offer.end,
                                                     offer.date.strftime("%A, %B %d at %I:%M %p"),
-                                                    rider,
-                                                    rider.phone_number,
-                                                    rider.user.username)
-        send_email( email_from=rider.user.username,
+                                                    passenger,
+                                                    passenger.phone_number,
+                                                    passenger.user.username)
+        send_email( email_from=passenger.user.username,
                     email_to=request.user.username,
                     email_body=body_driver,
-                    email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
+                    email_subject="Your ride %s"%(offer) )
 
         # Email the requester, telling them that they're request has been accepted, and
         # give them the driver's contact info.
-        body_requester = "%s has accepted your request\
- for a ride from %s to %s! The intended time of\
+        body_requester = "Hey there, %s!\r\n\r\n\
+This email is confirming your ride with %s has accepted your request\
+ from %s to %s! The intended time of\
  departure is %s. Be safe, and be sure to thank\
  your driver and give them a little something\
  for gas! Generosity is what makes ridesharing\
  work.\r\n\r\nYour driver's contact information:\r\n\
-name: %s\r\nphone: %s\r\nemail: %s"%(offer.driver,
+name: %s\r\nphone: %s\r\nemail: %s"%(passenger,
+                                     offer.driver,
                                      offer.start,
                                      offer.end,
                                      offer.date.strftime("%A, %B %d at %I:%M %p"),
@@ -231,17 +277,16 @@ name: %s\r\nphone: %s\r\nemail: %s"%(offer.driver,
                                      offer.driver.phone_number,
                                      offer.driver.user.username)
         send_email( email_from=request.user.username,
-                    email_to=rider.user.username,
+                    email_to=passenger.user.username,
                     email_body=body_requester,
-                    email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
+                    email_subject="Your ride %s"%str(req) )
     # Nothing happens when a driver declines a request?
 
-    messages.add_message( request, messages.SUCCESS, "You have {} {}'s request".format(
+    messages.add_message( request, messages.SUCCESS, "You have {} {}'s offer".format(
             'accepted' if response == 'accept' else 'declined',
-            str(rider.user)
+            str(driver)
             ) )
     ## --------------------------------------------------
-
 
     return HttpResponseRedirect( reverse('user_home') )
 
@@ -257,6 +302,7 @@ def offer_propose( request ):
         data = form.cleaned_data
         offer = RideOffer.objects.get( pk=ObjectId(data['offer_id']) )
         msg = data['msg']
+        request_id = data['request_choices']
 
         # See if the logged-in user has already asked for a ride from this person
         profile = request.session['profile']
@@ -276,19 +322,19 @@ def offer_propose( request ):
             offer.end,
             offer.date.strftime("%A, %B %d at %I:%M %p"),
             # This renders accept/decline links
-            '{}{}?offer={}&response={}&rider={}'.format(
+            '{}{}?offer={}&response={}&request={}'.format(
                 _hostname(),
                 reverse( 'process_offer_proposal' ),
                 data['offer_id'],
                 'accept',
-                str(profile.id)
+                request_id
             ),
-            '{}{}?offer={}&response={}&rider={}'.format(
+            '{}{}?offer={}&response={}&request={}'.format(
                 _hostname(),
                 reverse( 'process_offer_proposal' ),
                 data['offer_id'],
                 'decline',
-                str(profile.id)
+                request_id
             )
         )
         msg = "\r\n".join( (msg,30*'-',appended) )
@@ -311,17 +357,18 @@ def offer_propose( request ):
 
 @login_required
 def process_offer_proposal( request ):
-    ''' Processes a response YES/NO to a request from a ride from a particular RideOffer '''
+    ''' Processes a response YES/NO to a request for a ride from a particular RideOffer '''
     data = request.GET
     offer_id = data['offer']
-    rider_id = data['rider']
+    request_id = data['request']
     response = data['response']
     try:
         offer = RideOffer.objects.get( id=ObjectId(offer_id) )
-        rider = UserProfile.objects.get( id=ObjectId(rider_id) )
+        req = RideRequest.objects.get( pk=ObjectId(request_id) )
+        rider = req.passenger
     # Offer or Passenger is not real
-    except (RideOffer.DoesNotExist, UserProfile.DoesNotExist):
-        messages.add_message( request, messages.ERROR, "Offer or user does not exist" )
+    except (RideOffer.DoesNotExist, RideRequest.DoesNotExist):
+        messages.add_message( request, messages.ERROR, "Rideoffer or request does not exist" )
         return HttpResponseRedirect( reverse('user_home') )
     # Invalid value for "response" field--- must accept or decline
     if response not in ('accept','decline'):
@@ -340,6 +387,9 @@ def process_offer_proposal( request ):
         else:
             offer.passengers.append( rider )
         offer.save()
+        # Save this offer inside of the RideRequest
+        req.ride_offer = offer
+        req.save()
         # Email the driver, confirming the fact that they've decided to give a ride.
         # Also give them passenger's contact info.
         body_driver = "Thank you for your helpfulness and generosity.\
@@ -413,17 +463,14 @@ def _process_ro_form( request, type ):
         startLocation = Location( position=startloc, title=data['start_location'] )
         endLocation = Location( position=endloc, title=data['end_location'] )
         date = data['date']
-        repeat = data['repeat']
-        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date, 'repeat':repeat }
+        fuzziness = data['fuzziness']
+        kwargs = { 'start':startLocation, 'end':endLocation, 'date':date, 'fuzziness':fuzziness }
 
-        # Associate request/offer with user, if possible
-        # TODO: make this mandatory!
-        profile = request.session['profile']
-        if profile:
-            kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
+        # Associate request/offer with user
+        profile = request.session.get('profile')
+        kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
 
         # Create offer/request object in database
-        profile = request.session.get("profile")
         if type == 'offer':
             # Also grab "polygon" field, merge boxes into polygon
             boxes = json.loads( data['polygon'] )
@@ -500,6 +547,43 @@ def _merge_boxes( boxes ):
 
     return bboxArea, bboxContour
     
+def _request_search( **kwargs ):
+    '''
+    Searches for RideRequests that meet the criteria specified in **kargs.
+    The criteria are:
+
+    REQUIRED:
+    polygon : a list of coordinates giving the route of the offer
+    date : a datetime object giving the departure date and time
+    fuzziness : the fuzziness to search with
+
+    NOT REQUIRED:
+    other_filters : a dictionary containing other filters to apply in the query
+
+    Returns a list of RideOffers that match
+
+    '''
+    polygon = kwargs['polygon']
+    offer_start_time = kwargs['date']
+    offer_fuzziness = kwargs['fuzziness']
+
+    # RideRequests within the bounds
+    if not 'other_filters' in kwargs:
+        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon )
+    else:
+        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon,
+                                                            **kwargs['other_filters'] )
+
+    # Filter by date
+    def in_date( req ):
+        return _dates_match( req.date, req.fuzziness, offer_start_time, offer_fuzziness )
+    requests_within_start = [req for req in requests_within_start if in_date(req)]
+
+    # Can't do two geospatial queries at once :(
+    bboxArea = Polygon( polygon )
+    requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
+    return requests_on_route
+
 def request_search( request ):
     '''
     Searches for and returns any RideRequests within the bounds of the rectangles given
@@ -508,40 +592,17 @@ def request_search( request ):
     '''
     postData = json.loads( request.raw_post_data )
     rectangles = postData['rectangles']
-    repeat = postData['repeat']
-
     bboxArea, bboxContour = _merge_boxes( rectangles )
 
     # TODO: make this work with time fuzziness
     offer_start_time = datetime.fromtimestamp( float(postData['start_time'])/1000 )
-    offer_end_time = datetime.fromtimestamp( float(postData['end_time'])/1000 )
-    # For now, assume a 2-hour window that the passenger would be ok with
-    earliest_request = offer_start_time - timedelta(hours=1)
-    latest_request = offer_end_time + timedelta(hours=1)
+    offer_fuzziness = postData['fuzziness']
 
-    # RideRequests within the bounds
     requestEncoder = RideRequestEncoder()
-    requests_within_start = RideRequest.objects.filter(
-        start__position__within_polygon=bboxContour,
-    )
+    requests = { "requests" : [requestEncoder.default(r) for r in _request_search( polygon=bboxContour,
+                                                                                   date=offer_start_time,
+                                                                                   fuzziness=offer_fuzziness )] }
 
-    import sys
-    sys.stderr.write("searching for requests, just positions: %s\n"%str([r.passenger for r in requests_within_start]))
-    
-    # Filter dates
-    def in_date( req ):
-        # TODO: flesh this out!
-        if len(repeat) > 0:
-            return True
-        return (req.date >= earliest_request and req.date <= latest_request) or (req.repeat and len(req.repeat)) > 0
-    # Don't show this user's requests
-    def is_me( req ):
-        return req.passenger == request.session.get("profile")
-    requests_within_start = [req for req in requests_within_start if in_date(req) and not is_me(req)]
-
-    # Can't do two geospatial queries at once :(
-    requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
-    requests = { "requests" : [requestEncoder.default(r) for r in requests_on_route] }
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
     
 def request_show( request ):
@@ -554,18 +615,25 @@ def request_show( request ):
     # This information is used in the template to determine if the user has already
     # offered a ride to this RideRequest
     user_profile = request.session.get("profile")
-    if not user_profile in ride_request.askers and user_profile != ride_request.passenger:
+    def is_driver():
+        if not ride_request.ride_offer:
+            return False
+        return user_profile == ride_request.ride_offer.driver
+    if not user_profile in ride_request.askers and user_profile != ride_request.passenger and not is_driver():
         # Find RideOffers the logged-in user has made that would work well with this request
         if user_profile:
+            # TODO: Make this neater?
             searchParams = {}
             searchParams['start_lat'],searchParams['start_lng'] = ride_request.start.position
             searchParams['end_lat'],searchParams['end_lng'] = ride_request.end.position
             searchParams['date'] = ride_request.date
-            
+            searchParams['fuzziness'] = ride_request.fuzziness
+
             import sys
-            sys.stderr.write("my other offers: %s\n"%str(user_profile.offers))
+            sys.stderr.write("my other offers: %s\n"%str([offer for offer in user_profile.offers]))
 
             searchParams['other_filters'] = { 'id__in' : tuple([offer.id for offer in user_profile.offers]) }
+
             offers = _offer_search( **searchParams )
             offers = [(str(offer.id),str(offer)) for offer in offers]
             form = OfferRideForm(initial={'request_id':request.GET['request_id']},
@@ -585,8 +653,27 @@ def offer_show( request ):
     # This information is used in the template to determine if the user has already
     # requested a ride from this RideOffer
     user_profile = request.session.get("profile")
-    if not user_profile in ride_offer.askers and user_profile != ride_offer.driver:
-        form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
+    if not user_profile in ride_offer.askers+ride_offer.passengers and user_profile != ride_offer.driver:
+
+        # Find RideOffers the logged-in user has made that would work well with this request
+        if user_profile:
+            searchParams = {
+                'polygon': ride_offer.polygon,
+                'date': ride_offer.date,
+                'fuzziness': ride_offer.fuzziness,
+                'other_filters': {'passenger':user_profile}
+            }
+
+            requests = _request_search( **searchParams )
+
+            import sys
+            sys.stderr.write("request search in offer_show returned the following: %s"%str(requests))
+            
+            requests = [(str(req.id),str(req)) for req in requests]
+            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']},
+                                  request_choices=requests)
+        else:
+            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
     return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
 
 ############
@@ -633,11 +720,13 @@ def cancel_ride(request, ride_id):
             if not ride_request == None:
                 reason_msg = data['reason']
                 email_message = "Hello,\r\n\nThis is an email concerning your upcoming trip %s.\r\n\nPlease note: %s has left your passenger group for the following reason:\r\n\n %s \r\n\nTo follow up, you can contact them at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_request), str(ride_request.passenger), reason_msg, ride_request.user.username )
-                send_email(
-                    email_subject='Rider Cancellation',
-                    email_to=ride_request.ride_offer.driver.user.username,
-                    email_body=email_message
-                )
+                if ride_request.ride_offer.driver:
+                    send_email(
+                        email_subject='Rider Cancellation',
+                        email_to=ride_request.ride_offer.driver.user.username,
+                        email_body=email_message
+                    )
+                
                 ride_request.delete()
             elif not ride_offer == None:
                 reason_msg = data['reason']
@@ -645,11 +734,13 @@ def cancel_ride(request, ride_id):
                 email_message = "Hello,\r\n\nThis is an email concerning your upcoming ride %s.\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n %s \r\n\nTo follow up, contact %s at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_offer), reason_msg, str(ride_offer.driver.user.first_name), str(ride_offer.driver.user.username) )
                 
                 list_o_emails = [profile.user.username for profile in ride_offer.passengers]
-                send_email(
-                    email_subject='Ride Cancellation', 
-                    email_to=list_o_emails, 
-                    email_body=email_message
-                )
+                if list_o_emails:
+                    send_email(
+                        email_subject='Ride Cancellation', 
+                        email_to=list_o_emails, 
+                        email_body=email_message
+                    )
+                
                 ride_offer.delete()
                 
             return HttpResponseRedirect(reverse('user_home'))
@@ -661,15 +752,22 @@ def process_request_update(request, request_id):
     '''
     Render and process the request update form
     '''
+    
+    try:
+        RideRequest.objects.get(pk=ObjectId(request_id))
+    except:
+        raise Http404
+    
+    # Allow only the RideRequest creator to access the optinos form
+    if request.session.get('profile') == RideRequest.objects.get(pk=ObjectId(request_id)).passenger:
+        if request.method == 'POST':
+            form = RequestOptionsForm(request.POST)
 
-    if request.method == 'POST':
-        form = RequestOptionsForm(request.POST)
-
-        # Form validates
-        if form.is_valid():
-            data = form.cleaned_data
-            ride_request = RideRequest.objects.get(pk=ObjectId(request_id))
-            
+            # Form validates
+            if form.is_valid():
+                data = form.cleaned_data
+                ride_request = RideRequest.objects.get(pk=ObjectId(request_id))
+                
             # Parse out the form and update RideRequest
             if data['message']:
                 ride_request.message = data['message']
@@ -677,52 +775,62 @@ def process_request_update(request, request_id):
         
             return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
 
-    if RideRequest.objects.get(pk=ObjectId(request_id)).message:
-        message = RideRequest.objects.get(pk=ObjectId(request_id))
+        if RideRequest.objects.get(pk=ObjectId(request_id)).message:
+            message = RideRequest.objects.get(pk=ObjectId(request_id))
+        else:
+            message = "No message"
+            
+        # Render the form
+        form = RequestOptionsForm(initial={'request_id':request_id, 'message':message})
+        return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
     else:
-        message = "No message"
-
-    # Render the form
-    form = RequestOptionsForm(initial={'request_id':request_id, 'message':message})
-    return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
+        raise PermissionDenied
 
 def process_offer_update(request, offer_id):
     '''
     Render and process the offer update form
     '''
     
-    if request.method =='POST':
-        form = OfferOptionsForm(request.POST)
+    try:
+        RideOffer.objects.get(pk=ObjectId(offer_id))
+    except:
+        raise Http404
 
-        # Form validates
-        if form.is_valid():
-            data = form.cleaned_data
-            ride_offer = RideOffer.objects.get(pk=ObjectId(data['offer_id']))
+    # Allow only the RideOffer creator to access the options form
+    if request.session.get('profile') == RideOffer.objects.get(pk=ObjectId(offer_id)).driver:
+        if request.method =='POST':
+            form = OfferOptionsForm(request.POST)
             
-            # Parse out the form and update RideOffer
-            if data['message']:
-                ride_offer.message = data['message']
-                ride_offer.save()
+            # Form validates
+            if form.is_valid():
+                data = form.cleaned_data
+                ride_offer = RideOffer.objects.get(pk=ObjectId(data['offer_id']))
                 
-            # render the form
-            return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
+                # Parse out the form and update RideOffer
+                if data['message']:
+                    ride_offer.message = data['message']
+                    ride_offer.save()
+                    
+                # render the form
+                return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
 
-    if RideOffer.objects.get(pk=ObjectId(offer_id)).message:
-        message = RideOffer.objects.get(pk=ObjectId(offer_id)).message
+        if RideOffer.objects.get(pk=ObjectId(offer_id)).message:
+            message = RideOffer.objects.get(pk=ObjectId(offer_id)).message
+        else:
+            message = "No message"
+            
+        rider_list = RideOffer.objects.get(pk=ObjectId(offer_id)).passengers
+        form = OfferOptionsForm(initial={'offer_id':offer_id, 'message':message})
+        return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
     else:
-        message = "No message"
-    
-    rider_list = RideOffer.objects.get(pk=ObjectId(offer_id)).passengers
-    form = OfferOptionsForm(initial={'offer_id':offer_id, 'message':message})
-    return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
-
+        raise PermissionDenied
 
 #####################
 # USER ACCOUNT INFO #
 #####################
 
 @login_required
-def show_requests_and_offers( request ):
+def userprofile_show( request ):
     ''' Shows all RideRequests and RideOffers for a particular user '''
     if 'user_id' in request.GET:
         profile = UserProfile.objects.get( pk=ObjectId( request.GET['user_id'] ) )
@@ -730,4 +838,10 @@ def show_requests_and_offers( request ):
         profile = request.session['profile']
     rides_requested = RideRequest.objects.filter( passenger=profile )
     rides_offered = RideOffer.objects.filter( driver=profile )
-    return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )
+    # Show detail page (not user home page) if specific user was given and it's not the logged-in user
+    if 'user_id' in request.GET and request.GET.get("user_id") != str(request.session.get("profile").id):
+        # Additional context for detail pages here...
+        return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )
+
+    # Put other context variables for a user's home page here...
+    return render_to_response( "user_home.html", locals(), context_instance=RequestContext(request) )
