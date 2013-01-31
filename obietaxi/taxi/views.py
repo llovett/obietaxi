@@ -703,55 +703,68 @@ def cancel_ride(request, ride_id):
     '''
     Render and process a RideRequest cancellation
     '''
+    
+    try:
+        driver = RideOffer.objects.get(pk=ObjectId(ride_id)).driver
+    except (RideOffer.DoesNotExist):
+        driver = None
 
-    # Form has been submitted, else...
-    if request.method == 'POST':
-        form = CancellationForm(request.POST)
+    try:
+        rider = RideRequest.objects.get(pk=ObjectId(ride_id)).passenger
+    except (RideRequest.DoesNotExist):
+        rider = None
+    
+    if request.session.get('profile') == driver or request.session.get('profile') == rider:
+        # Form has been submitted, else...
+        if request.method == 'POST':
+            form = CancellationForm(request.POST)
         
-        # Check for valid form
-        if form.is_valid():
-            data = form.cleaned_data
-            
-            try:
-                ride_request = RideRequest.objects.get(pk=ObjectId(ride_id))
-            except RideRequest.DoesNotExist:
-                ride_request = None
+            # Check for valid form
+            if form.is_valid():
+                data = form.cleaned_data
+                
+                try:
+                    ride_request = RideRequest.objects.get(pk=ObjectId(ride_id))
+                except RideRequest.DoesNotExist:
+                    ride_request = None
+                    
+                try:
+                    ride_offer = RideOffer.objects.get(pk=ObjectId(ride_id))
+                except RideOffer.DoesNotExist:
+                    ride_offer = None
+                    
+                if not ride_request == None:
+                    reason_msg = data['reason']
+                    email_message = "Hello,\r\n\nThis is an email concerning your upcoming trip %s.\r\n\nPlease note: %s has left your passenger group for the following reason:\r\n\n %s \r\n\nTo follow up, you can contact them at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_request), str(ride_request.passenger), reason_msg, ride_request.passenger.user.username )
+                    if ride_request.ride_offer:
+                        send_email(
+                            email_subject='Rider Cancellation',
+                            email_to=ride_request.ride_offer.driver.user.username,
+                            email_body=email_message
+                            )
+                
+                    ride_request.delete()
+                elif not ride_offer == None:
+                    reason_msg = data['reason']
+                    # This is a rock'n mess. Clean up*
+                    email_message = "Hello,\r\n\nThis is an email concerning your upcoming ride %s.\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n %s \r\n\nTo follow up, contact %s at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_offer), reason_msg, str(ride_offer.driver.user.first_name), str(ride_offer.driver.user.username) )
+                
+                    list_o_emails = [profile.user.username for profile in ride_offer.passengers]
+                    if list_o_emails:
+                        send_email(
+                            email_subject='Ride Cancellation', 
+                            email_to=list_o_emails, 
+                            email_body=email_message
+                            )
+                
+                    ride_offer.delete()
+                
+                return HttpResponseRedirect(reverse('user_home'))
 
-            try:
-                ride_offer = RideOffer.objects.get(pk=ObjectId(ride_id))
-            except RideOffer.DoesNotExist:
-                ride_offer = None
-            
-            if not ride_request == None:
-                reason_msg = data['reason']
-                email_message = "Hello,\r\n\nThis is an email concerning your upcoming trip %s.\r\n\nPlease note: %s has left your passenger group for the following reason:\r\n\n %s \r\n\nTo follow up, you can contact them at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_request), str(ride_request.passenger), reason_msg, ride_request.user.username )
-                if ride_request.ride_offer.driver:
-                    send_email(
-                        email_subject='Rider Cancellation',
-                        email_to=ride_request.ride_offer.driver.user.username,
-                        email_body=email_message
-                    )
-                
-                ride_request.delete()
-            elif not ride_offer == None:
-                reason_msg = data['reason']
-                # This is a rock'n mess. Clean up*
-                email_message = "Hello,\r\n\nThis is an email concerning your upcoming ride %s.\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n %s \r\n\nTo follow up, contact %s at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_offer), reason_msg, str(ride_offer.driver.user.first_name), str(ride_offer.driver.user.username) )
-                
-                list_o_emails = [profile.user.username for profile in ride_offer.passengers]
-                if list_o_emails:
-                    send_email(
-                        email_subject='Ride Cancellation', 
-                        email_to=list_o_emails, 
-                        email_body=email_message
-                    )
-                
-                ride_offer.delete()
-                
-            return HttpResponseRedirect(reverse('user_home'))
-
-    form = CancellationForm(initial={'ride_id':ride_id,'reason':'Give a reason for cancellation.'})
-    return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
+        form = CancellationForm(initial={'ride_id':ride_id,'reason':'Give a reason for cancellation.'})
+        return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
+    else:
+        raise PermissionDenied
 
 def process_request_update(request, request_id):
     '''
