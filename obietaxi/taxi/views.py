@@ -149,13 +149,13 @@ def offer_ride( request ):
             start = req.start,
             end = req.end,
             date = req.date,
+            message = msg
         )
         profile.offers.append( offer )
         profile.save()
     else:
         offer = RideOffer.objects.get( pk=ObjectId(offer_choices) )
-        offer.passengers.append( req.passenger )
-        offer.save()
+        offer.message = msg
 
     if profile in req.askers:
         messages.add_message( request, messages.ERROR, "You have already offered a ride to this person" )
@@ -236,9 +236,7 @@ def process_offer_ride( request ):
 
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
-        req.askers.remove( driver )
         req.ride_offer = offer
-        req.save()
 
         passenger = request.session.get("profile")
         if len(offer.passengers) == 0:
@@ -260,15 +258,14 @@ def process_offer_ride( request ):
                                                     passenger,
                                                     passenger.phone_number,
                                                     passenger.user.username)
-        send_email( email_from=passenger.user.username,
-                    email_to=request.user.username,
+        send_email( email_to=driver.user.username,
                     email_body=body_driver,
                     email_subject="Your ride %s"%(offer) )
 
         # Email the requester, telling them that they're request has been accepted, and
         # give them the driver's contact info.
         body_requester = "Hey there, %s!\r\n\r\n\
-This email is confirming your ride with %s has accepted your request\
+This email is confirming your ride with %s going\
  from %s to %s! The intended time of\
  departure is %s. Be safe, and be sure to thank\
  your driver and give them a little something\
@@ -282,11 +279,13 @@ name: %s\r\nphone: %s\r\nemail: %s"%(passenger,
                                      offer.driver,
                                      offer.driver.phone_number,
                                      offer.driver.user.username)
-        send_email( email_from=request.user.username,
-                    email_to=passenger.user.username,
+        send_email( email_to=passenger.user.username,
                     email_body=body_requester,
                     email_subject="Your ride %s"%str(req) )
-    # Nothing happens when a driver declines a request?
+
+    # Whether accepting or declining, remove driver from askers and save riderequest
+    req.askers.remove( driver )
+    req.save()
 
     messages.add_message( request, messages.SUCCESS, "You have {} {}'s offer".format(
             'accepted' if response == 'accept' else 'declined',
