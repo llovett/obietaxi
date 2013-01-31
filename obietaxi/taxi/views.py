@@ -770,7 +770,7 @@ def cancel_ride(request, ride_id):
                 
                     for each_ride in RideRequest.objects.filter(ride_offer=ride_offer):
                         each_ride.ride_offer = None
-                        each_request.save()
+                        each_ride.save()
                     ride_offer.delete()
                 
                 return HttpResponseRedirect(reverse('user_home'))
