@@ -9,9 +9,14 @@
     <table name="ride_requests" id="ride_request_table" class="browse_table">
       <tr><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
       {% for item in ride_requests %}
-	<tr id="ride_request_listing_{{ item.id }}"><td>{{ item.start }}</td><td>{{ item.end }}</td><td>{{ item.date }}</td><td>{{ item.passenger }}</td></tr>
+	<tr id="ride_request_listing_{{ item.id }}">
+	  <td><a href="/request/show/?request_id={{ item.id }}">{{ item.start }}</a></td>
+	  <td><a href="/request/show/?request_id={{ item.id }}">{{ item.end }}</a></td>
+	  <td><a href="/request/show/?request_id={{ item.id }}">{{ item.date }}</a></td>
+	  <td><a href="/accounts/profile/?user_id={{ item.passenger.id }}">{{ item.passenger }}</a></td>
+	</tr>
       {% endfor %}
-    </table>      
+    </table>
   {% endif %}
 
   {% if ride_offers %}
@@ -19,9 +24,14 @@
     <table name="ride_offers" id="ride_offer_table" class="browse_table">
       <tr><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
       {% for item in ride_offers %}
-	<tr id="ride_offer_listing_{{ item.id }}"><td>{{ item.start }}</td><td>{{ item.end }}</td><td>{{ item.date }}</td><td>{{ item.driver }}</td></tr>
+	<tr id="ride_offer_listing_{{ item.id }}">
+	  <td><a href="/offer/show/?offer_id={{ item.id }}">{{ item.start }}</a></td>
+	  <td><a href="/offer/show/?offer_id={{ item.id }}">{{ item.end }}</a></td>
+	  <td><a href="/offer/show/?offer_id={{ item.id }}">{{ item.date }}</a></td>
+	  <td><a href="/accounts/profile/?user_id={{ item.driver.id }}">{{ item.driver }}</a></td>
+	</tr>
       {% endfor %}
-    </table>      
+    </table>
   {% endif %}
 
 {% endblock %}
