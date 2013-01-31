@@ -38,18 +38,20 @@
 	</div> <!-- wrapper -->
 
 	{% block footer %}
-	<div id="footer">
+
+	    <div id="checkers"></div>
+	    <div id="footer">
 	    <div id="navigation">    
-		<ul class="navlinks">
-		    <li><a href="{% url main_page %}">Home</a></li>
-		    <li><a href="{% url browse %}">Browse</a></li>
+		<ul id="footer_navigation" class="navlinks">
+		    <li><a href="{% url main_page %}">HOME</a></li>
+		    <li><a href="{% url browse %}">BROWSE</a></li>
 		    {% if not user.is_authenticated %}
 		    <!-- TODO: make popup menu that allows login/login with google -->	  
-		    <li><a href="{% url login %}">Login</a></li>
-		    <li><a href="{% url register %}">Register</a></li>
+		    <li><a href="{% url login %}">LOGIN</a></li>
+		    <li><a href="{% url register %}">REGISTER</a></li>
 		    {% else %}
-		    <li><a href="{% url logout %}">Logout</a></li>
-		    <li><a href="{% url user_home %}">(logged in as {{ user.username }})</a></li>
+		    <li><a href="{% url logout %}">LOGOUT</a></li>
+		    <li><a href="{% url user_home %}">ACCOUNT (logged in as {{ user.username }})</a></li>
 		    {% endif %}	  
 		</ul>
 	    </div>

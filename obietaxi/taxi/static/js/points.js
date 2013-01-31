@@ -276,8 +276,8 @@ function showOffers( offers ) {
 }
 
 // List the relevant ride requests beneath the map
-// start_points[i] is the start location of the ride ending at end_points[i]
 function showRides( requests ){
+
     // Start out by emptying the current passenger listing
     $("#ride_listing").empty();
 
@@ -307,6 +307,7 @@ function showRides( requests ){
 	    .append( itemdesc );
 	$("#ride_listing").append( newitem );
     }
+
 }
 
 // Convert boxes into JSON
