@@ -200,7 +200,7 @@ class OfferOptionsForm (forms.Form):
         self.helper.form_id = 'offer_options_form'
         self.helper.layout = Layout(
             Fieldset(
-                'Ride Offer',
+                '',
                 'offer_id',
                 'message',
                 ),
