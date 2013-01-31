@@ -59,7 +59,7 @@ class RideRequest(mdb.Document):
     # 6. +/- a day              "day"
     # 7. +/- a week             "week"
     # 8. anytime                "anytime"
-    fuzziness = mdb.StringField()
+    fuzziness = mdb.StringField( default="1-hours" )
     # N.B.: This is unused. Could be a feature in the future
     repeat = mdb.StringField()
     ride_offer = mdb.ReferenceField('RideOffer')
