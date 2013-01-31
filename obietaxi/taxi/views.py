@@ -142,6 +142,10 @@ def offer_ride( request ):
     msg = data['msg']
     offer_choices = data['offer_choices'] if 'offer_choices' in data else 'new'
 
+    if profile in req.askers:
+        messages.add_message( request, messages.ERROR, "You have already offered a ride to this person" )
+        return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
+
     # Get or create the offer that this request should be associated with
     if offer_choices == 'new':
         offer = RideOffer.objects.create(
@@ -157,10 +161,6 @@ def offer_ride( request ):
         offer = RideOffer.objects.get( pk=ObjectId(offer_choices) )
         offer.message = msg
 
-    if profile in req.askers:
-        messages.add_message( request, messages.ERROR, "You have already offered a ride to this person" )
-        return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
-    
     # Message to be sent to the passenger
     appended = "This message has been sent to you because\
  someone found your request from {} to {} on {}. Please note that\
@@ -300,68 +300,80 @@ name: %s\r\nphone: %s\r\nemail: %s"%(passenger,
 
 
 @login_required
-def offer_propose( request ):
+def ask_for_ride( request ):
     ''' Asks for a ride from a particular offer '''
-    form = AskForRideForm( request.POST )
-    if form.is_valid():
-        data = form.cleaned_data
-        offer = RideOffer.objects.get( pk=ObjectId(data['offer_id']) )
-        msg = data['msg']
-        request_id = data['request_choices']
+    data = request.POST
 
-        # See if the logged-in user has already asked for a ride from this person
-        profile = request.session['profile']
-        if profile in offer.askers:
-            messages.add_message( request, messages.ERROR, "You have already asked to join this ride." )
-            return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
+    offer = RideOffer.objects.get( pk=ObjectId(data['offer_id']) )
+    msg = data['msg']
+    request_id = data['request_choices'] if 'request_choices' in data else 'new'
 
-        # Stuff that we append to the message
-        appended = "This message has been sent to you because\
+    # See if the logged-in user has already asked for a ride from this person
+    profile = request.session['profile']
+    if profile in offer.askers:
+        messages.add_message( request, messages.ERROR, "You have already asked to join this ride." )
+        return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
+
+    # Get or create the RideRequest
+    if request_id == 'new':
+        req = RideRequest.objects.create(
+            passenger = profile,
+            start = offer.start,
+            end = offer.end,
+            message = msg,
+            date = offer.date
+        )
+        request_id = req.id
+    else:
+        req = RideRequest.objects.get( pk=ObjectId(request_id) )
+        req.message = msg
+        req.save()
+
+    # Stuff that we append to the message
+    appended = "This message has been sent to you because\
  someone found your ride offer from {} to {} on {}. Please\
  consider your safety when offering rides to people you don't\
  know personally, but we hope you have a positive attitude in\
  contributing to sharing your vehicle with others.\r\n\r\n you ARE WILLING\
  to share a ride with this person, please follow {}.\r\n\r\n\
  If you ARE NOT WILLING to share a ride with this person, follow {}.".format(
-            offer.start,
-            offer.end,
-            offer.date.strftime("%A, %B %d at %I:%M %p"),
-            # This renders accept/decline links
-            '{}{}?offer={}&response={}&request={}'.format(
-                _hostname(),
-                reverse( 'process_offer_proposal' ),
-                data['offer_id'],
-                'accept',
-                request_id
+        offer.start,
+        offer.end,
+        offer.date.strftime("%A, %B %d at %I:%M %p"),
+        # This renders accept/decline links
+        '{}{}?offer={}&response={}&request={}'.format(
+            _hostname(),
+            reverse( 'process_ask_for_ride' ),
+            data['offer_id'],
+            'accept',
+            request_id
             ),
-            '{}{}?offer={}&response={}&request={}'.format(
-                _hostname(),
-                reverse( 'process_offer_proposal' ),
-                data['offer_id'],
-                'decline',
-                request_id
+        '{}{}?offer={}&response={}&request={}'.format(
+            _hostname(),
+            reverse( 'process_ask_for_ride' ),
+            data['offer_id'],
+            'decline',
+            request_id
             )
         )
-        msg = "\r\n".join( (msg,30*'-',appended) )
-
-        # Save this asker in the offer's 'askers' field
-        offer.askers.append( profile )
-        offer.save()
-        
-        dest_email = offer.offer.user.username
-        from_email = request.user.username
-        subject = "{} {} is asking you for a ride!".format(
-            request.user.first_name,
-            request.user.last_name
+    msg = "\r\n".join( (msg,30*'-',appended) )
+    
+    # Save this asker in the offer's 'askers' field
+    offer.askers.append( profile )
+    offer.save()
+    
+    dest_email = offer.driver.user.username
+    from_email = request.user.username
+    subject = "{} {} is asking you for a ride!".format(
+        request.user.first_name,
+        request.user.last_name
         )
-        send_email( email_from=from_email, email_to=dest_email, email_body=msg, email_subject=subject )
-        messages.add_message( request, messages.SUCCESS, "Your request has been sent successfully." )
-        return HttpResponseRedirect( reverse("browse") )
-
-    return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
+    send_email( email_to=dest_email, email_body=msg, email_subject=subject )
+    messages.add_message( request, messages.SUCCESS, "Your request has been sent successfully." )
+    return HttpResponseRedirect( reverse("browse") )
 
 @login_required
-def process_offer_proposal( request ):
+def process_ask_for_ride( request ):
     ''' Processes a response YES/NO to a request for a ride from a particular RideOffer '''
     data = request.GET
     offer_id = data['offer']
@@ -409,8 +421,7 @@ def process_offer_proposal( request ):
                                                     rider,
                                                     rider.phone_number,
                                                     rider.user.username)
-        send_email( email_from=rider.user.username,
-                    email_to=request.user.username,
+        send_email( email_to=request.user.username,
                     email_body=body_driver,
                     email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
 
@@ -429,8 +440,7 @@ name: %s\r\nphone: %s\r\nemail: %s"%(offer.driver,
                                      offer.driver,
                                      offer.driver.phone_number,
                                      offer.driver.user.username)
-        send_email( email_from=request.user.username,
-                    email_to=rider.user.username,
+        send_email( email_to=rider.user.username,
                     email_body=body_requester,
                     email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
     # Nothing happens when a driver declines a request?
