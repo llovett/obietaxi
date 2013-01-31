@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Your Account{% endblock %}
+{% block heading %}Your Account{% endblock %}
+{% block content %}
+  <h2>Rides that You Requested</h2>
+  {% if rides_requested %}
+    <ul>
+      {% for ride in rides_requested %}
+	<li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
+	  {% if ride.ride_offer %}
+	    (accepted an <a href="/offer/show/?offer_id={{ ride.ride_offer.id }}">offer</a>)
+	  {% else %}
+	    {% with askers=ride.askers %}
+	      {% if askers|length > 0 %}({{ askers|length }} offer{{ askers|pluralize }}){% endif %}
+	    {% endwith %}
+	  {% endif %}	    
+	  <a href="{% url request_options ride.id %}">options</a>
+	</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You haven't requested any rides yet.</p>
+  {% endif %}
+  <h2>Rides You Have Offered</h2>
+  {% if rides_offered %}
+    <ul>
+      {% for ride in rides_offered %}
+        <li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
+	  {% with passengers=ride.passengers %}
+	    {% if passengers|length > 0 %}
+	      ({{ passengers|length }} passenger{{ passengers|pluralize }})
+	    {% endif %}
+	  {% endwith %}
+	  <a href="{% url offer_options ride.id %}">options</a>
+	</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You haven't offered any rides yet.</p>
+  {% endif %}
+{% endblock %}

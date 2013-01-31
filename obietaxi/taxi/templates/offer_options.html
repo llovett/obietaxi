@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block scripts %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/options.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/options.js"></script>
 {% endblock %}
 
 {% block title %} Options {% endblock %}
@@ -9,20 +9,19 @@
 
 {% block content %}
 
-<h3>Passengers</h3>
-{% if rider_list %}
-<ul>
-  {% for rider in rider_list %}
-  <li>{{ rider }}
-  </li>
-  {% endfor %}
-</ul>
-{% else %}
-<p>Your ride has no passengers.</p>
-{% endif %}
+  <h3>Passengers</h3>
+  {% if rider_list %}
+    <ul>
+      {% for rider in rider_list %}
+	<li>{{ rider }}</li>
+      {% endfor %}      
+    </ul>
+  {% else %}
+    <p>Your ride has no passengers.</p>
+  {% endif %}
 
-{% load crispy_forms_tags %}
-<!-- this renders the form -->
-{% crispy form %}
+  {% load crispy_forms_tags %}
+  <!-- this renders the form -->
+  {% crispy form %}
 
 {% endblock %}
