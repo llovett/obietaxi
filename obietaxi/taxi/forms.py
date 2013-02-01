@@ -181,7 +181,7 @@ class OfferOptionsForm (forms.Form):
         required=False,
         max_length=300,
         widget=forms.Textarea(
-            attrs={'cols':5, 'rows':5}
+            attrs={'cols':5, 'rows':5, 'placeholder':'No message'}
         )
     )
     
@@ -222,7 +222,7 @@ class RequestOptionsForm (forms.Form):
         required=False,
         max_length=300,
         widget=forms.Textarea(
-            attrs={'cols':40, 'rows':5}
+            attrs={'cols':40, 'rows':5, 'placeholder':'No message'},
         )
     )
 
