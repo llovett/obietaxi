@@ -2,6 +2,30 @@
 {% block title %}Your Account{% endblock %}
 {% block heading %}Your Account{% endblock %}
 {% block content %}
+  {% if ride_requests_completed or ride_offers_completed %}
+    <h2>Rides Completed</h2>
+    {% if ride_offers_completed %}
+      <h3>Rides in which you drove</h3>
+      <ul>
+	{% for offer in ride_offers_completed %}
+	  <li>
+	    <a href="/offer/feedback/?offer_id={{ offer.id }}">
+	      {{ offer.start }} to {{ offer.end }} on {{ offer.date }}
+	    </a>
+	  </li>
+	{% endfor %}
+      </ul>
+    {% endif %}
+    {% if ride_requests_completed %}
+      <h3>Rides in which you were a passenger</h3>
+      <ul>
+	{% for req in ride_requests_completed %}
+	  <li>{{ req.start }} to {{ req.end }} on {{ req.date }}</li>
+	{% endfor %}
+      </ul>
+    {% endif %}
+  {% endif %}
+
   <h2>Rides that You Requested</h2>
   {% if rides_requested %}
     <ul>
@@ -13,7 +37,7 @@
 	    {% with askers=ride.askers %}
 	      {% if askers|length > 0 %}({{ askers|length }} offer{{ askers|pluralize }}){% endif %}
 	    {% endwith %}
-	  {% endif %}	    
+	  {% endif %}
 	  <a href="{% url request_options ride.id %}">options</a>
 	</li>
       {% endfor %}

@@ -284,3 +284,56 @@ class CancellationForm(forms.Form):
         )
 
         super(CancellationForm, self).__init__(*args, **kwargs)
+
+class DriverFeedbackForm( forms.Form ):
+    '''
+    Form shown to a driver when they review their trip with passengers.
+    '''
+
+    offer_id = forms.CharField( widget=forms.HiddenInput )
+    group_fb = forms.CharField(
+        widget=forms.Textarea(
+            attrs={'cols':40,
+                   'rows':5,
+                   'placeholder':'your message'},
+        ),
+        label="Say something to the whole group!",
+        required=False
+    )
+
+
+    def __init__( self, offer, *args, **kwargs ):
+        Fields = []
+        for p in offer.passengers:
+            fb = forms.CharField(
+                widget=forms.Textarea(
+                    attrs={'cols':40,
+                           'rows':5,
+                           'placeholder':'your message',
+                           'id':'passenger_%s'%str(p.id),
+                           'name':'passenger_%s'%str(p.id)}
+                ),
+                label="Feedback just for %s"%str(p),
+                required=False
+            )
+            Fields.append( ('passenger_%s'%str(p.id), fb) )
+
+        super(DriverFeedbackForm, self).__init__(*args, **kwargs)
+
+        for field in Fields:
+            self.fields[field[0]] = field[1]
+
+        self.helper = FormHelper()
+        self.helper.form_action = reverse( 'driver_feedback' )
+        self.helper.form_id = 'driver_feedback_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'How were your passengers?',
+                'offer_id',
+                'group_fb',
+                *[f[0] for f in Fields]
+            ),
+            FormActions(
+                Submit('submit', 'Submit'),
+            )
+        )

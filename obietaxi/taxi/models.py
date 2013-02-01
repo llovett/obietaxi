@@ -3,8 +3,12 @@ from mongologin.models import OpenidAuthStub
 from taxi.helpers import geospatial_distance
 
 class Trust(mdb.EmbeddedDocument):
+    '''
+    Models a review/trust rating. This could be expanded in the future.
+    '''
+    truster = mdb.ReferenceField('UserProfile')
+    offer = mdb.ReferenceField('RideOffer')
     message = mdb.StringField()
-    user = mdb.ReferenceField('UserProfile')
 
 class Location(mdb.EmbeddedDocument):
     '''
