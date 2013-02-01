@@ -9,9 +9,13 @@
       <ul>
 	{% for offer in ride_offers_completed %}
 	  <li>
-	    <a href="/offer/feedback/?offer_id={{ offer.id }}">
+	    {% if offer.passengers %}
+	      <a href="/offer/feedback/?offer_id={{ offer.id }}">
+	    {% endif %}
 	      {{ offer.start }} to {{ offer.end }} on {{ offer.date }}
-	    </a>
+	    {% if offer.passengers %}
+	      </a>
+	    {% endif %}
 	  </li>
 	{% endfor %}
       </ul>

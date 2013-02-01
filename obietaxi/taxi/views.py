@@ -786,7 +786,7 @@ def cancel_ride(request, ride_id):
                 ride_offer.delete()
 
             return HttpResponseRedirect(reverse('user_home'))
-        
+
         return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
 
     form = CancellationForm(initial={'ride_id':ride_id})
@@ -972,6 +972,9 @@ def driver_feedback( request ):
             # Mark this trip as having been reviewed already
             offer.completed = True
             offer.save()
+
+            messages.add_message( request, message.SUCCESS, "Your correspondence has been recorded." )
+            return HttpResponseRedirect( reverse('user_home') )
 
     offer_id = request.GET.get("offer_id")
     form = DriverFeedbackForm( RideOffer.objects.get(pk=offer_id),
