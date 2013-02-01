@@ -69,12 +69,12 @@
 			    console.log("No offer search results.");
 			    $("#offer_or_request_form").submit();
 			} else {
-			    console.log("submitting request via AJAX");
-			    $.ajax( {
-				type: "POST",
-				url: "/request/new/",
-				data: $("#offer_or_request_form").serialize()
-			    } );
+			    // console.log("submitting request via AJAX");
+			    // $.ajax( {
+			    // 	type: "POST",
+			    // 	url: "/request/new/",
+			    // 	data: $("#offer_or_request_form").serialize()
+			    // } );
 			}
 		    }
 		);
@@ -167,9 +167,11 @@
 	    data: $("#offer_or_request_form").serialize(),
 	    dataType: "text",
 	    success: function( data ) {
-		offers = ( $.parseJSON( data ) ).offers;
-		showOffers( offers );
-		callback( offers );
+		if ( data.length > 0 ) {
+		    offers = ( $.parseJSON( data ) ).offers;
+		    showOffers( offers );
+		    callback( offers );
+		}
 	    }
 	} );
     }

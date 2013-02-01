@@ -68,11 +68,6 @@ class RideRequest(mdb.Document):
     def time( self ):
         return self.date.strftime("%m/%d/%Y at %I:%M %p")
 
-    def __eq__( self, obj ):
-        if not isinstance( obj, RideRequest ):return False
-        need_to_be_equal = ( 'passenger', 'start', 'end', 'date' )
-        return reduce( lambda x,y: x and y, [obj.__getattr__(p) == self.__getattr__(p) for p in need_to_be_equal] )
-
     def __unicode__( self ):
         return "from {} to {} on {}".format( self.start, self.end, self.time() )
 
@@ -102,11 +97,6 @@ class RideOffer(mdb.Document):
 
     def time( self ):
         return self.date.strftime("%m/%d/%Y at %I:%M %p")
-
-    def __eq__( self, obj ):
-        if not isinstance( obj, RideOffer ):return False
-        need_to_be_equal = ( 'driver', 'start', 'end', 'date' )
-        return reduce( lambda x,y: x and y, [obj.__getattr__(p) == self.__getattr__(p) for p in need_to_be_equal] )
 
     def __unicode__( self ):
         return "from {} to {} on {}".format( self.start, self.end, self.time() )
