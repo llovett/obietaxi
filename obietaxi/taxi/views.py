@@ -28,12 +28,12 @@ def _dates_match( date1, fuzzy1, date2, fuzzy2 ):
     Determines if there is an overlap between two sets of dates (including fuzziness).
     Returns True or False.
     '''
-    
+
     # What fuzzy trumps? It is the lesser of the two fuzzies :)
     for fuzz_option in ('1-hours','2-hours','3-hours','4-hours','5-hours','day','week','anytime'):
         if fuzz_option in (fuzzy1, fuzzy2):
             fuzzy = fuzz_option
-    
+
     # Larger fuzzy times: check date
     if fuzzy == 'anytime':
         return True
@@ -41,7 +41,7 @@ def _dates_match( date1, fuzzy1, date2, fuzzy2 ):
         return False
     elif fuzzy == 'day' and date1.date() != date2.date():
         return False
-    
+
     # Check times for small fuzzies
     if '-' in fuzzy:
         numHours = int(fuzzy.split('-')[0])
@@ -49,7 +49,7 @@ def _dates_match( date1, fuzzy1, date2, fuzzy2 ):
         upperBound = (date1 + timedelta(hours=numHours)).replace(tzinfo=None)
         date2 = date2.replace(tzinfo=None)
         date1 = date1.replace(tzinfo=None)
-        
+
         if date2 < lowerBound or date2 > upperBound:
             return False
 
@@ -89,7 +89,7 @@ def _offer_search( **kwargs ):
         delta = timedelta(days=3, hours=12)
         earliest_offer = request_date - delta
         latest_offer = request_date + delta
-    
+
     if 'other_filters' in kwargs:
         if request_fuzzy == 'anytime':
             offers = RideOffer.objects.filter( **kwargs['other_filters'] )
@@ -103,7 +103,7 @@ def _offer_search( **kwargs ):
         else:
             offers = RideOffer.objects.filter( date__gte=earliest_offer,
                                                date__lte=latest_offer )
-            
+
     # Filter offers further:
     # 1. Must have start point near req. start and end point near req. end --OR--
     # 2. Must have polygon field that overlays start & end of this request
@@ -160,6 +160,7 @@ def offer_ride( request ):
     else:
         offer = RideOffer.objects.get( pk=ObjectId(offer_choices) )
         offer.message = msg
+        offer.save()
 
     # Message to be sent to the passenger
     appended = "This message has been sent to you because\
@@ -196,7 +197,7 @@ def offer_ride( request ):
     # Save this asker in the offer's 'askers' field
     req.askers.append( profile )
     req.save()
-        
+
     dest_email = req.passenger.user.username
     subject = "{} can drive you to {}".format( profile, req.end )
     send_email( email_to=dest_email, email_body=msg, email_subject=subject )
@@ -214,6 +215,7 @@ def process_offer_ride( request ):
     request_id = data['req']
     offer_id = data['offer']
     response = data['response']
+    profile = request.session.get("profile")
 
     # Do some error checking
     def fail( msg ):
@@ -232,7 +234,7 @@ def process_offer_ride( request ):
     # Accepting/declining someone who never asked for a ride
     if driver not in req.askers:
         return fail( "Not a valid accept or decline request link (no such user has offered you a ride)" )
-    if request.session.get("profile") != req.passenger:
+    if profile != req.passenger:
         return fail( "Not a valid accept or decline request link (no offer request has been sent to this account)" )
 
     # Update the RideOffer instance to accept/decline the request
@@ -241,11 +243,10 @@ def process_offer_ride( request ):
         req.askers.remove( driver )
         req.save()
 
-        passenger = request.session.get("profile")
         if len(offer.passengers) == 0:
-            offer.passengers = [passenger]
+            offer.passengers = [profile]
         else:
-            offer.passengers.append( passenger )
+            offer.passengers.append( profile )
         offer.save()
         # Email the driver, confirming the fact that they've decided to give a ride.
         # Also give them passenger's contact info.
@@ -254,13 +255,13 @@ def process_offer_ride( request ):
  mobility in Oberlin.\r\n\r\nYou are receiving this email to confirm\
  your offer to give %s a ride from %s to %s on %s. To help you keep\
  in contact with your passengers, we've provided you their information\
- below:\r\n\r\nname: %s\r\nphone: %s\r\nemail: %s"%(passenger,
+ below:\r\n\r\nname: %s\r\nphone: %s\r\nemail: %s"%(profile,
                                                     offer.start,
                                                     offer.end,
                                                     offer.date.strftime("%A, %B %d at %I:%M %p"),
-                                                    passenger,
-                                                    passenger.phone_number,
-                                                    passenger.user.username)
+                                                    profile,
+                                                    profile.phone_number,
+                                                    profile.user.username)
         send_email( email_to=driver.user.username,
                     email_body=body_driver,
                     email_subject="Your ride %s"%(offer) )
@@ -274,7 +275,7 @@ This email is confirming your ride with %s going\
  your driver and give them a little something\
  for gas! Generosity is what makes ridesharing\
  work.\r\n\r\nYour driver's contact information:\r\n\
-name: %s\r\nphone: %s\r\nemail: %s"%(passenger,
+name: %s\r\nphone: %s\r\nemail: %s"%(profile,
                                      offer.driver,
                                      offer.start,
                                      offer.end,
@@ -282,29 +283,26 @@ name: %s\r\nphone: %s\r\nemail: %s"%(passenger,
                                      offer.driver,
                                      offer.driver.phone_number,
                                      offer.driver.user.username)
-        send_email( email_to=passenger.user.username,
+        send_email( email_to=profile.user.username,
                     email_body=body_requester,
                     email_subject="Your ride %s"%str(req) )
 
-    messages.add_message( request, messages.SUCCESS, "You have {} {}'s offer".format(
-            'accepted' if response == 'accept' else 'declined',
-            str(driver)
-            ) )
-    ## --------------------------------------------------
-
+    messages.add_message( request,
+                          messages.SUCCESS, "You have {} {}'s offer".format('accepted' if response == 'accept' else 'declined',
+                                                                            str(driver)) )
     return HttpResponseRedirect( reverse('user_home') )
 
 @login_required
 def ask_for_ride( request ):
     ''' Asks for a ride from a particular offer '''
-    data = request.POST
 
+    data = request.POST
+    profile = request.session.get("profile")
     offer = RideOffer.objects.get( pk=ObjectId(data['offer_id']) )
     msg = data['msg']
     request_id = data['request_choices'] if 'request_choices' in data else 'new'
 
     # See if the logged-in user has already asked for a ride from this person
-    profile = request.session['profile']
     if profile in offer.askers:
         messages.add_message( request, messages.ERROR, "You have already asked to join this ride." )
         return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
@@ -319,6 +317,8 @@ def ask_for_ride( request ):
             date = offer.date
         )
         request_id = req.id
+        profile.requests.append( req )
+        profile.save()
     else:
         req = RideRequest.objects.get( pk=ObjectId(request_id) )
         req.message = msg
@@ -352,24 +352,22 @@ def ask_for_ride( request ):
             )
         )
     msg = "\r\n".join( (msg,30*'-',appended) )
-    
+
     # Save this asker in the offer's 'askers' field
     offer.askers.append( profile )
     offer.save()
-    
+
     dest_email = offer.driver.user.username
-    from_email = request.user.username
-    subject = "{} {} is asking you for a ride!".format(
-        request.user.first_name,
-        request.user.last_name
-        )
+    subject = "{} {} is asking you for a ride!".format( request.user.first_name, request.user.last_name )
     send_email( email_to=dest_email, email_body=msg, email_subject=subject )
     messages.add_message( request, messages.SUCCESS, "Your request has been sent successfully." )
     return HttpResponseRedirect( reverse("browse") )
 
 @login_required
 def process_ask_for_ride( request ):
-    ''' Processes a response YES/NO to a request for a ride from a particular RideOffer '''
+    ''' Processes a response YES/NO to a request for a ride from a
+    particular RideOffer '''
+
     data = request.GET
     offer_id = data['offer']
     request_id = data['request']
@@ -443,12 +441,11 @@ name: %s\r\nphone: %s\r\nemail: %s"%(offer.driver,
         send_email( email_to=rider.user.username,
                     email_body=body_requester,
                     email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
-    # Nothing happens when a driver declines a request?
 
-    messages.add_message( request, messages.SUCCESS, "You have {} {}'s request".format(
-            'accepted' if response == 'accept' else 'declined',
-            str(rider.user)
-            ) )
+    messages.add_message( request,
+                          messages.SUCCESS,
+                          "You have {} {}'s request".format('accepted' if response == 'accept' else 'declined',
+                                                            str(rider.user)) )
     return HttpResponseRedirect( reverse('user_home') )
 
 ###################
@@ -462,7 +459,7 @@ def request_or_offer_ride( request ):
 
 def _process_ro_form( request, type ):
     ''' Process the request/offer form.
-    Note that this is not a view, but receives <request> when called from another view. 
+    Note that this is not a view, but receives <request> when called from another view.
 
     '''
 
@@ -506,7 +503,7 @@ def _process_ro_form( request, type ):
 
     # Render the form
     return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
-    
+
 
 @login_required
 def offer_new( request ):
@@ -561,7 +558,7 @@ def _merge_boxes( boxes ):
     bboxContour = [list(t) for t in bboxArea.contour( 0 )]
 
     return bboxArea, bboxContour
-    
+
 def _request_search( **kwargs ):
     '''
     Searches for RideRequests that meet the criteria specified in **kargs.
@@ -619,7 +616,7 @@ def request_search( request ):
                                                                                    fuzziness=offer_fuzziness )] }
 
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
-    
+
 def request_show( request ):
     ''' Renders a page displaying more information about a particular RideRequest '''
     try:
@@ -683,7 +680,7 @@ def offer_show( request ):
 
             import sys
             sys.stderr.write("request search in offer_show returned the following: %s"%str(requests))
-            
+
             requests = [(str(req.id),str(req)) for req in requests]
             form = AskForRideForm(initial={'offer_id':request.GET['offer_id']},
                                   request_choices=requests)
@@ -714,10 +711,6 @@ def cancel_ride(request, ride_id):
     Render and process a RideRequest cancellation
     '''
 
-    # confirm correct user
-    if not request.session.get('profile') == driver or request.session.get('profile') == rider:
-        raise PermissionDenied
-    
     try:
         driver = RideOffer.objects.get(pk=ObjectId(ride_id)).driver
     except (RideOffer.DoesNotExist):
@@ -727,7 +720,10 @@ def cancel_ride(request, ride_id):
         rider = RideRequest.objects.get(pk=ObjectId(ride_id)).passenger
     except (RideRequest.DoesNotExist):
         rider = None
-    
+
+    # confirm correct user
+    if not request.session.get('profile') == driver or request.session.get('profile') == rider:
+        raise PermissionDenied
     
     # Form has been submitted, else...
     if request.method == 'POST':
@@ -785,7 +781,7 @@ def process_request_update(request, request_id):
     '''
     Render and process the request update form
     '''
-    
+
     try:
         RideRequest.objects.get(pk=ObjectId(request_id))
     except:
@@ -809,7 +805,7 @@ def process_request_update(request, request_id):
             if data['message']:
                 ride_request.message = data['message']
                 ride_request.save()
-        
+
             return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
 
     if RideRequest.objects.get(pk=ObjectId(request_id)).message:
@@ -825,7 +821,7 @@ def process_offer_update(request, offer_id):
     '''
     Render and process the offer update form
     '''
-    
+
     try:
         RideOffer.objects.get(pk=ObjectId(offer_id))
     except:
