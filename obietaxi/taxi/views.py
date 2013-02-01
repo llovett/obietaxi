@@ -736,7 +736,7 @@ def cancel_ride(request, ride_id):
         rider = None
 
     # confirm correct user
-    if not request.session.get('profile') == driver or request.session.get('profile') == rider:
+    if not request.session.get('profile') in (driver,rider):
         raise PermissionDenied
     
     # Form has been submitted, else...
@@ -786,6 +786,8 @@ def cancel_ride(request, ride_id):
                 ride_offer.delete()
                 
             return HttpResponseRedirect(reverse('user_home'))
+        
+        return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
 
     form = CancellationForm(initial={'ride_id':ride_id})
     return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))

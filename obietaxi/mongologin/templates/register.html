@@ -1,9 +1,12 @@
 {% extends "mol_base.html" %}
+
+{% block title %} Register {% endblock %}
+{% block heading %} Welcome to ObieTaxi {% endblock %}
+
 {% block content %}
-  {{ block.super }}  
-  <form action="." method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="sign up" />    
-  </form>
+
+{% load crispy_forms_tags %}
+<!-- renders the form -->
+{% crispy form %}
+
 {% endblock %}  

@@ -1,13 +1,20 @@
 {% extends "mol_base.html" %}
 {% block content %}
+
+{% load crispy_forms_tags %}
+<!-- renders the form -->
+{% crispy form %}
+
+<!--
   {{ block.super }}  
   <form action="." method="POST">
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="login" />
-  </form>
+  </form> -->
   <strong>or</strong>
   <form action="{{ endpoint }}" method="POST">
+    {% csrf_token %}
     <!-- used for openid POST request to Google -->
     {% for key, value in params.items %}
       <input type="hidden" name="{{ key }}" value="{{ value }}" />
