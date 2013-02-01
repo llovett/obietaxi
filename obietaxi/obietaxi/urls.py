@@ -21,6 +21,7 @@ urlpatterns = patterns('',
                        url( r'^request/new/$', views.request_new, name="request_ride_new" ),
                        url( r'^request/search/$', views.request_search, name="request_search" ),
                        url( r'^request/show/$', views.request_show, name="request_show" ),
+                       url( r'^request/feedback/(?P<request_id>[a-z0-9]+)/$', views.rider_feedback, name="ride_feedback" ),
 
                        url( r'^browse/$', views.browse, name="browse" ),
                        url( r'^accounts/', include( 'mongologin.urls' ) ),

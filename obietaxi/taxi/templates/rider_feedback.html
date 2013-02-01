@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Trip Feedback{% endblock %}
+{% block heading %} Feedback {% endblock %}
+
+{% block content %}
+
+{% load crispy_forms_tags %}
+<!-- this renders the form -->
+{% crispy form %}
+
+<b>Please note: your feedback will be emailed to the driver</b>
+
+{% endblock %}
+

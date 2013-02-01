@@ -337,3 +337,37 @@ class DriverFeedbackForm( forms.Form ):
                 Submit('submit', 'Submit'),
             )
         )
+
+
+class RiderFeedbackForm(forms.Form):
+    '''
+    Form for rendering and processing feedback FROM RIDERS about driver
+    '''
+
+    request_id = forms.CharField( widget=forms.HiddenInput )
+    message = forms.CharField(
+        widget=forms.Textarea(
+            attrs={'cols':40,
+                   'rows':5,
+                   'placeholder':'How was your driver?'},
+        ),
+        label='',
+        required=False
+    )
+        
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = '.'
+        self.helper.form_id = 'rider_feedback_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Feedback for your Driver',
+                'request_id',
+                'message'
+            ),
+            FormActions(
+                Submit('give','Give Feedback'),
+            )
+        )
+    
+        super(RiderFeedbackForm, self).__init__(*args, **kwargs)
