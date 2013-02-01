@@ -28,7 +28,7 @@ class Location(mdb.EmbeddedDocument):
 class UserProfile(mdb.Document):
     """The basic model for a user."""
     phone_number = mdb.StringField()
-    trust = mdb.ListField( Trust )
+    trust = mdb.ListField( mdb.EmbeddedDocumentField('Trust') )
     active = mdb.BooleanField()
     reports = mdb.IntField(default=0)
     offers = mdb.ListField(mdb.ReferenceField('RideOffer'))

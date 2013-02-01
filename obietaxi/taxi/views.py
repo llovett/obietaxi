@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from bson.objectid import ObjectId
 from mongoengine.queryset import Q
-from models import RideRequest, UserProfile, RideOffer, Location
+from models import RideRequest, UserProfile, RideOffer, Location, Trust
 from forms import RideRequestOfferForm, AskForRideForm, OfferRideForm, OfferOptionsForm, RequestOptionsForm, CancellationForm, DriverFeedbackForm
 from datetime import datetime, timedelta
 from random import random
@@ -973,7 +973,7 @@ def driver_feedback( request ):
             offer.completed = True
             offer.save()
 
-            messages.add_message( request, message.SUCCESS, "Your correspondence has been recorded." )
+            messages.add_message( request, messages.SUCCESS, "Your correspondence has been recorded." )
             return HttpResponseRedirect( reverse('user_home') )
 
     offer_id = request.GET.get("offer_id")
