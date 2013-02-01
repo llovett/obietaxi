@@ -885,7 +885,7 @@ def userprofile_show( request ):
     else:
         profile = request.session['profile']
 
-    my_offers = RideOffer.objects.filter( driver=profile )
+    my_offers = RideOffer.objects.filter( driver=profile, completed=False, passengers__not__size=0 )
     my_requests = RideRequest.objects.filter( passenger=profile )
 
     rides_requested, rides_offered, ride_requests_completed, ride_offers_completed = [], [], [], []
@@ -928,10 +928,10 @@ def driver_feedback( request ):
             raise Http404
         # Must be the driver of this RideOffer
         if profile != offer.driver:
-            return fail( "Cannot leave feedback on this trip." )
+            return fail( "Cannot leave feedback on that trip." )
         # Make sure no feedback has already been left for this trip
         if offer.completed:
-            return fail( "You have already left feedback for this trip." )
+            return fail( "You have already left feedback for that trip." )
 
         form = DriverFeedbackForm( offer, request.POST )
         if form.is_valid():
@@ -942,7 +942,7 @@ def driver_feedback( request ):
             form_ids = sorted([p.split('_')[1] for p in passengers.keys()])
             actual_ids = sorted([str(p.id) for p in offer.passengers])
             if form_ids != actual_ids:
-                return fail( "Cannot leave feedback on this trip because the feedback left for one or more passengers was invalid." )
+                return fail( "Cannot leave feedback on that trip because the feedback left for one or more passengers was invalid." )
 
             # Increment trust rating for all passengers, and send emails
             for name, val in passengers.iteritems():
