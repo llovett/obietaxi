@@ -265,15 +265,21 @@
 	    var userlink = $("<a></a>");
 	    userlink.attr( {"href":"/accounts/profile/?user_id="+offers[i].driver_id} );
 	    userlink.append( driver_name );
-	    var itemdesc = $("<p>Going from <strong>"+
+	    var offerlink = $("<a></a>");
+	    offerlink.attr( {'href':'/offer/show/?offer_id='+offers[i].id} );
+	    offerlink.append("Offer going from <strong>"+
 			     offers[i].location_start.title+
 			     "</strong> to <strong>"+
 			     offers[i].location_end.title+
-			     "</strong></p>");
+			     "</strong>");
+	    var itemdate = $("<p><strong>"+offers[i].date+"</strong></p>");
 	    // TODO: add "ask for ride" button
 	    newitem
+		.append( offerlink )
+		.append( " by " )
 		.append( userlink )
-		.append( itemdesc );
+		.append( " on " )
+		.append( itemdate );
 	    $("#ride_listing").append( newitem );
 	}
     }
@@ -312,7 +318,7 @@
 		.append( " by " )
 		.append( userlink )
 		.append( " on " )
-		.append( itemdate )
+		.append( itemdate );
 	    $("#ride_listing").append( newitem );
 	}
     }
