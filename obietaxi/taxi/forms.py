@@ -141,7 +141,7 @@ class RideRequestOfferForm (forms.Form):
         ),
         label="Departure",
         input_formats = input_formats
-    )   
+    )
     fuzziness = forms.ChoiceField(choices=FUZZY_OPTIONS)
 
     def __init__( self, *args, **kwargs ):
@@ -163,7 +163,7 @@ class RideRequestOfferForm (forms.Form):
                 'fuzziness'
                 ),
             FormActions(
-                Submit('ask', 'Ask for a Ride', css_id="ask_button" ),
+                Submit('ask', 'Search Rides', css_id="ask_button" ),
                 Submit('offer', 'Offer a Ride', css_id="offer_button" )
             )
         )
@@ -181,10 +181,10 @@ class OfferOptionsForm (forms.Form):
         required=False,
         max_length=300,
         widget=forms.Textarea(
-            attrs={'cols':5, 'rows':5}
+            attrs={'cols':5, 'rows':5, 'placeholder':'No message'}
         )
     )
-    
+
     def clean( self ):
         cleaned_data = super( OfferOptionsForm, self ).clean()
         try:
@@ -209,7 +209,7 @@ class OfferOptionsForm (forms.Form):
                 Submit('cancel', 'Cancel Offer', css_id='cancel_button')
             )
         )
-        
+
         super( OfferOptionsForm, self).__init__( *args, **kwargs)
 
 class RequestOptionsForm (forms.Form):
@@ -222,7 +222,7 @@ class RequestOptionsForm (forms.Form):
         required=False,
         max_length=300,
         widget=forms.Textarea(
-            attrs={'cols':40, 'rows':5}
+            attrs={'cols':40, 'rows':5, 'placeholder':'No message'},
         )
     )
 
@@ -234,7 +234,7 @@ class RequestOptionsForm (forms.Form):
             raise ValidationError("not a valid offer id")
         return cleaned_data
 
-    
+
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_action = '.'
@@ -258,7 +258,7 @@ class CancellationForm(forms.Form):
     '''
     Form for cancelling a RideRequest or RideOffer
     '''
-    
+
     ride_id = forms.CharField( widget=forms.HiddenInput )
     reason = forms.CharField(
         label="",
@@ -282,6 +282,58 @@ class CancellationForm(forms.Form):
                 Submit('cancel', 'Cancel', css_id='cancel_button'),
             )
         )
-        
+
         super(CancellationForm, self).__init__(*args, **kwargs)
-    
+
+class DriverFeedbackForm( forms.Form ):
+    '''
+    Form shown to a driver when they review their trip with passengers.
+    '''
+
+    offer_id = forms.CharField( widget=forms.HiddenInput )
+    group_fb = forms.CharField(
+        widget=forms.Textarea(
+            attrs={'cols':40,
+                   'rows':5,
+                   'placeholder':'your message'},
+        ),
+        label="Say something to the whole group!",
+        required=False
+    )
+
+
+    def __init__( self, offer, *args, **kwargs ):
+        Fields = []
+        for p in offer.passengers:
+            fb = forms.CharField(
+                widget=forms.Textarea(
+                    attrs={'cols':40,
+                           'rows':5,
+                           'placeholder':'your message',
+                           'id':'passenger_%s'%str(p.id),
+                           'name':'passenger_%s'%str(p.id)}
+                ),
+                label="Feedback just for %s"%str(p),
+                required=False
+            )
+            Fields.append( ('passenger_%s'%str(p.id), fb) )
+
+        super(DriverFeedbackForm, self).__init__(*args, **kwargs)
+
+        for field in Fields:
+            self.fields[field[0]] = field[1]
+
+        self.helper = FormHelper()
+        self.helper.form_action = reverse( 'driver_feedback' )
+        self.helper.form_id = 'driver_feedback_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'How were your passengers?',
+                'offer_id',
+                'group_fb',
+                *[f[0] for f in Fields]
+            ),
+            FormActions(
+                Submit('submit', 'Submit'),
+            )
+        )

@@ -12,7 +12,8 @@ class RideRequestEncoder( json.JSONEncoder ):
                 'passenger_id': str(o.passenger.id) if o.passenger else 0,
                 'location_start': { 'point': o.start.position, 'title': o.start.title },
                 'location_end' : { 'point': o.end.position, 'title': o.end.title },
-                'date': datetime.strftime( o.date, "%m/%d/%Y %I:%M %p" )
+                'date': datetime.strftime( o.date, "%m/%d/%Y %I:%M %p" ),
+                'id': str(o.id)
             }
         else:
             return json.JSONEncoder.default( self, o )
@@ -26,7 +27,8 @@ class UserProfileEncoder( json.JSONEncoder ):
                 'offers': [str(offer.id) for offer in o.offers],
                 'requests': [str(request.id) for request in o.requests],
                 'first_name': o.user.first_name,
-                'last_name': o.user.last_name
+                'last_name': o.user.last_name,
+                'id': str(o.id)
             }
         else:
             return json.JSONEncoder.default( self, o )
@@ -42,7 +44,8 @@ class RideOfferEncoder( json.JSONEncoder ):
                 'location_start': { 'point': o.start.position, 'title': o.start.title },
                 'location_end' : { 'point': o.end.position, 'title': o.end.title },
                 'passengers': [userEncoder.default(u) for u in o.passengers],
-                'date': datetime.strftime( o.date, "%m/%d/%Y %I:%M %p" )
+                'date': datetime.strftime( o.date, "%m/%d/%Y %I:%M %p" ),
+                'id': str(o.id)
             }
         else:
-            return json.JSONEncoder.default( self, o )            
+            return json.JSONEncoder.default( self, o )

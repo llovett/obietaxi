@@ -25,8 +25,6 @@ $(document).ready( function() {
     $("#cancel_button").click( function( event ) {
 	event.preventDefault();
 	
-	console.log("We could be cancelling");
-
 	var pathArray = window.location.pathname.split('/');
 	var rideType = pathArray[1];
 	var id = pathArray[pathArray.length-2];
@@ -34,16 +32,9 @@ $(document).ready( function() {
 	// create the path for window.location redirect
 	var redirectPath = "/" + pathArray[1] + "/cancel/" + id + "/" ;
 
-	for (var j=0; j<pathArray.length; j++){
-	    console.log("bucket " + j + " : " + pathArray[j] + "\n");
-	}
-	
 	if (rideType == "offer"){
-	    console.log("RideOffer with path " + redirectPath); 
-//	    $("#CancellationForm").attr( {"action":"/offer/cancel/" + id + "/"} );
 	    window.location = redirectPath;
 	} else if (rideType == "request"){
-//	    $("#CancellationForm").attr( {"action":"/request/cancel/" + id + "/"} );
 	    window.location = redirectPath;
 	}
     } );

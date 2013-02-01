@@ -12,6 +12,7 @@ urlpatterns = patterns('',
                        url( r'^offer/proposal/$', views.process_ask_for_ride, name="process_ask_for_ride" ),
                        url( r'^offer/options/(?P<offer_id>[a-z0-9]+)/$', views.process_offer_update, name="offer_options" ),
                        url( r'^offer/cancel/(?P<ride_id>[a-z0-9]+)/$', views.cancel_ride, name="cancel_offer"),
+                       url( r'^offer/feedback/$', views.driver_feedback, name="driver_feedback" ),
 
                        url( r'^request/cancel/(?P<ride_id>[a-z0-9]+)/$', views.cancel_ride, name="cancel_request"),
                        url( r'^request/options/(?P<request_id>[a-z0-9]+)/$', views.process_request_update, name="request_options" ),
@@ -24,4 +25,3 @@ urlpatterns = patterns('',
                        url( r'^browse/$', views.browse, name="browse" ),
                        url( r'^accounts/', include( 'mongologin.urls' ) ),
 )
-

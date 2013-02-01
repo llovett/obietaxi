@@ -1,10 +1,14 @@
 import mongoengine as mdb
 from mongologin.models import OpenidAuthStub
-import math, unicodedata
+from taxi.helpers import geospatial_distance
 
 class Trust(mdb.EmbeddedDocument):
+    '''
+    Models a review/trust rating. This could be expanded in the future.
+    '''
+    truster = mdb.ReferenceField('UserProfile')
+    offer = mdb.ReferenceField('RideOffer')
     message = mdb.StringField()
-    user = mdb.ReferenceField('UserProfile')
 
 class Location(mdb.EmbeddedDocument):
     '''
@@ -17,15 +21,14 @@ class Location(mdb.EmbeddedDocument):
         return self.title
 
     def __eq__( self, obj ):
-        EQUALS_DELTA = 0.001
+        EQUALS_DELTA = 0.1      # 1/10th of a km
         if not isinstance( obj, Location ):return False
-        return math.sqrt( (obj.position[0]-self.position[0])**2 +
-                          (obj.position[1]-self.position[1])**2 ) < EQUALS_DELTA
+        return geospatial_distance( self.position, obj.position ) < EQUALS_DELTA
 
 class UserProfile(mdb.Document):
     """The basic model for a user."""
     phone_number = mdb.StringField()
-    trust = mdb.ListField( Trust )
+    trust = mdb.ListField( mdb.EmbeddedDocumentField('Trust') )
     active = mdb.BooleanField()
     reports = mdb.IntField(default=0)
     offers = mdb.ListField(mdb.ReferenceField('RideOffer'))

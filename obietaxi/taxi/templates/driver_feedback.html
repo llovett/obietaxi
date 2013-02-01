@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback on your Trip{% endblock %}
+{% block heading %}Feedback on your Trip{% endblock %}
+
+{% block content %}
+  <p>Leaving feedback increases trust among users who find a means to travel online. The messages you write here will be sent to the emails of each of your passengers, so they can benefit from your feedback and enjoy your correspondence. Note that all fields are entirely optional. You can say something to the entire group as well as say something personally to each passenger.</p>
+
+  {% load crispy_forms_tags %}
+  <!-- this renders the form -->
+  {% crispy form %}
+
+{% endblock %}
