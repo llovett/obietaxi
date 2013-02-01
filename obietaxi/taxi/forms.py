@@ -141,7 +141,7 @@ class RideRequestOfferForm (forms.Form):
         ),
         label="Departure",
         input_formats = input_formats
-    )   
+    )
     fuzziness = forms.ChoiceField(choices=FUZZY_OPTIONS)
 
     def __init__( self, *args, **kwargs ):
@@ -163,7 +163,7 @@ class RideRequestOfferForm (forms.Form):
                 'fuzziness'
                 ),
             FormActions(
-                Submit('ask', 'Ask for a Ride', css_id="ask_button" ),
+                Submit('ask', 'Search Rides', css_id="ask_button" ),
                 Submit('offer', 'Offer a Ride', css_id="offer_button" )
             )
         )
@@ -184,7 +184,7 @@ class OfferOptionsForm (forms.Form):
             attrs={'cols':5, 'rows':5, 'placeholder':'No message'}
         )
     )
-    
+
     def clean( self ):
         cleaned_data = super( OfferOptionsForm, self ).clean()
         try:
@@ -209,7 +209,7 @@ class OfferOptionsForm (forms.Form):
                 Submit('cancel', 'Cancel Offer', css_id='cancel_button')
             )
         )
-        
+
         super( OfferOptionsForm, self).__init__( *args, **kwargs)
 
 class RequestOptionsForm (forms.Form):
@@ -234,7 +234,7 @@ class RequestOptionsForm (forms.Form):
             raise ValidationError("not a valid offer id")
         return cleaned_data
 
-    
+
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_action = '.'
@@ -258,7 +258,7 @@ class CancellationForm(forms.Form):
     '''
     Form for cancelling a RideRequest or RideOffer
     '''
-    
+
     ride_id = forms.CharField( widget=forms.HiddenInput )
     reason = forms.CharField(
         label="",
@@ -282,6 +282,5 @@ class CancellationForm(forms.Form):
                 Submit('cancel', 'Cancel', css_id='cancel_button'),
             )
         )
-        
+
         super(CancellationForm, self).__init__(*args, **kwargs)
-    
