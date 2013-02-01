@@ -735,59 +735,61 @@ def cancel_ride(request, ride_id):
     except (RideRequest.DoesNotExist):
         rider = None
 
-    if request.session.get('profile') == driver or request.session.get('profile') == rider:
-        # Form has been submitted, else...
-        if request.method == 'POST':
-            form = CancellationForm(request.POST)
-
-            # Check for valid form
-            if form.is_valid():
-                data = form.cleaned_data
-
-                try:
-                    ride_request = RideRequest.objects.get(pk=ObjectId(ride_id))
-                except RideRequest.DoesNotExist:
-                    ride_request = None
-
-                try:
-                    ride_offer = RideOffer.objects.get(pk=ObjectId(ride_id))
-                except RideOffer.DoesNotExist:
-                    ride_offer = None
-
-                if not ride_request == None:
-                    reason_msg = data['reason']
-                    email_message = "Hello,\r\n\nThis is an email concerning your upcoming trip %s.\r\n\nPlease note: %s has left your passenger group for the following reason:\r\n\n %s \r\n\nTo follow up, you can contact them at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_request), str(ride_request.passenger), reason_msg, ride_request.passenger.user.username )
-                    if ride_request.ride_offer:
-                        send_email(
-                            email_subject='Rider Cancellation',
-                            email_to=ride_request.ride_offer.driver.user.username,
-                            email_body=email_message
-                            )
-
-                    ride_request.delete()
-                elif not ride_offer == None:
-                    reason_msg = data['reason']
-                    # This is a rock'n mess. Clean up*
-                    email_message = "Hello,\r\n\nThis is an email concerning your upcoming ride %s.\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n %s \r\n\nTo follow up, contact %s at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_offer), reason_msg, str(ride_offer.driver.user.first_name), str(ride_offer.driver.user.username) )
-                    list_o_emails = [profile.user.username for profile in ride_offer.passengers]
-                    if list_o_emails:
-                        send_email(
-                            email_subject='Ride Cancellation',
-                            email_to=list_o_emails,
-                            email_body=email_message
-                            )
-
-                    for each_ride in RideRequest.objects.filter(ride_offer=ride_offer):
-                        each_ride.ride_offer = None
-                        each_ride.save()
-                    ride_offer.delete()
-
-                return HttpResponseRedirect(reverse('user_home'))
-
-        form = CancellationForm(initial={'ride_id':ride_id})
-        return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
-    else:
+    # confirm correct user
+    if not request.session.get('profile') == driver or request.session.get('profile') == rider:
         raise PermissionDenied
+    
+    # Form has been submitted, else...
+    if request.method == 'POST':
+        form = CancellationForm(request.POST)
+
+        # Check for valid form
+        if form.is_valid():
+            data = form.cleaned_data
+                
+            try:
+                ride_request = RideRequest.objects.get(pk=ObjectId(ride_id))
+            except RideRequest.DoesNotExist:
+                ride_request = None
+                    
+            try:
+                ride_offer = RideOffer.objects.get(pk=ObjectId(ride_id))
+            except RideOffer.DoesNotExist:
+                ride_offer = None
+                    
+            if not ride_request == None:
+                reason_msg = data['reason']
+                email_message = "Hello,\r\n\nThis is an email concerning your upcoming trip %s.\r\n\nPlease note: %s has left your passenger group for the following reason:\r\n\n %s \r\n\nTo follow up, you can contact them at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_request), str(ride_request.passenger), reason_msg, ride_request.passenger.user.username )
+                if ride_request.ride_offer:
+                    send_email(
+                        email_subject='Rider Cancellation',
+                        email_to=ride_request.ride_offer.driver.user.username,
+                        email_body=email_message
+                    )
+                
+                ride_request.delete()
+            elif not ride_offer == None:
+                reason_msg = data['reason']
+                # This is a rock'n mess. Clean up*
+                email_message = "Hello,\r\n\nThis is an email concerning your upcoming ride %s.\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n %s \r\n\nTo follow up, contact %s at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_offer), reason_msg, str(ride_offer.driver.user.first_name), str(ride_offer.driver.user.username) )
+                list_o_emails = [profile.user.username for profile in ride_offer.passengers]
+                if list_o_emails:
+                    send_email(
+                        email_subject='Ride Cancellation', 
+                        email_to=list_o_emails, 
+                        email_body=email_message
+                    )
+                
+                for each_ride in RideRequest.objects.filter(ride_offer=ride_offer):
+                    each_ride.ride_offer = None
+                    each_ride.save()
+                ride_offer.delete()
+                
+            return HttpResponseRedirect(reverse('user_home'))
+
+    form = CancellationForm(initial={'ride_id':ride_id})
+    return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
+
 
 def process_request_update(request, request_id):
     '''
@@ -799,16 +801,20 @@ def process_request_update(request, request_id):
     except:
         raise Http404
 
+    # confirm correct user
+    if not request.session.get('profile') == RideRequest.objects.get(pk=ObjectId(request_id)).passenger:
+        raise PermissionDenied
+    
     # Allow only the RideRequest creator to access the optinos form
-    if request.session.get('profile') == RideRequest.objects.get(pk=ObjectId(request_id)).passenger:
-        if request.method == 'POST':
-            form = RequestOptionsForm(request.POST)
 
-            # Form validates
-            if form.is_valid():
-                data = form.cleaned_data
-                ride_request = RideRequest.objects.get(pk=ObjectId(request_id))
-
+    if request.method == 'POST':
+        form = RequestOptionsForm(request.POST)
+        
+        # Form validates
+        if form.is_valid():
+            data = form.cleaned_data
+            ride_request = RideRequest.objects.get(pk=ObjectId(request_id))
+                
             # Parse out the form and update RideRequest
             if data['message']:
                 ride_request.message = data['message']
@@ -816,16 +822,14 @@ def process_request_update(request, request_id):
 
             return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
 
-        if RideRequest.objects.get(pk=ObjectId(request_id)).message:
-            message = RideRequest.objects.get(pk=ObjectId(request_id))
-        else:
-            message = "No message"
-
-        # Render the form
+    if RideRequest.objects.get(pk=ObjectId(request_id)).message:
+        message = RideRequest.objects.get(pk=ObjectId(request_id))
         form = RequestOptionsForm(initial={'request_id':request_id, 'message':message})
-        return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
     else:
-        raise PermissionDenied
+        form = RequestOptionsForm(initial={'request_id':request_id})
+            
+    return render_to_response('request_options.html', locals(), context_instance=RequestContext(request))
+
 
 def process_offer_update(request, offer_id):
     '''
@@ -836,35 +840,37 @@ def process_offer_update(request, offer_id):
         RideOffer.objects.get(pk=ObjectId(offer_id))
     except:
         raise Http404
+    
+    # Confirm correct user
+    if not request.session.get('profile') == RideOffer.objects.get(pk=ObjectId(offer_id)).driver:
+        raise PermissionDenied
 
-    # Allow only the RideOffer creator to access the options form
-    if request.session.get('profile') == RideOffer.objects.get(pk=ObjectId(offer_id)).driver:
-        if request.method =='POST':
-            form = OfferOptionsForm(request.POST)
 
-            # Form validates
-            if form.is_valid():
-                data = form.cleaned_data
-                ride_offer = RideOffer.objects.get(pk=ObjectId(data['offer_id']))
-
-                # Parse out the form and update RideOffer
-                if data['message']:
-                    ride_offer.message = data['message']
-                    ride_offer.save()
-
+    if request.method =='POST':
+        form = OfferOptionsForm(request.POST)
+        
+        # Form validates
+        if form.is_valid():
+            data = form.cleaned_data
+            ride_offer = RideOffer.objects.get(pk=ObjectId(data['offer_id']))
+            
+            # Parse out the form and update RideOffer
+            if data['message']:
+                ride_offer.message = data['message']
+                ride_offer.save()
+                    
                 # render the form
                 return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
 
-        if RideOffer.objects.get(pk=ObjectId(offer_id)).message:
-            message = RideOffer.objects.get(pk=ObjectId(offer_id)).message
-        else:
-            message = "No message"
-
-        rider_list = RideOffer.objects.get(pk=ObjectId(offer_id)).passengers
+    if RideOffer.objects.get(pk=ObjectId(offer_id)).message:
+        message = RideOffer.objects.get(pk=ObjectId(offer_id)).message
         form = OfferOptionsForm(initial={'offer_id':offer_id, 'message':message})
-        return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
     else:
-        raise PermissionDenied
+        form = OfferOptionsForm(initial={'offer_id':offer_id})
+            
+    rider_list = RideOffer.objects.get(pk=ObjectId(offer_id)).passengers
+    return render_to_response('offer_options.html', locals(), context_instance=RequestContext(request))
+
 
 #####################
 # USER ACCOUNT INFO #
