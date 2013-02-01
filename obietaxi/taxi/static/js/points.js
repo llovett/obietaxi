@@ -297,17 +297,22 @@
 	    var userlink = $("<a></a>");
 	    userlink.attr( {"href":"/accounts/profile/?user_id="+requests[i].passenger_id} );
 	    userlink.append( passenger_name );
-	    var itemdesc = $("<p>Going from <strong>"+
-			     requests[i].location_start.title+
-			     "</strong> to <strong>"+
-			     requests[i].location_end.title+
-			     "</strong></p>"+
-			     "<p><strong>"+requests[i].date+"</strong></p>");
+	    var reqlink = $("<a></a>");
+	    reqlink.attr( {'href':'/request/show/?request_id='+requests[i].id} );
+	    reqlink.append("Request to go from <strong>"+
+			   requests[i].location_start.title+
+			   "</strong> to <strong>"+
+			   requests[i].location_end.title+
+			   "</strong>");
+	    var itemdate = $("<p><strong>"+requests[i].date+"</strong></p>");
 
 	    // TODO: add "offer ride" button
 	    newitem
+		.append( reqlink )
+		.append( " by " )
 		.append( userlink )
-		.append( itemdesc );
+		.append( " on " )
+		.append( itemdate )
 	    $("#ride_listing").append( newitem );
 	}
     }
