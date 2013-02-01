@@ -18,6 +18,8 @@ function initialize() {
     });
     $('.timepicker-default').timepicker();
 
+    $('#map_canvas').hide();
+
     // Map & directions initialization code
     var latLng = new google.maps.LatLng(41.2939, -82.2175);    // Oberlin, OH
     var mapOptions = {
@@ -249,6 +251,9 @@ function showOffers( offers ) {
     // Start out by emptying the current passenger listing
     $("#ride_listing").empty();
 
+    //show the map
+    $('#map_canvas').show('Slide');
+
     for ( var i=0; i<offers.length; i++ ) {
 	// Display starting point of driver on the map, along with their name
 	var start_point = offers[i].location_start.point;
@@ -280,6 +285,8 @@ function showRides( requests ){
 
     // Start out by emptying the current passenger listing
     $("#ride_listing").empty();
+
+    $('#map_canvas').show('Slide');
 
     for ( var i=0; i<requests.length; i++ ) {
 	// Display starting point of passenger on the map, along with their name

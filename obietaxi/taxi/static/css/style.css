@@ -11,7 +11,6 @@ html {
 body {
   width: 100%;
   height: 100%;
-  margin-top: -10px;
   padding: 0;
 }
 #wrapper {
@@ -24,6 +23,11 @@ body {
 #heading {
   margin-left: 10px;
 }
+#logo {
+  float: right;
+  margin: 20px;
+  margin-right: 40px;
+}
 #content {
   margin-left: 10px;
   position: relative;
@@ -35,19 +39,23 @@ body {
   width: 40%;
   height: 100%;
   padding: 5px;
-  margin-right: 5px;
+  margin: 50px;
+  margin-top: 130px;
   /*border: 1px dotted #a0a0a0;*/
 
 }
 #right_panel {
   float: left;
-  width: 55%;
+  width: 45%;
   height: 500px;
 }
 #map_canvas {
   position: relative;
   height: 60%;
-  width: 100%;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  overflow: auto !important;
 }
 #ride_listing {
   width: 100%;
@@ -70,7 +78,7 @@ body {
   padding: 20px;
   z-index: 20;
 }
-#checkers {
+.checkers {
   height: 30px;
   width: 100%;
   background-image: url('images/checkers-mini.png');
@@ -112,4 +120,13 @@ body {
   text-decoration: none;
   background-color: #ffb400;
   border-radius: 5px 5px 5px 5px;
+}
+.form-actions {
+  background-color: #ffffff;
+  border: none;
+}
+legend {
+  border: none;
+  font-size: 34px;
+  font-weight: bold;
 }

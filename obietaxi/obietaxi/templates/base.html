@@ -3,9 +3,9 @@
     <head>
 	<title>Obietaxi - {% block title %}Welcome{% endblock %}</title>
 
-	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" />
 	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css" />
 	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap-responsive.css" />
+	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" />
 	{% block styles %}
 	{% endblock %}
 
@@ -18,7 +18,12 @@
     <body>
 	<div id="wrapper">
 	    <div id="heading">
-		<h1>{% block heading %}Obietaxi{% endblock %}</h1>
+		<img id="logo" src="{{ STATIC_URL }}images/obietaxi_logo2.png"
+		    alt="Obietaxi" 
+		    width='231' 
+		    height='209'> 
+		    <h1>{% block heading %}
+			{% endblock %}</h1>
 	    </div>
 	    <div id="messages">
 		{% if messages %}
@@ -39,7 +44,7 @@
 
 	{% block footer %}
 
-	    <div id="checkers"></div>
+	    <div class="checkers"></div>
 	    <div id="footer">
 	    <div id="navigation">    
 		<ul id="footer_navigation" class="navlinks">
