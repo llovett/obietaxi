@@ -1,14 +1,40 @@
 from django import forms
 from django.core.validators import EMPTY_VALUES
 from django.utils.encoding import smart_text
-import re
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit, Layout, Fieldset
+from crispy_forms.bootstrap import FormActions
 from mongoengine.django.auth import User
+from django.core.urlresolvers import reverse
+import re
 
 class LoginForm( forms.Form ):
     # Username is an email
-    username = forms.EmailField()
-    password = forms.CharField( widget=forms.PasswordInput(render_value=False),
-                                max_length=20 )
+    username = forms.EmailField(required=True)
+    password = forms.CharField(
+        widget=forms.PasswordInput(render_value=False),
+        max_length=20,
+        required=True
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = reverse('login')
+        self.helper.form_method = 'POST'
+        self.form_id = 'login_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                '',
+                'username',
+                'password',
+            ),
+            FormActions(
+                Submit('login', 'Login', css_id="login_button"),
+              #  Submit('google_sign_in', 'Sign in with Google', css_id="google_button")
+            )
+        )
+        
+        super(LoginForm, self).__init__(*args, **kwargs)
 
 class USPhoneNumberField( forms.CharField ):
     '''
@@ -62,3 +88,26 @@ class RegisterForm( forms.Form ):
             if User.objects( username=usr ).count() > 0:
                 raise forms.ValidationError("That username is already taken.")
         return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = reverse( 'register' )
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'register_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Register',
+                'username',
+                'password1',
+                'password2',
+                'first_name',
+                'last_name',
+                'phone'
+            ),
+            FormActions(
+                Submit('sign_up', 'Sign Up', css_id="sign_up_button")
+            )
+        )
+
+        super(RegisterForm, self).__init__(*args, **kwargs)
+

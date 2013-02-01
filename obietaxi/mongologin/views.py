@@ -23,23 +23,29 @@ def _fail_login( request, msg ):
 def login_view( request ):
     # Login form submitted
     if request.method == 'POST':
-        error_msg = ''
-        try:
-            user = User.objects.get( username=request.POST['username'] )
-            if user.check_password( request.POST['password'] ) and user.is_active:
-                user.backend = 'mongoengine.django.auth.MongoEngineBackend'
-                login( request, user )
-                # Put profile in the session
-                request.session['profile'] = UserProfile.objects.get(user=user)
-                return HttpResponseRedirect( reverse('user_home') )
-            else:
+        form = LoginForm(request.POST)
+        
+        if form.is_valid():
+            data = form.cleaned_data
+            error_msg = ''
+            try:
+                user = User.objects.get( username=data['username'] )
+                if user.check_password( data['password'] ) and user.is_active:
+                    user.backend = 'mongoengine.django.auth.MongoEngineBackend'
+                    login( request, user )
+                    # Put profile in the session
+                    request.session['profile'] = UserProfile.objects.get(user=user)
+                    return HttpResponseRedirect( reverse('user_home') )
+                else:
+                    return _fail_login( request, 'invalid login' )
+            except User.DoesNotExist:
                 return _fail_login( request, 'invalid login' )
-        except User.DoesNotExist:
-            return _fail_login( request, 'invalid login' )
-        form = LoginForm()
+
+        #form = LoginForm()
         return render_to_response( 'login.html', locals(), context_instance=RequestContext(request) )
     # Login form needs rendering
     else:
+        # if request.user.is_authenticated():
         if request.user.is_authenticated():
             return redirect( user_show )
 
