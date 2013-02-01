@@ -488,12 +488,26 @@ def _process_ro_form( request, type ):
             boxes = json.loads( data['polygon'] )
             polygon, contour = _merge_boxes( boxes['rectangles'] )
             kwargs['polygon'] = contour
-            ro = RideOffer.objects.create( **kwargs )
-            profile.offers.append( ro )
+            ro = RideOffer( **kwargs )
+
+            # Don't let duplicates happen
+            if RideOffer.objects.filter( driver=profile,
+                                         date=ro.date,
+                                         start=ro.start,
+                                         end=ro.end ).count() == 0:
+                ro.save()
+                profile.offers.append( ro )
             ride_requests = RideRequest.objects.all()
         elif type == 'request':
-            rr = RideRequest.objects.create( **kwargs )
-            profile.requests.append( rr )
+            rr = RideRequest( **kwargs )
+
+            # Don't let duplicates happen
+            if RideRequest.objects.filter( passenger=profile,
+                                           date=rr.date,
+                                           start=rr.start,
+                                           end=rr.end ).count() == 0:
+                rr.save()
+                profile.requests.append( rr )
             ride_offers = RideOffer.objects.all()
 
         profile.save()
