@@ -886,7 +886,7 @@ def userprofile_show( request ):
     else:
         profile = request.session['profile']
 
-    my_offers = RideOffer.objects.filter( driver=profile )
+    my_offers = RideOffer.objects.filter( driver=profile, completed=False, passengers__not__size=0 )
     my_requests = RideRequest.objects.filter( passenger=profile )
 
     rides_requested, rides_offered, ride_requests_completed, ride_offers_completed = [], [], [], []
