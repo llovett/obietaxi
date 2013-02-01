@@ -1,6 +1,6 @@
 import mongoengine as mdb
 from mongologin.models import OpenidAuthStub
-import math, unicodedata
+from taxi.helpers import geospatial_distance
 
 class Trust(mdb.EmbeddedDocument):
     message = mdb.StringField()
@@ -17,10 +17,9 @@ class Location(mdb.EmbeddedDocument):
         return self.title
 
     def __eq__( self, obj ):
-        EQUALS_DELTA = 0.001
+        EQUALS_DELTA = 0.1      # 1/10th of a km
         if not isinstance( obj, Location ):return False
-        return math.sqrt( (obj.position[0]-self.position[0])**2 +
-                          (obj.position[1]-self.position[1])**2 ) < EQUALS_DELTA
+        return geospatial_distance( self.position, obj.position ) < EQUALS_DELTA
 
 class UserProfile(mdb.Document):
     """The basic model for a user."""
@@ -69,6 +68,11 @@ class RideRequest(mdb.Document):
     def time( self ):
         return self.date.strftime("%m/%d/%Y at %I:%M %p")
 
+    def __eq__( self, obj ):
+        if not isinstance( obj, RideRequest ):return False
+        need_to_be_equal = ( 'passenger', 'start', 'end', 'date' )
+        return reduce( lambda x,y: x and y, [obj.__getattr__(p) == self.__getattr__(p) for p in need_to_be_equal] )
+
     def __unicode__( self ):
         return "from {} to {} on {}".format( self.start, self.end, self.time() )
 
@@ -98,6 +102,11 @@ class RideOffer(mdb.Document):
 
     def time( self ):
         return self.date.strftime("%m/%d/%Y at %I:%M %p")
+
+    def __eq__( self, obj ):
+        if not isinstance( obj, RideOffer ):return False
+        need_to_be_equal = ( 'driver', 'start', 'end', 'date' )
+        return reduce( lambda x,y: x and y, [obj.__getattr__(p) == self.__getattr__(p) for p in need_to_be_equal] )
 
     def __unicode__( self ):
         return "from {} to {} on {}".format( self.start, self.end, self.time() )
