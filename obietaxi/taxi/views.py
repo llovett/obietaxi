@@ -14,7 +14,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from Polygon.Shapes import Rectangle, Polygon
 from encoders import RideRequestEncoder, RideOfferEncoder
-from helpers import send_email, _hostname, geospatial_distance
+from helpers import send_email, _hostname, geospatial_distance, get_mongo_or_404
 import json
 
 
@@ -633,10 +633,8 @@ def request_search( request ):
 
 def request_show( request ):
     ''' Renders a page displaying more information about a particular RideRequest '''
-    try:
-        ride_request = RideRequest.objects.get( pk=ObjectId(request.GET['request_id']) )
-    except RideRequest.DoesNotExist:
-        raise Http404
+
+    ride_request = get_mongo_or_404( RideRequest, pk=ObjectId(request.GET['request_id']) )
 
     # This information is used in the template to determine if the user has already
     # offered a ride to this RideRequest
@@ -671,10 +669,8 @@ def request_show( request ):
 
 def offer_show( request ):
     ''' Renders a page displaying more information about a particular RideOffer '''
-    try:
-        ride_offer = RideOffer.objects.get( pk=ObjectId(request.GET['offer_id']) )
-    except RideOffer.DoesNotExist:
-        raise Http404
+
+    ride_offer = get_mongo_or_404( RideOffer, pk=ObjectId(request.GET['offer_id']) )
 
     # This information is used in the template to determine if the user has already
     # requested a ride from this RideOffer
@@ -798,24 +794,19 @@ def process_request_update(request, request_id):
     Render and process the request update form
     '''
 
-    try:
-        RideRequest.objects.get(pk=ObjectId(request_id))
-    except:
-        raise Http404
+    ride_request = get_mongo_or_404( RideRequest, pk=ObjectId(request_id) )
 
     # confirm correct user
     if not request.session.get('profile') == RideRequest.objects.get(pk=ObjectId(request_id)).passenger:
         raise PermissionDenied
 
     # Allow only the RideRequest creator to access the optinos form
-
     if request.method == 'POST':
         form = RequestOptionsForm(request.POST)
 
         # Form validates
         if form.is_valid():
             data = form.cleaned_data
-            ride_request = RideRequest.objects.get(pk=ObjectId(request_id))
 
             # Parse out the form and update RideRequest
             if data['message']:
@@ -838,10 +829,7 @@ def process_offer_update(request, offer_id):
     Render and process the offer update form
     '''
 
-    try:
-        RideOffer.objects.get(pk=ObjectId(offer_id))
-    except:
-        raise Http404
+    ride_offer = get_mongo_or_404( RideOffer, pk=ObjectId(offer_id) )
 
     # Confirm correct user
     if not request.session.get('profile') == RideOffer.objects.get(pk=ObjectId(offer_id)).driver:
@@ -923,10 +911,7 @@ def driver_feedback( request ):
             return HttpResponseRedirect( reverse('user_home') )
 
         profile = request.session.get("profile")
-        try:
-            offer = RideOffer.objects.get(pk=request.POST['offer_id'])
-        except RideOffer.DoesNotExist:
-            raise Http404
+        offer = get_mongo_or_404( RideOffer, pk=request.POST['offer_id'] )
         # Must be the driver of this RideOffer
         if profile != offer.driver:
             return fail( "Cannot leave feedback on that trip." )

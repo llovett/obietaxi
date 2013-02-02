@@ -2,6 +2,17 @@ import smtplib
 from random import choice
 from obietaxi import settings
 import math
+from django.http import Http404
+
+def get_mongo_or_404( cls, **kwargs ):
+    '''
+    cls = The type of model to get an object of
+    kwargs = used for filtering
+    '''
+    try:
+        return cls.objects.get( **kwargs )
+    except cls.DoesNotExist:
+        raise Http404
 
 def _hostname( protocol="http" ):
     basename = settings.HOSTNAME if 'HOSTNAME' in dir(settings) else 'localhost'
@@ -11,14 +22,14 @@ def _hostname( protocol="http" ):
 
 def random_string( chars='abcdefghijklmnopqrstubwxyz1234567890', length=80 ):
     return "".join( choice(chars) for i in xrange(length) )
-    
+
 def send_email( email_from="", email_subject="", email_to=[], email_body="" ):
     if len(email_from) == 0:
         email_from = 'noreply@{}'.format( _hostname(protocol="") )
     if not type(email_to) is list:
         email_to=[email_to]
     email_subject = "Obietaxi: %s"%email_subject if len(email_subject) > 0 else "Message from Obietaxi!"
-    
+
     hostname = _hostname( protocol="" )
     email_message = "\r\n".join( ["From: {}".format(email_from),
                                   "To: {}".format(', '.join(email_to)),
