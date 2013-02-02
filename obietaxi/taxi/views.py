@@ -5,7 +5,7 @@ from django.contrib import messages
 from bson.objectid import ObjectId
 from mongoengine.queryset import Q
 from models import RideRequest, UserProfile, RideOffer, Location, Trust
-from forms import RideRequestOfferForm, AskForRideForm, OfferRideForm, OfferOptionsForm, RequestOptionsForm, CancellationForm, DriverFeedbackForm
+from forms import RideRequestOfferForm, AskForRideForm, OfferRideForm, OfferOptionsForm, RequestOptionsForm, CancellationForm, DriverFeedbackForm, RiderFeedbackForm
 from datetime import datetime, timedelta
 from random import random
 from time import strptime,mktime
@@ -785,7 +785,6 @@ def process_request_update(request, request_id):
     if not request.session.get('profile') == RideRequest.objects.get(pk=ObjectId(request_id)).passenger:
         raise PermissionDenied
 
-    # Allow only the RideRequest creator to access the optinos form
     if request.method == 'POST':
         form = RequestOptionsForm(request.POST)
 
@@ -950,3 +949,37 @@ def driver_feedback( request ):
     form = DriverFeedbackForm( RideOffer.objects.get(pk=offer_id),
                                initial={'offer_id':offer_id} )
     return render_to_response("driver_feedback.html", locals(), context_instance=RequestContext(request) )
+
+@login_required
+def rider_feedback(request, request_id):
+
+    # confirm correct user
+    if not request.session.get('profile') == RideRequest.objects.get(pk=ObjectId(request_id)).passenger:
+        raise PermissionDenied
+
+    try:
+        RideRequest.objects.get(pk=request_id)
+    except (RideRequest.DoesNotExist):
+        raise Http404
+
+    if request.method == 'POST':
+        form = RiderFeedbackForm(request.POST)
+
+        if form.is_valid():
+            data = form.cleaned_data
+            feedback_msg = data['message']
+            request = RideRequest.objects.get(pk=ObjectId(data['request_id']))
+            driver = request.ride_offer.driver
+
+            send_email(email_to=driver.user.username,
+                       email_subject="Trip Feedback",
+                       email_body=feedback_msg
+            )
+
+            request.completed = True
+            request.save()
+
+            return HttpResponseRedirect(reverse('user_home'))
+
+    form = RiderFeedbackForm(initial={'request_id':request_id})
+    return render_to_response('rider_feedback.html', locals(), context_instance=RequestContext(request))

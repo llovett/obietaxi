@@ -24,7 +24,13 @@
       <h3>Rides in which you were a passenger</h3>
       <ul>
 	{% for req in ride_requests_completed %}
-	  <li>{{ req.start }} to {{ req.end }} on {{ req.date }}</li>
+	{% if req.ride_offer %}
+	  <li>
+	    <a href="{% url ride_feedback req.id %}">
+	    {{ req.start }} to {{ req.end }} on {{ req.date }}
+	    </a>
+	  </li>
+	{% endif %}
 	{% endfor %}
       </ul>
     {% endif %}
