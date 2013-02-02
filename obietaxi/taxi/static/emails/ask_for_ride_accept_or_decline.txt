@@ -1,0 +1,6 @@
+Hi {{offer.driver.user.first_name}}
+
+Someone found your offer to drive from {{offer.start}} to {{offer.end}} on {{offer.time()}}, and would like to ride with you! Please consider your safety when offering rides to people you don't know personally, but we hope you have a positive attitude in contributing to sharing your vehicle with others.
+
+If you are willing to share a ride with this person, please follow {{accept_link}}.
+If you would rather not, follow {{decline_link}}.

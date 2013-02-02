@@ -1,0 +1,7 @@
+Hello {{offer.driver}},
+
+This is an email concerning your upcoming trip {{offer}}. {{req.passenger}} no longer needs a ride for the following reason:
+
+{{reason_msg}}
+
+If you would like to follow up, you can contact them by email at {{req.passenger.user.username}}.

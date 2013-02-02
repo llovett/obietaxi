@@ -1,0 +1,9 @@
+Good news, {{req.passenger.user.first_name}}!
+
+{{offer.driver}} has accepted your request for a ride from {{offer.start}} to {{offer.end}}! Find the details of your trip at the bottom of this message. Be safe, and be sure to thank your driver and give them a little something for gas! Generosity is what makes ridesharing work.
+
+Trip info:
+driver's name: {{offer.driver}}
+phone: {{offer.driver.phone_number}}
+email: {{offer.driver.user.username}}
+departing at: {{offer.time()}}

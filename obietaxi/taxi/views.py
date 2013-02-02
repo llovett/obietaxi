@@ -233,41 +233,16 @@ def process_offer_ride( request ):
         else:
             offer.passengers.append( profile )
         offer.save()
+
         # Email the driver, confirming the fact that they've decided to give a ride.
-        # Also give them passenger's contact info.
-        body_driver = "Thank you for your helpfulness and generosity.\
- Drivers like you who offer space in their car greatly increase\
- mobility in Oberlin.\r\n\r\nYou are receiving this email to confirm\
- your offer to give %s a ride from %s to %s on %s. To help you keep\
- in contact with your passengers, we've provided you their information\
- below:\r\n\r\nname: %s\r\nphone: %s\r\nemail: %s"%(profile,
-                                                    offer.start,
-                                                    offer.end,
-                                                    offer.date.strftime("%A, %B %d at %I:%M %p"),
-                                                    profile,
-                                                    profile.phone_number,
-                                                    profile.user.username)
+        body_driver = render_message( "taxi/static/emails/driver_thankyou.txt", locals() )
         send_email( email_to=driver.user.username,
                     email_body=body_driver,
                     email_subject="Your ride %s"%(offer) )
 
         # Email the requester, telling them that they're request has been accepted, and
         # give them the driver's contact info.
-        body_requester = "Hey there, %s!\r\n\r\n\
-This email is confirming your ride with %s going\
- from %s to %s! The intended time of\
- departure is %s. Be safe, and be sure to thank\
- your driver and give them a little something\
- for gas! Generosity is what makes ridesharing\
- work.\r\n\r\nYour driver's contact information:\r\n\
-name: %s\r\nphone: %s\r\nemail: %s"%(profile,
-                                     offer.driver,
-                                     offer.start,
-                                     offer.end,
-                                     offer.date.strftime("%A, %B %d at %I:%M %p"),
-                                     offer.driver,
-                                     offer.driver.phone_number,
-                                     offer.driver.user.username)
+        body_requester = render_message( "taxi/static/emails/process_offer_ride_confirm.txt", locals() )
         send_email( email_to=profile.user.username,
                     email_body=body_requester,
                     email_subject="Your ride %s"%str(req) )
@@ -310,32 +285,21 @@ def ask_for_ride( request ):
         req.save()
 
     # Stuff that we append to the message
-    appended = "This message has been sent to you because\
- someone found your ride offer from {} to {} on {}. Please\
- consider your safety when offering rides to people you don't\
- know personally, but we hope you have a positive attitude in\
- contributing to sharing your vehicle with others.\r\n\r\n you ARE WILLING\
- to share a ride with this person, please follow {}.\r\n\r\n\
- If you ARE NOT WILLING to share a ride with this person, follow {}.".format(
-        offer.start,
-        offer.end,
-        offer.date.strftime("%A, %B %d at %I:%M %p"),
-        # This renders accept/decline links
-        '{}{}?offer={}&response={}&request={}'.format(
+    accept_link = '{}{}?offer={}&response={}&request={}'.format(
             _hostname(),
             reverse( 'process_ask_for_ride' ),
             data['offer_id'],
             'accept',
             request_id
-            ),
-        '{}{}?offer={}&response={}&request={}'.format(
+    )
+    decline_link = '{}{}?offer={}&response={}&request={}'.format(
             _hostname(),
             reverse( 'process_ask_for_ride' ),
             data['offer_id'],
             'decline',
             request_id
-            )
-        )
+    )
+    appended = render_message( "taxi/static/emails/ask_for_ride_accept_or_decline.txt", locals() )
     msg = "\r\n".join( (msg,30*'-',appended) )
 
     # Save this asker in the offer's 'askers' field
@@ -392,37 +356,14 @@ def process_ask_for_ride( request ):
         req.save()
         # Email the driver, confirming the fact that they've decided to give a ride.
         # Also give them passenger's contact info.
-        body_driver = "Thank you for your helpfulness and generosity.\
- Drivers like you who offer space in their car greatly increase\
- mobility in Oberlin.\r\n\r\nYou are receiving this email to confirm\
- your offer to give %s a ride from %s to %s on %s. To help you keep\
- in contact with your passengers, we've provided you their information\
- below:\r\n\r\nname: %s\r\nphone: %s\r\nemail: %s"%(rider,
-                                                    offer.start,
-                                                    offer.end,
-                                                    offer.date.strftime("%A, %B %d at %I:%M %p"),
-                                                    rider,
-                                                    rider.phone_number,
-                                                    rider.user.username)
+        body_driver = render_message( "taxi/static/emails/driver_thankyou.txt", locals() )
         send_email( email_to=request.user.username,
                     email_body=body_driver,
                     email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
 
         # Email the requester, telling them that they're request has been accepted, and
         # give them the driver's contact info.
-        body_requester = "%s has accepted your request\
- for a ride from %s to %s! The intended time of\
- departure is %s. Be safe, and be sure to thank\
- your driver and give them a little something\
- for gas! Generosity is what makes ridesharing\
- work.\r\n\r\nYour driver's contact information:\r\n\
-name: %s\r\nphone: %s\r\nemail: %s"%(offer.driver,
-                                     offer.start,
-                                     offer.end,
-                                     offer.date.strftime("%A, %B %d at %I:%M %p"),
-                                     offer.driver,
-                                     offer.driver.phone_number,
-                                     offer.driver.user.username)
+        body_requester = render_message( "taxi/static/emails/process_ask_for_ride_confirm.txt", locals() )
         send_email( email_to=rider.user.username,
                     email_body=body_requester,
                     email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
@@ -729,31 +670,31 @@ def cancel_ride(request, ride_id):
             data = form.cleaned_data
 
             try:
-                ride_request = RideRequest.objects.get(pk=ObjectId(ride_id))
+                req = RideRequest.objects.get(pk=ObjectId(ride_id))
             except RideRequest.DoesNotExist:
-                ride_request = None
+                req = None
 
             try:
-                ride_offer = RideOffer.objects.get(pk=ObjectId(ride_id))
+                offer = RideOffer.objects.get(pk=ObjectId(ride_id))
             except RideOffer.DoesNotExist:
-                ride_offer = None
+                offer = None
 
-            if not ride_request == None:
+            if not req == None:
                 reason_msg = data['reason']
-                email_message = "Hello,\r\n\nThis is an email concerning your upcoming trip %s.\r\n\nPlease note: %s has left your passenger group for the following reason:\r\n\n %s \r\n\nTo follow up, you can contact them at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_request), str(ride_request.passenger), reason_msg, ride_request.passenger.user.username )
-                if ride_request.ride_offer:
+                email_message = render_message( "taxi/static/emails/passenger_cancelled.txt", locals() )
+                if req.offer:
                     send_email(
                         email_subject='Rider Cancellation',
-                        email_to=ride_request.ride_offer.driver.user.username,
+                        email_to=req.offer.driver.user.username,
                         email_body=email_message
                     )
 
-                ride_request.delete()
-            elif not ride_offer == None:
+                req.delete()
+            elif not offer == None:
                 reason_msg = data['reason']
                 # This is a rock'n mess. Clean up*
-                email_message = "Hello,\r\n\nThis is an email concerning your upcoming ride %s.\r\n\nPlease note: the driver has CANCELLED this ride offer for the following reason:\r\n\n %s \r\n\nTo follow up, contact %s at %s. Please do not respond to this email.\r\n\nObieTaxi" % ( str(ride_offer), reason_msg, str(ride_offer.driver.user.first_name), str(ride_offer.driver.user.username) )
-                list_o_emails = [profile.user.username for profile in ride_offer.passengers]
+                email_message = render_message( "taxi/static/emails/driver_cancelled.txt", locals() )
+                list_o_emails = [profile.user.username for profile in offer.passengers]
                 if list_o_emails:
                     send_email(
                         email_subject='Ride Cancellation',
@@ -761,10 +702,10 @@ def cancel_ride(request, ride_id):
                         email_body=email_message
                     )
 
-                for each_ride in RideRequest.objects.filter(ride_offer=ride_offer):
-                    each_ride.ride_offer = None
+                for each_ride in RideRequest.objects.filter(offer=offer):
+                    each_ride.offer = None
                     each_ride.save()
-                ride_offer.delete()
+                offer.delete()
 
             return HttpResponseRedirect(reverse('user_home'))
 
@@ -926,7 +867,7 @@ def driver_feedback( request ):
 
                 if len(group_message) > 0 or len(val) > 0:
                     if len(group_message) > 0 and len(val)>0:
-                        email_body = "%s\r\n\r\nAdditionally, you driver says:\r\n\r\n%s"%(
+                        email_body = "%s\r\n\r\nAdditionally, your driver says:\r\n\r\n%s"%(
                             group_message,
                             val
                         )
