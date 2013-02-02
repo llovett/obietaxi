@@ -3,6 +3,23 @@ from random import choice
 from obietaxi import settings
 import math
 from django.http import Http404
+import re
+
+def render_message( filename, context ):
+    '''
+    Render a message as a string. The source of the message can be found in the text file
+    named by <filename>, with substitutions being as variables supplied by locals() or
+    globals() in <context>.
+    '''
+    replacements = {}
+    with open( filename, "r" ) as input:
+        contents = input.read()
+        for match in re.finditer( "{{(.*?)}}", contents ):
+            replacements[match.group(1)] = eval( match.group(1), context )
+    newstring = None
+    for orig, new in replacements.iteritems():
+        newstring = (newstring or contents).replace( '{{%s}}'%orig, str(new) )
+    return newstring
 
 def get_mongo_or_404( cls, **kwargs ):
     '''

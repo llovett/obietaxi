@@ -14,10 +14,8 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from Polygon.Shapes import Rectangle, Polygon
 from encoders import RideRequestEncoder, RideOfferEncoder
-from helpers import send_email, _hostname, geospatial_distance, get_mongo_or_404
+from helpers import send_email, _hostname, geospatial_distance, get_mongo_or_404, render_message
 import json
-
-
 
 ####################
 # HELPERS TO VIEWS #
@@ -163,34 +161,21 @@ def offer_ride( request ):
         offer.save()
 
     # Message to be sent to the passenger
-    appended = "This message has been sent to you because\
- someone found your request from {} to {} on {}. Please note that\
- the time and place from which your driver may want to depart may\
- not match that of your request; find ride information at the bottom\
- of this message. If you would like to accept this offer, please\
- follow {}.\r\nIf you would like to decline, follow {}.\r\n\r\n\
- departing from: {}\r\n\
- time: {}".format(
-        req.start,
-        req.end,
-        req.date.strftime("%A, %B %d at %I:%M %p"),
-        '{}{}?req={}&response={}&offer={}'.format(
+    accept_link = '{}{}?req={}&response={}&offer={}'.format(
             _hostname(),
             reverse( 'process_offer_ride' ),
             data['request_id'],
             'accept',
             str(offer.id)
-        ),
-        '{}{}?req={}&response={}&offer={}'.format(
+    )
+    decline_link = '{}{}?req={}&response={}&offer={}'.format(
             _hostname(),
             reverse( 'process_offer_ride' ),
             data['request_id'],
             'decline',
             str(offer.id)
-        ),
-        offer.start,
-        offer.time()
     )
+    appended = render_message( 'taxi/static/emails/offer_ride_accept_or_decline.txt', locals() )
 
     msg = "\r\n".join( (msg,30*'-',appended) )
 
