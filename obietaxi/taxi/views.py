@@ -652,10 +652,10 @@ def request_show( request ):
 
     return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
 
-def offer_show( request ):
+def offer_show( request, offer_id ):
     ''' Renders a page displaying more information about a particular RideOffer '''
 
-    ride_offer = get_mongo_or_404( RideOffer, pk=ObjectId(request.GET['offer_id']) )
+    ride_offer = get_mongo_or_404( RideOffer, pk=ObjectId(offer_id) )
 
     # This information is used in the template to determine if the user has already
     # requested a ride from this RideOffer
@@ -677,10 +677,10 @@ def offer_show( request ):
             sys.stderr.write("request search in offer_show returned the following: %s"%str(requests))
 
             requests = [(str(req.id),str(req)) for req in requests]
-            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']},
+            form = AskForRideForm(initial={'offer_id':offer_id},
                                   request_choices=requests)
         else:
-            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
+            form = AskForRideForm(initial={'offer_id':offer_id})
     return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
 
 ############
@@ -858,19 +858,21 @@ def userprofile_show( request ):
     else:
         profile = request.session['profile']
 
-    my_offers = RideOffer.objects.filter( driver=profile, completed=False, passengers__not__size=0 )
+    my_offers = RideOffer.objects.filter( driver=profile, completed=False )
     my_requests = RideRequest.objects.filter( passenger=profile )
 
     rides_requested, rides_offered, ride_requests_completed, ride_offers_completed = [], [], [], []
     now = datetime.now()
     for req in my_requests:
         if req.date < now:
-            ride_requests_completed.append( req )
+            if req.ride_offer:
+                ride_requests_completed.append( req )
         else:
             rides_requested.append( req )
     for o in my_offers:
         if o.date < now:
-            ride_offers_completed.append( o )
+            if not len(o.passengers) == 0:
+                ride_offers_completed.append( o )
         else:
             rides_offered.append( o )
     # Show detail page (not user home page) if specific user was given and it's not the logged-in user

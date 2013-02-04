@@ -25,7 +25,7 @@
       <tr><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
       {% for item in ride_offers %}
 	<tr id="ride_offer_listing_{{ item.id }}">
-	  <td><a href="/offer/show/?offer_id={{ item.id }}">{{ item.start }}</a></td>
+	  <td><a href="{% url offer_show item.id %}">{{ item.start }}</a></td>
 	  <td><a href="/offer/show/?offer_id={{ item.id }}">{{ item.end }}</a></td>
 	  <td><a href="/offer/show/?offer_id={{ item.id }}">{{ item.date }}</a></td>
 	  <td><a href="/accounts/profile/?user_id={{ item.driver.id }}">{{ item.driver }}</a></td>

@@ -7,7 +7,7 @@ urlpatterns = patterns('',
 
                        url( r'^offer/new/$', views.offer_new, name="offer_ride_new" ),
                        url( r'^offer/search/$', views.offer_search, name="offer_search" ),
-                       url( r'^offer/show/$', views.offer_show, name="offer_show" ),
+                       url( r'^offer/show/(?P<offer_id>[a-z0-9]+)/$', views.offer_show, name="offer_show" ),
                        url( r'^offer/propose/$', views.ask_for_ride, name="ask_for_ride" ),
                        url( r'^offer/proposal/$', views.process_ask_for_ride, name="process_ask_for_ride" ),
                        url( r'^offer/options/(?P<offer_id>[a-z0-9]+)/$', views.process_offer_update, name="offer_options" ),
