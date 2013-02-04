@@ -33,7 +33,7 @@ class LoginForm( forms.Form ):
               #  Submit('google_sign_in', 'Sign in with Google', css_id="google_button")
             )
         )
-        
+
         super(LoginForm, self).__init__(*args, **kwargs)
 
 class USPhoneNumberField( forms.CharField ):
@@ -111,3 +111,21 @@ class RegisterForm( forms.Form ):
 
         super(RegisterForm, self).__init__(*args, **kwargs)
 
+class GoogleRegisterForm( forms.Form ):
+    # Username is an email
+    phone = USPhoneNumberField()
+
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = reverse('google_register')
+        self.helper.form_method = 'POST'
+        self.form_id = 'google_register_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Almost Done!'
+                'phone',
+                ),
+            FormActions(Submit('register', 'Finish', css_id="finish_button")),
+        )
+
+        super(GoogleRegisterForm, self).__init__(*args, **kwargs)

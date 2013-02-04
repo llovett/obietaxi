@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
-from forms import LoginForm, RegisterForm
+from forms import LoginForm, RegisterForm, GoogleRegisterForm
 from mongoengine.django.auth import User
 from random import choice
 from models import RegistrationStub, OpenidAuthStub
@@ -24,7 +24,7 @@ def login_view( request ):
     # Login form submitted
     if request.method == 'POST':
         form = LoginForm(request.POST)
-        
+
         if form.is_valid():
             data = form.cleaned_data
             error_msg = ''
@@ -80,7 +80,7 @@ def login_view( request ):
         ########################################
 
         endpoint = str( get_endpoint() )
-        
+
         params = {
             'openid.mode' : 'checkid_setup',
             'openid.ns' : 'http://specs.openid.net/auth/2.0',
@@ -110,8 +110,8 @@ def google_login_success( request ):
         params = request.GET
     elif request.method == 'POST':
         params = request.POST
-    values = { p.split('.')[-1] : params[p] for p in params.keys() if 'value' in p }    
-    
+    values = { p.split('.')[-1] : params[p] for p in params.keys() if 'value' in p }
+
     mode = params['openid.mode']
     if mode != 'id_res':
         # The user declined to sign in at Google
@@ -150,11 +150,28 @@ def google_login_success( request ):
         profile.openid_auth_stub = OpenidAuthStub(association=association, claimed_id=userid)
         profile.save()
 
+    # Get the user's phone number if they do not have one already registered
+    if not profile.phone_number:
+        return HttpResponseRedirect( reverse('google_register') )
+
     profile.user.backend = 'mongoengine.django.auth.MongoEngineBackend'
     login( request, profile.user )
     return render_to_response( 'google_login_success.html',
                                locals(),
                                context_instance=RequestContext(request) )
+
+def google_register( request ):
+    if request.method == 'POST':
+        form = GoogleRegisterForm( request.POST )
+        if form.is_valid():
+            #TODO: Store the user's phone number
+            pass
+    else:
+        form = GoogleRegisterForm()
+    return render_to_response( 'google_register.html',
+                               locals(),
+                               context_instance=RequestContext(request) )
+
 
 def activate( request ):
     # Try to find the user/stub to activate
@@ -198,7 +215,7 @@ def register( request ):
             profile = UserProfile.objects.create( phone_number=form.cleaned_data['phone'],
                                                  user=user )
             stub = RegistrationStub.objects.create( user=user )
-            
+
             # Send confirmation email
             hostname = _hostname( protocol="" )
             activate_uri = reverse( 'activate' )
@@ -208,10 +225,10 @@ def register( request ):
             email_to = [form.cleaned_data['username']]
             msg_body = "Welcome to Obietaxi! Your account has already been created with this email address, now all you need to do is confirm your accout by clicking on the link below. If there is no link, you should copy & paste the address into your browser's address bar and navigate there.\n\n{}".format( activate_link )
             send_email( email_to=email_to, email_subject=email_subject, email_body=msg_body )
-            
+
             messages.add_message( request, messages.SUCCESS, "Your account has been created. Check your email for a confirmation link to complete the registration process." )
             return HttpResponseRedirect( reverse('login') )
-        
+
     # Form needs to be rendered
     else:
         form = RegisterForm()
