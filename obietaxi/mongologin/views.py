@@ -37,9 +37,9 @@ def login_view( request ):
                     request.session['profile'] = UserProfile.objects.get(user=user)
                     return HttpResponseRedirect( reverse('user_home') )
                 else:
-                    return _fail_login( request, 'invalid login' )
+                    return _fail_login( request, 'invalid login (note: you must Sign in with Google if that\'s how you signed up initially)' )
             except User.DoesNotExist:
-                return _fail_login( request, 'invalid login' )
+                return _fail_login( request, 'invalid login (note: you must Sign in with Google if that\'s how you signed up initially)' )
 
         #form = LoginForm()
         return render_to_response( 'login.html', locals(), context_instance=RequestContext(request) )
@@ -150,6 +150,9 @@ def google_login_success( request ):
         profile.openid_auth_stub = OpenidAuthStub(association=association, claimed_id=userid)
         profile.save()
 
+    # Store the profile in the session
+    request.session['profile'] = profile
+
     # Get the user's phone number if they do not have one already registered
     if not profile.phone_number:
         return HttpResponseRedirect( reverse('google_register') )
@@ -164,8 +167,14 @@ def google_register( request ):
     if request.method == 'POST':
         form = GoogleRegisterForm( request.POST )
         if form.is_valid():
-            #TODO: Store the user's phone number
-            pass
+            # Get the user's profile
+            profile = request.session.get("profile")
+            # Store the phone number
+            profile.phone_number = form.cleaned_data['phone']
+            profile.save()
+            messages.add_message( request, messages.SUCCESS,
+                                  "Your profile has been saved!" )
+            return HttpResponseRedirect( reverse('user_home') )
     else:
         form = GoogleRegisterForm()
     return render_to_response( 'google_register.html',

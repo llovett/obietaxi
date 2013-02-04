@@ -2,7 +2,7 @@ from django import forms
 from django.core.validators import EMPTY_VALUES
 from django.utils.encoding import smart_text
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset
+from crispy_forms.layout import Submit, Layout, Fieldset, HTML
 from crispy_forms.bootstrap import FormActions
 from mongoengine.django.auth import User
 from django.core.urlresolvers import reverse
@@ -122,7 +122,12 @@ class GoogleRegisterForm( forms.Form ):
         self.form_id = 'google_register_form'
         self.helper.layout = Layout(
             Fieldset(
-                'Almost Done!'
+                'Almost Done!',
+                HTML( """
+<p>Google does not supply us with your phone number, but we need that information \
+in order to connect passengers and drivers together with the most complete contact \
+information for each other. We keep information only to help with the logistical process \
+of finding and giving rides, and no more.</p>"""),
                 'phone',
                 ),
             FormActions(Submit('register', 'Finish', css_id="finish_button")),
