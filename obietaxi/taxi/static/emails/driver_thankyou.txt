@@ -1,0 +1,9 @@
+Dear {{offer.driver.user.first_name}},
+
+Thank you for your helpfulness and generosity. Drivers like you who offer space in their car greatly increase mobility in Oberlin.
+
+You are receiving this email to confirm your offer to give {{req.passenger}} a ride from {{req.start}} to {{req.end}} on {{req.time()}}. To help you keep in contact with your passengers, we've provided you their information below:
+
+name: {{req.passenger}}
+phone: {{req.phone_number}}
+email: {{req.passenger.user.username}}
