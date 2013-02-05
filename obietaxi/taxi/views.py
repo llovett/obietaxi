@@ -499,7 +499,7 @@ def _process_ro_form( request, type ):
         # Return listings of the other type
         return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
 
-    # Render the form
+    # Render the form if it was invalid
     return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
 
 
@@ -516,17 +516,28 @@ def offer_search( request ):
     Searches for and returns any RideOffers whose driving area encompasses that
     of this RideRequest.
     '''
-
     # Use the form data
     form = RideRequestOfferForm( request.POST )
-
     if form.is_valid():
         filtered_offers = _offer_search( **form.cleaned_data )
         return HttpResponse( json.dumps({"offers":filtered_offers}, cls=RideOfferEncoder),
                              mimetype='application/json' )
-
     # Something went wrong.... return an empty response?
     return HttpResponse()
+
+def offer_search_and_display( request ):
+    '''
+    Searches for ride offers per the restrictions given in <request>.POST.
+    Renders the results into the "browse.html" page. This is different from
+    the 'offer_search' view because it renders HTML instead of giving JSON.
+    '''
+    form = RideRequestOfferForm( request.POST )
+    if form.is_valid():
+        ride_offers = _offer_search( **form.cleaned_data )
+        return render_to_response( "browse.html",
+                                   locals(),
+                                   context_instance=RequestContext(request) )
+    return HttpResponseRedirect( reverse('browse') )
 
 @login_required
 def request_new( request ):
@@ -553,8 +564,28 @@ def request_search( request ):
     requests = { "requests" : [requestEncoder.default(r) for r in _request_search( polygon=bboxContour,
                                                                                    date=offer_start_time,
                                                                                    fuzziness=offer_fuzziness )] }
-
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
+
+def request_search_and_display( request ):
+    '''
+    Searches for RideRequests with the given filters in <request>.POST
+    Renders results of the search into "browse.html".
+    This view is different from 'request_search' because it returns HTML, not JSON.
+    '''
+    postData = json.loads( request.raw_post_data )
+    rectangles = postData['rectangles']
+    bboxArea, bboxContour = _merge_boxes( rectangles )
+
+    offer_start_time = datetime.fromtimestamp( float(postData['start_time'])/1000 )
+    offer_fuzziness = postData['fuzziness']
+
+    requestEncoder = RideRequestEncoder()
+    ride_requests =  _request_search( polygon=bboxContour,
+                                      date=offer_start_time,
+                                      fuzziness=offer_fuzziness )
+    return render_to_response( "browse.html",
+                               locals(),
+                               context_instance=RequestContext(request) )
 
 def request_show( request ):
     ''' Renders a page displaying more information about a particular RideRequest '''

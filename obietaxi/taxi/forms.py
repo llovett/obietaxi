@@ -146,7 +146,7 @@ class RideRequestOfferForm (forms.Form):
 
     def __init__( self, *args, **kwargs ):
         self.helper = FormHelper()
-        self.helper.form_action = reverse( 'request_ride_new' )
+        self.helper.form_action = reverse( 'request_search_and_display' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'offer_or_request_form'
         self.helper.layout = Layout(
@@ -164,7 +164,7 @@ class RideRequestOfferForm (forms.Form):
                 ),
             FormActions(
                 Submit('ask', 'Search Rides', css_id="ask_button" ),
-                Submit('offer', 'Offer a Ride', css_id="offer_button" )
+                Submit('offer', 'Search Offers', css_id="offer_button" )
             )
         )
 
@@ -354,7 +354,7 @@ class RiderFeedbackForm(forms.Form):
         label='',
         required=False
     )
-        
+
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_action = '.'
@@ -369,5 +369,5 @@ class RiderFeedbackForm(forms.Form):
                 Submit('give','Give Feedback'),
             )
         )
-    
+
         super(RiderFeedbackForm, self).__init__(*args, **kwargs)

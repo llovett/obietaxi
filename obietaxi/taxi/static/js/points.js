@@ -38,46 +38,23 @@
 	// What we do when the "Offer a Ride" button is pressed
 	$("#offer_button").click(
 	    function( event ) {
-		event.preventDefault();
-		route( function( results ) {
-		    // If there are no passenger results immediately, submit offer
-		    // and go to browse page showing requests
-		    if ( results.length == 0 ) {
-			$("#offer_or_request_form").attr( {"action":"/offer/new/"} );
-			console.log("no results... posting offer in foreground.");
-			$("#offer_or_request_form").submit();
-		    } else {
-			// Submit offer in the background
-			console.log("submitting offer via AJAX");
-			$.ajax( {
-			    type: "POST",
-			    url: "/offer/new/",
-			    data: $("#offer_or_request_form").serialize()
-			} );
-		    }
-		} );
+		// event.preventDefault();
+
+		// Show suggested travel route on the map
+		route();
+		//TODO: allow the driver to modify the route and
+		//update #id_polygon as necessary
+
+		//TODO: show "ok" button under map that acutally does the submission
+
+		$("#offer_or_request_form").attr( {"action": "/offer/search/browse/"} );
+
 	    }
 	);
 	// What we do when the "Ask for a Ride" button is pressed
 	$("#ask_button").click(
-	    function( event ) {
-		event.preventDefault();
-		$("#offer_or_request_form").attr( {"action": "/request/new/"} );
-		searchOffers(
-		    function( results ) {
-			if ( results.length == 0 ) {
-			    console.log("No offer search results.");
-			    $("#offer_or_request_form").submit();
-			} else {
-			    // console.log("submitting request via AJAX");
-			    // $.ajax( {
-			    // 	type: "POST",
-			    // 	url: "/request/new/",
-			    // 	data: $("#offer_or_request_form").serialize()
-			    // } );
-			}
-		    }
-		);
+	    function() {
+		$("#offer_or_request_form").attr( {"action": "/request/search/browse/"} );
 	    }
 	);
 
@@ -178,7 +155,7 @@
 
     // Find a route between two points. Find also all points we have
     // stored within a certain distance of that route.
-    function route( callback ) {
+    function route() {
 	// Bounding-box encapsulation distance
 	var distance = "10";
 
@@ -199,51 +176,53 @@
 		var path = result.routes[0].overview_path;
 		var boxes = routeBoxer.box( path, distance );
 
-		// Make a request to the server -------
-		// bounding boxes:
-		var request = boxesToJSON( boxes );
+		// // Make a request to the server -------
+		// // bounding boxes:
+		// var request = boxesToJSON( boxes );
+
 		// Save the JSON'd boxes in the "polygon" field of the form
 		$("#id_polygon").val( JSON.stringify(request) );
-		var startDate = Date.parse($("#id_date_0").val()+" "+$("#id_date_1").val());
-		// Get approximate start/end times for this trip
-		request.start_time = startDate;
-		var rideLength = 0;
-		for ( var i=0; i<result.routes[0].legs.length; i++ ) {
-		    rideLength += result.routes[i].legs[0].duration.value;
-		}
-		var endDate = startDate + 1000.0*rideLength;
-		request.end_time = endDate;
-		// Get fuzzy
-		request.fuzziness = $("#id_fuzziness option:selected").val();
 
-		console.log( request );
+		// var startDate = Date.parse($("#id_date_0").val()+" "+$("#id_date_1").val());
+		// // Get approximate start/end times for this trip
+		// request.start_time = startDate;
+		// var rideLength = 0;
+		// for ( var i=0; i<result.routes[0].legs.length; i++ ) {
+		//     rideLength += result.routes[i].legs[0].duration.value;
+		// }
+		// var endDate = startDate + 1000.0*rideLength;
+		// request.end_time = endDate;
+		// // Get fuzzy
+		// request.fuzziness = $("#id_fuzziness option:selected").val();
 
-		$.ajax( {
-		    type: "POST",
-		    url: "/request/search/",
-		    data: JSON.stringify( request ),
-		    dataType: "text",
-		    success: function( data ) {
-			// Convert to object from JSON string
-			var requests = ( $.parseJSON( data ) ).requests;
-			var start_points = new Array();
-			var end_points = new Array();
-			for( var i = 0; i<requests.length; i++){
-			    //grabbing start and end points for each location
-			    start_points[i] = requests[i].location_start;
-			    end_points[i] = requests[i].location_end;
-			}
+		// console.log( request );
 
-			// Display markers that fit within the union of the boxes
-			clearMarkers();
-			showRides( requests );
-			if ( !(typeof callback === 'undefined') ) {
-			    callback( requests );
-			}
-		    }
-		} );
+		// $.ajax( {
+		//     type: "POST",
+		//     url: "/request/search/",
+		//     data: JSON.stringify( request ),
+		//     dataType: "text",
+		//     success: function( data ) {
+		// 	// Convert to object from JSON string
+		// 	var requests = ( $.parseJSON( data ) ).requests;
+		// 	var start_points = new Array();
+		// 	var end_points = new Array();
+		// 	for( var i = 0; i<requests.length; i++){
+		// 	    //grabbing start and end points for each location
+		// 	    start_points[i] = requests[i].location_start;
+		// 	    end_points[i] = requests[i].location_end;
+		// 	}
+
+		// 	// Display markers that fit within the union of the boxes
+		// 	clearMarkers();
+		// 	showRides( requests );
+		// 	if ( !(typeof callback === 'undefined') ) {
+		// 	    callback( requests );
+		// 	}
+		//     }
+		// } );
 	    } else {
-		$("#status").text("Directions query failed: "+status);
+		console.log("Could not load directions from Google!");
 	    }
 	} );
     }
