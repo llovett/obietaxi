@@ -537,7 +537,9 @@ def offer_search_and_display( request ):
         return render_to_response( "browse.html",
                                    locals(),
                                    context_instance=RequestContext(request) )
-    return HttpResponseRedirect( reverse('browse') )
+    return render_to_response( "index.html",
+                               locals(),
+                               context_instance=RequestContext(request) )
 
 @login_required
 def request_new( request ):
@@ -572,18 +574,22 @@ def request_search_and_display( request ):
     Renders results of the search into "browse.html".
     This view is different from 'request_search' because it returns HTML, not JSON.
     '''
-    postData = json.loads( request.raw_post_data )
-    rectangles = postData['rectangles']
-    bboxArea, bboxContour = _merge_boxes( rectangles )
+    form = RideRequestOfferForm( request.POST )
+    if form.is_valid():
+        rectangles = form.cleaned_data['rectangles']
+        bboxArea, bboxContour = _merge_boxes( rectangles )
 
-    offer_start_time = datetime.fromtimestamp( float(postData['start_time'])/1000 )
-    offer_fuzziness = postData['fuzziness']
+        offer_start_time = datetime.fromtimestamp( float(form.cleaned_data['start_time'])/1000 )
+        offer_fuzziness = form.cleaned_data['fuzziness']
 
-    requestEncoder = RideRequestEncoder()
-    ride_requests =  _request_search( polygon=bboxContour,
-                                      date=offer_start_time,
-                                      fuzziness=offer_fuzziness )
-    return render_to_response( "browse.html",
+        requestEncoder = RideRequestEncoder()
+        ride_requests =  _request_search( polygon=bboxContour,
+                                          date=offer_start_time,
+                                          fuzziness=offer_fuzziness )
+        return render_to_response( "browse.html",
+                                   locals(),
+                                   context_instance=RequestContext(request) )
+    return render_to_response( "index.html",
                                locals(),
                                context_instance=RequestContext(request) )
 

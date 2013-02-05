@@ -38,17 +38,13 @@
 	// What we do when the "Offer a Ride" button is pressed
 	$("#offer_button").click(
 	    function( event ) {
-		// event.preventDefault();
+		$("#offer_or_request_form").attr( {"action": "/offer/search/browse/"} );
 
 		// Show suggested travel route on the map
 		route();
 		//TODO: allow the driver to modify the route and
 		//update #id_polygon as necessary
-
 		//TODO: show "ok" button under map that acutally does the submission
-
-		$("#offer_or_request_form").attr( {"action": "/offer/search/browse/"} );
-
 	    }
 	);
 	// What we do when the "Ask for a Ride" button is pressed
