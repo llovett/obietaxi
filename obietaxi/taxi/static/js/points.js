@@ -35,24 +35,38 @@
 	directionsRenderer = new google.maps.DirectionsRenderer( {map: map} );
 	routeBoxer = new RouteBoxer();
 
-	// What we do when the "Offer a Ride" button is pressed
-	$("#offer_button").click(
+	// What we do when the "Search Offers" button is pressed
+	$("#search_offers_button").click(
+	    function() {
+		$("#offer_or_request_form").attr( {"action": "/request/search/browse/"} );
+	    }
+	);
+	// What we do when the "Search Rides" button is pressed
+	$("#search_rides_button").click(
 	    function( event ) {
+		event.preventDefault();
+
 		$("#offer_or_request_form").attr( {"action": "/offer/search/browse/"} );
 
 		// Show suggested travel route on the map
 		route();
 		//TODO: allow the driver to modify the route and
 		//update #id_polygon as necessary
-		//TODO: show "ok" button under map that acutally does the submission
+		$("#right_panel").css( {'margin-left':0} );
 	    }
 	);
-	// What we do when the "Ask for a Ride" button is pressed
-	$("#ask_button").click(
+	// Submission after meddling with the map
+	$("#submit_from_map").click(
 	    function() {
+		// Save the JSON'd boxes in the "polygon" field of the form
+		$("#id_polygon").val( JSON.stringify(boxesToJSON(boxes)) );
 		$("#offer_or_request_form").attr( {"action": "/request/search/browse/"} );
+		$("#offer_or_request_form").submit();
 	    }
 	);
+
+	// Hide the right panel (containing the map, "OK" button for searching rides)
+	$("#right_panel").css( {'margin-left':1000} );
 
 	// Update the "repeat" options when date, so we can be clear what
 	// the repeat options mean.
@@ -177,7 +191,7 @@
 		// var request = boxesToJSON( boxes );
 
 		// Save the JSON'd boxes in the "polygon" field of the form
-		$("#id_polygon").val( JSON.stringify(request) );
+		$("#id_polygon").val( JSON.stringify(boxesToJSON(boxes)) );
 
 		// var startDate = Date.parse($("#id_date_0").val()+" "+$("#id_date_1").val());
 		// // Get approximate start/end times for this trip

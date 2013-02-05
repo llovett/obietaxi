@@ -163,8 +163,8 @@ class RideRequestOfferForm (forms.Form):
                 'fuzziness'
                 ),
             FormActions(
-                Submit('ask', 'Search Rides', css_id="ask_button" ),
-                Submit('offer', 'Search Offers', css_id="offer_button" )
+                Submit('search_rides', 'Search Rides', css_id="search_rides_button" ),
+                Submit('search_offers', 'Search Offers', css_id="search_offers_button" )
             )
         )
 
