@@ -1,5 +1,6 @@
 import mongoengine as mdb
 from mongologin.models import OpenidAuthStub
+from mongoengine.django.auth import User
 from taxi.helpers import geospatial_distance
 
 class Trust(mdb.EmbeddedDocument):
@@ -35,7 +36,8 @@ class UserProfile(mdb.Document):
     requests = mdb.ListField(mdb.ReferenceField('RideRequest'))
     # mongoengine user object
     # This already contains email, firstname, lastname
-    user = mdb.ReferenceField( 'mongoengine.django.auth.User' )
+    user = mdb.ReferenceField( User, reverse_delete_rule=mdb.CASCADE )
+
     # Holds openid data
     openid_auth_stub = mdb.EmbeddedDocumentField( OpenidAuthStub )
 

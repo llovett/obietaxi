@@ -125,6 +125,64 @@ def _offer_search( **kwargs ):
                 filtered_offers.append( offer )
     return filtered_offers
 
+def _merge_boxes( boxes ):
+    '''
+    Merges a list of points specifying contiguous boxes into a single
+    Polygon.  Returns the polygon, list of points on the polygon.
+    '''
+    # bboxArea = the union of all the bounding boxes on the route
+    bboxArea = None
+    # union all the boxes together
+    for i in xrange(0,len(boxes),4):
+        # Make a Rectangle out of the width/height of a bounding box
+        # longitude = x, latitude = y
+        theRect = Rectangle( abs(boxes[i] - boxes[i+2]),
+                             abs(boxes[i+1] - boxes[i+3]) )
+        theRect.shift( boxes[i+2], boxes[i+3] )
+        bboxArea = bboxArea + theRect if bboxArea else theRect
+
+    # turn bboxArea into a list of points
+    bboxContour = [list(t) for t in bboxArea.contour( 0 )]
+
+    return bboxArea, bboxContour
+
+def _request_search( **kwargs ):
+    '''
+    Searches for RideRequests that meet the criteria specified in **kargs.
+    The criteria are:
+
+    REQUIRED:
+    polygon : a list of coordinates giving the route of the offer
+    date : a datetime object giving the departure date and time
+    fuzziness : the time fuzziness to search within
+
+    NOT REQUIRED:
+    other_filters : a dictionary containing other filters to apply in the query
+
+    Returns a list of RideOffers that match
+
+    '''
+    polygon = kwargs['polygon']
+    offer_start_time = kwargs['date']
+    offer_fuzziness = kwargs['fuzziness']
+
+    # RideRequests within the bounds
+    if not 'other_filters' in kwargs:
+        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon )
+    else:
+        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon,
+                                                            **kwargs['other_filters'] )
+
+    # Filter by date
+    def in_date( req ):
+        return _dates_match( req.date, req.fuzziness, offer_start_time, offer_fuzziness )
+    requests_within_start = [req for req in requests_within_start if in_date(req)]
+
+    # Can't do two geospatial queries at once :(
+    bboxArea = Polygon( polygon )
+    requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
+    return requests_on_route
+
 
 #########
 # TRIPS #
@@ -478,64 +536,6 @@ def request_new( request ):
     '''
     return _process_ro_form( request, 'request' )
 
-def _merge_boxes( boxes ):
-    '''
-    Merges a list of points specifying contiguous boxes into a single
-    Polygon.  Returns the polygon, list of points on the polygon.
-    '''
-    # bboxArea = the union of all the bounding boxes on the route
-    bboxArea = None
-    # union all the boxes together
-    for i in xrange(0,len(boxes),4):
-        # Make a Rectangle out of the width/height of a bounding box
-        # longitude = x, latitude = y
-        theRect = Rectangle( abs(boxes[i] - boxes[i+2]),
-                             abs(boxes[i+1] - boxes[i+3]) )
-        theRect.shift( boxes[i+2], boxes[i+3] )
-        bboxArea = bboxArea + theRect if bboxArea else theRect
-
-    # turn bboxArea into a list of points
-    bboxContour = [list(t) for t in bboxArea.contour( 0 )]
-
-    return bboxArea, bboxContour
-
-def _request_search( **kwargs ):
-    '''
-    Searches for RideRequests that meet the criteria specified in **kargs.
-    The criteria are:
-
-    REQUIRED:
-    polygon : a list of coordinates giving the route of the offer
-    date : a datetime object giving the departure date and time
-    fuzziness : the fuzziness to search with
-
-    NOT REQUIRED:
-    other_filters : a dictionary containing other filters to apply in the query
-
-    Returns a list of RideOffers that match
-
-    '''
-    polygon = kwargs['polygon']
-    offer_start_time = kwargs['date']
-    offer_fuzziness = kwargs['fuzziness']
-
-    # RideRequests within the bounds
-    if not 'other_filters' in kwargs:
-        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon )
-    else:
-        requests_within_start = RideRequest.objects.filter( start__position__within_polygon=polygon,
-                                                            **kwargs['other_filters'] )
-
-    # Filter by date
-    def in_date( req ):
-        return _dates_match( req.date, req.fuzziness, offer_start_time, offer_fuzziness )
-    requests_within_start = [req for req in requests_within_start if in_date(req)]
-
-    # Can't do two geospatial queries at once :(
-    bboxArea = Polygon( polygon )
-    requests_on_route = [r for r in requests_within_start if bboxArea.isInside(*r.end.position)]
-    return requests_on_route
-
 def request_search( request ):
     '''
     Searches for and returns any RideRequests within the bounds of the rectangles given
@@ -546,7 +546,6 @@ def request_search( request ):
     rectangles = postData['rectangles']
     bboxArea, bboxContour = _merge_boxes( rectangles )
 
-    # TODO: make this work with time fuzziness
     offer_start_time = datetime.fromtimestamp( float(postData['start_time'])/1000 )
     offer_fuzziness = postData['fuzziness']
 
