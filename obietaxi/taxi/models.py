@@ -86,7 +86,7 @@ class RideOffer(mdb.Document):
     end = mdb.EmbeddedDocumentField(Location)
     message = mdb.StringField()
     date = mdb.DateTimeField()
-    fuzziness = mdb.StringField()
+    fuzziness = mdb.StringField( default="1-hours" )
     # N.B.: This is unused. Could be a feature in the future
     repeat = mdb.StringField()
 

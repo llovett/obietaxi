@@ -7,13 +7,14 @@
   {% if ride_requests %}
     <h2>Ride Requests</h2>
     <table name="ride_requests" id="ride_request_table" class="browse_table">
-      <tr><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
+      <tr><th><!--blank--></th><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
       {% for item in ride_requests %}
 	<tr id="ride_request_listing_{{ item.id }}">
-	  <td><a href="/request/show/?request_id={{ item.id }}">{{ item.start }}</a></td>
-	  <td><a href="/request/show/?request_id={{ item.id }}">{{ item.end }}</a></td>
-	  <td><a href="/request/show/?request_id={{ item.id }}">{{ item.date }}</a></td>
-	  <td><a href="/accounts/profile/?user_id={{ item.passenger.id }}">{{ item.passenger }}</a></td>
+	  <td><a href="{% url request_show item.id %}">view</td>
+	  <td><!--<a href="{% url request_show item.id %}">-->{{ item.start }}</a></td>
+	  <td><!--<a href="/request/show/?request_id={{ item.id }}">-->{{ item.end }}</a></td>
+	  <td><!--<a href="/request/show/?request_id={{ item.id }}">-->{{ item.date }}</a></td>
+	  <td><a href="{% url user_home item.passenger.user.id %}">{{ item.passenger }}</a></td>
 	</tr>
       {% endfor %}
     </table>
@@ -22,13 +23,14 @@
   {% if ride_offers %}
     <h2>Ride Offers</h2>
     <table name="ride_offers" id="ride_offer_table" class="browse_table">
-      <tr><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
+      <tr><th><!--blank--></th><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
       {% for item in ride_offers %}
 	<tr id="ride_offer_listing_{{ item.id }}">
-	  <td><a href="{% url offer_show item.id %}">{{ item.start }}</a></td>
-	  <td><a href="/offer/show/?offer_id={{ item.id }}">{{ item.end }}</a></td>
-	  <td><a href="/offer/show/?offer_id={{ item.id }}">{{ item.date }}</a></td>
-	  <td><a href="/accounts/profile/?user_id={{ item.driver.id }}">{{ item.driver }}</a></td>
+	  <td><a href="{% url offer_show item.id %}"> view </a></td>
+	  <td><!--<a href="{% url offer_show item.id %}">-->{{ item.start }}</a></td>
+	  <td><!--<a href="{% url offer_show item.id %}">-->{{ item.end }}</a></td>
+	  <td><!--<a href="{% url offer_show item.id %}">-->{{ item.date }}</a></td>
+	  <td><a href="{% url user_home item.driver.user.id %}">{{ item.driver }}</a></td>
 	</tr>
       {% endfor %}
     </table>
