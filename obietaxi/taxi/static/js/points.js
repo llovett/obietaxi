@@ -70,7 +70,6 @@
 	$("#submit_from_map").click(
 	    function() {
 		// Save the JSON'd boxes in the "polygon" field of the form
-		$("#id_polygon").val( JSON.stringify(boxesToJSON(boxes)) );
 		$("#offer_or_request_form").attr( {"action": "/request/search/browse/"} );
 		$("#offer_or_request_form").submit();
 	    }

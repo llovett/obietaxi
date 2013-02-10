@@ -576,10 +576,12 @@ def request_search_and_display( request ):
     '''
     form = RideRequestOfferForm( request.POST )
     if form.is_valid():
-        rectangles = form.cleaned_data['rectangles']
+        rectangles = json.loads( form.cleaned_data['polygon'] )['rectangles']
         bboxArea, bboxContour = _merge_boxes( rectangles )
 
-        offer_start_time = datetime.fromtimestamp( float(form.cleaned_data['start_time'])/1000 )
+        # date_string = '%s %s'%(form.cleaned_data['date_0'],form.cleaned_data['date_1'])
+        # offer_start_time = datetime.strptime( date_string, "%m/%d/%Y %I:%M %p" )
+        offer_start_time = form.cleaned_data['date']
         offer_fuzziness = form.cleaned_data['fuzziness']
 
         requestEncoder = RideRequestEncoder()
@@ -589,6 +591,10 @@ def request_search_and_display( request ):
         return render_to_response( "browse.html",
                                    locals(),
                                    context_instance=RequestContext(request) )
+
+    import sys
+    sys.stderr.write( str(form._errors) )
+
     return render_to_response( "index.html",
                                locals(),
                                context_instance=RequestContext(request) )
