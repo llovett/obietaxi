@@ -180,7 +180,6 @@ def google_register( request ):
                                locals(),
                                context_instance=RequestContext(request) )
 
-
 def activate( request ):
     # Try to find the user/stub to activate
     try:

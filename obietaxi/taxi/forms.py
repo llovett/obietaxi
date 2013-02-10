@@ -145,6 +145,12 @@ class RideRequestOfferForm (forms.Form):
     fuzziness = forms.ChoiceField(choices=FUZZY_OPTIONS)
 
     def __init__( self, *args, **kwargs ):
+        super( RideRequestOfferForm, self ).__init__( *args, **kwargs )
+
+class RideRequestOfferSearchForm (RideRequestOfferForm):
+    def __init__( self, *args, **kwargs ):
+        super( RideRequestOfferSearchForm, self ).__init__( *args, **kwargs )
+
         self.helper = FormHelper()
         self.helper.form_action = reverse( 'request_search_and_display' )
         self.helper.form_method = 'POST'
@@ -167,8 +173,6 @@ class RideRequestOfferForm (forms.Form):
                 Submit('search_offers', 'Search Offers', css_id="search_offers_button" )
             )
         )
-
-        super( RideRequestOfferForm, self ).__init__( *args, **kwargs )
 
 class OfferOptionsForm (forms.Form):
     '''

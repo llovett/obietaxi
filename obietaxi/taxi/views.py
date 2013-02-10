@@ -5,7 +5,7 @@ from django.contrib import messages
 from bson.objectid import ObjectId
 from mongoengine.queryset import Q
 from models import RideRequest, UserProfile, RideOffer, Location, Trust
-from forms import RideRequestOfferForm, AskForRideForm, OfferRideForm, OfferOptionsForm, RequestOptionsForm, CancellationForm, DriverFeedbackForm, RiderFeedbackForm
+from forms import AskForRideForm, OfferRideForm, OfferOptionsForm, RequestOptionsForm, CancellationForm, DriverFeedbackForm, RiderFeedbackForm, RideRequestOfferSearchForm
 from datetime import datetime, timedelta
 from random import random
 from time import strptime,mktime
@@ -438,7 +438,7 @@ def process_ask_for_ride( request ):
 
 def request_or_offer_ride( request ):
     ''' Renders the ride request/offer form the first time '''
-    form = RideRequestOfferForm()
+    form = RideRequestOfferSearchForm()
     return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
 
 def _process_ro_form( request, type ):
@@ -447,7 +447,7 @@ def _process_ro_form( request, type ):
 
     '''
 
-    form = RideRequestOfferForm( request.POST )
+    form = RideRequestOfferSearchForm( request.POST )
 
     # Form validates
     if form.is_valid():
@@ -517,7 +517,7 @@ def offer_search( request ):
     of this RideRequest.
     '''
     # Use the form data
-    form = RideRequestOfferForm( request.POST )
+    form = RideRequestOfferSearchForm( request.POST )
     if form.is_valid():
         filtered_offers = _offer_search( **form.cleaned_data )
         return HttpResponse( json.dumps({"offers":filtered_offers}, cls=RideOfferEncoder),
@@ -531,7 +531,7 @@ def offer_search_and_display( request ):
     Renders the results into the "browse.html" page. This is different from
     the 'offer_search' view because it renders HTML instead of giving JSON.
     '''
-    form = RideRequestOfferForm( request.POST )
+    form = RideRequestOfferSearchForm( request.POST )
     if form.is_valid():
         ride_offers = _offer_search( **form.cleaned_data )
         return render_to_response( "browse.html",
@@ -574,9 +574,8 @@ def request_search_and_display( request ):
     Renders results of the search into "browse.html".
     This view is different from 'request_search' because it returns HTML, not JSON.
     '''
-    form = RideRequestOfferForm( request.POST )
+    form = RideRequestOfferSearchForm( request.POST )
     if form.is_valid():
-        rectangles = json.loads( form.cleaned_data['polygon'] )['rectangles']
         bboxArea, bboxContour = _merge_boxes( rectangles )
 
         # date_string = '%s %s'%(form.cleaned_data['date_0'],form.cleaned_data['date_1'])

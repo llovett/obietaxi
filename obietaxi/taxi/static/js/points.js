@@ -46,15 +46,13 @@
 	// What we do when the "Search Offers" button is pressed
 	$("#search_offers_button").click(
 	    function() {
-		$("#offer_or_request_form").attr( {"action": "/request/search/browse/"} );
+		$("#offer_or_request_form").attr( {"action": "/offer/search/browse/"} );
 	    }
 	);
 	// What we do when the "Search Rides" button is pressed
 	$("#search_rides_button").click(
 	    function( event ) {
 		event.preventDefault();
-
-		$("#offer_or_request_form").attr( {"action": "/offer/search/browse/"} );
 
 		// Show suggested travel route on the map
 		route(
