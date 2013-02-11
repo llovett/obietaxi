@@ -1,6 +1,6 @@
 from django import forms
 from bson.objectid import ObjectId
-from django.forms.widgets import Textarea
+from django.forms.widgets import Textarea, TextInput
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset
 from crispy_forms.bootstrap import FormActions
@@ -113,9 +113,6 @@ class RideRequestOfferForm (forms.Form):
     # rendered by the JavaScript in points.js
     polygon = forms.CharField( widget=forms.HiddenInput, required=False )
 
-    start_location = forms.CharField()
-    end_location = forms.CharField()
-
     # TODO: make a custom widget for this
     input_formats = [
         '%Y-%m-%d %H:%M:%S',     # '2006-10-25 14:30:59'
@@ -147,6 +144,13 @@ class RideRequestOfferForm (forms.Form):
     def __init__( self, *args, **kwargs ):
         super( RideRequestOfferForm, self ).__init__( *args, **kwargs )
 
+        # We create these fields inside of __init__ because we want
+        # them to be able to adjust them dynamically in sub-classes
+        self.start_location = forms.CharField()
+        self.end_location = forms.CharField()
+        self.fields['start_location'] = self.start_location
+        self.fields['end_location'] = self.end_location
+
 class RideRequestOfferSearchForm (RideRequestOfferForm):
     def __init__( self, *args, **kwargs ):
         super( RideRequestOfferSearchForm, self ).__init__( *args, **kwargs )
@@ -177,6 +181,8 @@ class RideRequestOfferSearchForm (RideRequestOfferForm):
 class RideRequestPutForm (RideRequestOfferForm):
     def __init__( self, *args, **kwargs ):
         super( RideRequestPutForm, self ).__init__( *args, **kwargs )
+        self.fields['start_location'].widget = TextInput( attrs={'id':'id_request_start_location'} )
+        self.fields['end_location'].widget = TextInput( attrs={'id':'id_request_end_location'} )
 
         self.helper = FormHelper()
         self.helper.form_action = reverse( 'request_ride_new' )
@@ -189,6 +195,8 @@ class RideRequestPutForm (RideRequestOfferForm):
 class RideOfferPutForm (RideRequestOfferForm):
     def __init__( self, *args, **kwargs ):
         super( RideOfferPutForm, self ).__init__( *args, **kwargs )
+        self.fields['start_location'].widget = TextInput( attrs={'id':'id_offer_start_location'} )
+        self.fields['end_location'].widget = TextInput( attrs={'id':'id_offer_end_location'} )
 
         self.helper = FormHelper()
         self.helper.form_action = reverse( 'offer_ride_new' )

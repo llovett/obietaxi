@@ -6,8 +6,11 @@ $(document).ready(function(){
 	new google.maps.LatLng(25.641526,-122.622072),
 	new google.maps.LatLng(49.837982, -64.174806));
 
-    var searchStartBox = new google.maps.places.SearchBox(startPoint, {bounds: defaultBounds});
-    var searchEndBox = new google.maps.places.SearchBox(endPoint, {bounds: defaultBounds});
+    var searchStartBox = new google.maps.places.SearchBox(startPoint,
+							  { 'bounds': defaultBounds,
+							    'autocomplete': true });
+    var searchEndBox = new google.maps.places.SearchBox(endPoint, { 'bounds': defaultBounds,
+								    'autocomplete': true});
 
     var updateLatLng = function( startOrEnd ) {
 	var places = (startOrEnd === 'start' ? searchStartBox : searchEndBox).getPlaces();

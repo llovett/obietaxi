@@ -5,6 +5,11 @@ body { width: 100%; height:100%; margin:0; padding:0; }
     max-height: 800px !important;
 }
 
+.pac-container {
+    /* this is needed so that bootstrap's modal views don't cover up google places autocomplete */
+    z-index:1051 !important;
+}
+
 #right_panel_wrapper {
     width:55%;
     overflow:hidden;
