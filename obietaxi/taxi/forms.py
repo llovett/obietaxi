@@ -2,7 +2,7 @@ from django import forms
 from bson.objectid import ObjectId
 from django.forms.widgets import Textarea, TextInput
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset
+from crispy_forms.layout import Submit, Layout, Fieldset, Div
 from crispy_forms.bootstrap import FormActions
 from django.core.urlresolvers import reverse
 from widgets import BootstrapSplitDateTimeWidget
@@ -151,11 +151,25 @@ class RideRequestOfferForm (forms.Form):
         self.fields['end_lat'] = forms.DecimalField( widget=forms.HiddenInput )
         self.fields['end_lng'] = forms.DecimalField( widget=forms.HiddenInput )
 
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Div(
+                'start_lat',
+                'start_lng',
+                'end_lat',
+                'end_lng',
+                'polygon',
+                'start_location',
+                'end_location',
+                'date',
+                'fuzziness'
+            )
+        )
+
 class RideRequestOfferSearchForm (RideRequestOfferForm):
     def __init__( self, *args, **kwargs ):
         super( RideRequestOfferSearchForm, self ).__init__( *args, **kwargs )
 
-        self.helper = FormHelper()
         self.helper.form_action = reverse( 'request_search_and_display' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'offer_or_request_form'
@@ -188,7 +202,6 @@ class RideRequestPutForm (RideRequestOfferForm):
         self.fields['start_lng'].widget.attrs['id'] = 'id_request_start_lng'
         self.fields['end_lng'].widget.attrs['id'] = 'id_request_end_lng'
 
-        self.helper = FormHelper()
         self.helper.form_action = reverse( 'request_ride_new' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'request_form'
@@ -206,7 +219,6 @@ class RideOfferPutForm (RideRequestOfferForm):
         self.fields['start_lng'].widget.attrs['id'] = 'id_offer_start_lng'
         self.fields['end_lng'].widget.attrs['id'] = 'id_offer_end_lng'
 
-        self.helper = FormHelper()
         self.helper.form_action = reverse( 'offer_ride_new' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'offer_form'
