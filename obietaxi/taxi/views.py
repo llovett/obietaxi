@@ -447,7 +447,13 @@ def _process_ro_form( request, type ):
 
     '''
 
-    form = RideRequestOfferSearchForm( request.POST )
+    # The extra name for the form is used in case we need to render errors
+    if type == 'request':
+        request_form = RideRequestPutForm( request.POST )
+        form = request_form
+    elif type == 'offer':
+        offer_form = RideOfferPutForm( request.POST )
+        form = offer_form
 
     # Form validates
     if form.is_valid():
@@ -498,11 +504,14 @@ def _process_ro_form( request, type ):
         profile.save()
 
         # Return listings of the other type
-        return _browse( request, ride_requests, ride_offers )
+        return _browse( request, locals() )
+
+    import sys
+    sys.stderr.write( "processing ro form: %s\n"%str(form._errors) )
 
     # Render the form if it was invalid
-    return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
-
+    invalid = type
+    return _browse( request, locals() )
 
 @login_required
 def offer_new( request ):
@@ -535,7 +544,7 @@ def offer_search_and_display( request ):
     form = RideRequestOfferSearchForm( request.POST )
     if form.is_valid():
         ride_offers = _offer_search( **form.cleaned_data )
-        return _browse( request, None, ride_offers )
+        return _browse( request, locals() )
     return render_to_response( "index.html",
                                locals(),
                                context_instance=RequestContext(request) )
@@ -584,7 +593,7 @@ def request_search_and_display( request ):
         ride_requests =  _request_search( polygon=bboxContour,
                                           date=offer_start_time,
                                           fuzziness=offer_fuzziness )
-        return _browse( request, ride_requests, None )
+        return _browse( request, locals() )
 
     import sys
     sys.stderr.write( str(form._errors) )
@@ -664,10 +673,17 @@ def offer_show( request ):
 # BROWSING #
 ############
 
-def _browse( request, ride_requests, ride_offers ):
-    offer_form = RideOfferPutForm()
-    request_form = RideRequestPutForm()
-    return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
+def _browse( request, context ):
+    import sys
+    write = sys.stderr.write
+    if not 'offer_form' in context:
+        write("no offer form\n")
+        offer_form = RideOfferPutForm()
+    if not 'request_form' in context:
+        write("no request form\n")
+        request_form = RideRequestPutForm()
+    ctx = dict( zip(locals().keys()+context.keys(), locals().values()+context.values()) )
+    return render_to_response("browse.html", ctx, context_instance=RequestContext(request))
 
 def browse( request ):
     '''
@@ -677,7 +693,7 @@ def browse( request ):
     ride_requests = RideRequest.objects.filter( date__gte=datetime.now() )
     ride_offers = RideOffer.objects.filter( date__gte=datetime.now() )
 
-    return _browse( request, ride_requests, ride_offers )
+    return _browse( request, locals() )
 
 #########################
 # REQUEST/OFFER OPTIONS #
