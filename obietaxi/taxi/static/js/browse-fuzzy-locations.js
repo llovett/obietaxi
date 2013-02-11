@@ -14,8 +14,8 @@ $(document).ready(
 	    var updateLatLng = function( startOrEnd ) {
 		var place = (startOrEnd === 'start' ? searchStartBox : searchEndBox).getPlace();
 		if ( place ) {
-		    var lat = places[0].geometry.location.Ya;
-		    var lng = places[0].geometry.location.Za;
+		    var lat = place.geometry.location.Ya;
+		    var lng = place.geometry.location.Za;
 		    $("#id_"+type+"_"+startOrEnd+"_lat").val(lat);
 		    $("#id_"+type+"_"+startOrEnd+"_lng").val(lng);
 		}
