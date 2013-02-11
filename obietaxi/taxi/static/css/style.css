@@ -1,6 +1,10 @@
 html { width: 100%; height:100% }
 body { width: 100%; height:100%; margin:0; padding:0; }
 
+.modal-body {
+    max-height: 800px !important;
+}
+
 #right_panel_wrapper {
     width:55%;
     overflow:hidden;

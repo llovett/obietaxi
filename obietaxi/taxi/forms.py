@@ -174,6 +174,57 @@ class RideRequestOfferSearchForm (RideRequestOfferForm):
             )
         )
 
+class RideRequestPutForm (RideRequestOfferForm):
+    def __init__( self, *args, **kwargs ):
+        super( RideRequestPutForm, self ).__init__( *args, **kwargs )
+
+        self.helper = FormHelper()
+        self.helper.form_action = reverse( 'request_ride_new' )
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'request_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Select your trip',
+                'start_lat',
+                'start_lng',
+                'end_lat',
+                'end_lng',
+                'start_location',
+                'end_location',
+                'date',
+                'fuzziness'
+                ),
+            FormActions(
+                Submit('ask_for_ride', 'Ask for a Ride', css_id="ask_for_ride_button" )
+            )
+        )
+
+class RideOfferPutForm (RideRequestOfferForm):
+    def __init__( self, *args, **kwargs ):
+        super( RideOfferPutForm, self ).__init__( *args, **kwargs )
+
+        self.helper = FormHelper()
+        self.helper.form_action = reverse( 'offer_ride_new' )
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'offer_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Select your trip',
+                'start_lat',
+                'start_lng',
+                'end_lat',
+                'end_lng',
+                'start_location',
+                'end_location',
+                'date',
+                'polygon',
+                'fuzziness'
+                ),
+            FormActions(
+                Submit('offer_ride', 'Offer Ride', css_id="offer_ride_button" )
+            )
+        )
+
 class OfferOptionsForm (forms.Form):
     '''
     Form for updating the information of a RideOffer

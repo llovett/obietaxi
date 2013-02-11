@@ -4,6 +4,28 @@
 {% block heading %}Browse{% endblock %}
 {% block content %}
 
+  <!-- ask for ride/offer a ride -->
+  <a href="#new_offer_modal" class="btn" role="button" data-toggle="modal">Offer a Ride</a>
+  <a href="#new_request_modal" class="btn" role="button" data-toggle="modal">Ask for a Ride</a>
+  <div id="new_offer_modal" class="modal hide fade">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    </div>
+    <div class="modal-body">
+      {% load crispy_forms_tags %}
+      {% crispy offer_form %}
+    </div>
+  </div>
+  <div id="new_request_modal" class="modal hide fade">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    </div>
+    <div class="modal-body">
+      {% load crispy_forms_tags %}
+      {% crispy request_form %}
+    </div>
+  </div>
+
   {% if ride_requests %}
     <h2>Ride Requests</h2>
     <table name="ride_requests" id="ride_request_table" class="browse_table">
