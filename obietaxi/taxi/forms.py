@@ -206,7 +206,7 @@ class RideRequestPutForm (RideRequestOfferForm):
         self.helper.form_method = 'POST'
         self.helper.form_id = 'request_form'
         self.helper.add_input(
-            Submit('ask_for_ride', 'Ask for a Ride', css_id="ask_for_ride_button" )
+            Submit('ask_for_ride', 'OK', css_id="ask_for_ride_button" )
         )
 
 class RideOfferPutForm (RideRequestOfferForm):
@@ -223,7 +223,7 @@ class RideOfferPutForm (RideRequestOfferForm):
         self.helper.form_method = 'POST'
         self.helper.form_id = 'offer_form'
         self.helper.add_input(
-                Submit('offer_ride', 'Offer Ride', css_id="offer_ride_button" )
+                Submit('offer_ride', 'OK', css_id="offer_ride_button" )
         )
 
 class OfferOptionsForm (forms.Form):
