@@ -43,20 +43,22 @@
     </div>
     <!-- form in modal -->
     <div class="modal-body">
-      <div id="new_offer_modal_form">
+      <div class="new_offer_modal_form">
 	{% load crispy_forms_tags %}
 	{% crispy offer_form %}
       </div>
-      <div id="new_offer_modal_map" style="display:none">
+      <div class="new_offer_modal_map" style="display:none">
 	<p>Map goes here</p>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-primary" id="offer_show_map_button">Next</button>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn" id="offer_show_form_button">Back</button>
-      <button type="button" class="btn btn-primary" id="offer_ride_button">OK</button>
+      <div class="new_offer_modal_form">
+	<button type="button" class="btn btn-primary" id="offer_show_map_button">Next</button>
+      </div>
+      <div class="new_offer_modal_map" style="display:none">
+	<button type="button" class="btn" id="offer_show_form_button">Back</button>
+	<button type="button" class="btn btn-primary" id="offer_ride_button">OK</button>
+      </div>
     </div>
   </div>
 
