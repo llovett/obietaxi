@@ -10,8 +10,16 @@ $(document).ready(
 	// Next button to take user to map for offering a ride
 	$("#offer_show_map_button").click(
 	    function() {
-		$(".new_offer_modal_form").slideUp();
-		$(".new_offer_modal_map").slideDown();
+		// Calculate route
+		ObietaxiMapper.polyfield = "#offer_form #id_polygon";
+		ObietaxiMapper.route(
+		    function() {
+			$(".new_offer_modal_form").slideUp();
+			$(".new_offer_modal_map").slideDown();
+		    },
+		    "#id_offer_start_location",
+		    "#id_offer_end_location"
+		);
 	    }
 	);
 

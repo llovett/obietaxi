@@ -600,10 +600,10 @@ def request_search_and_display( request ):
                                locals(),
                                context_instance=RequestContext(request) )
 
-def request_show( request ):
+def request_show( request, request_id ):
     ''' Renders a page displaying more information about a particular RideRequest '''
 
-    ride_request = get_mongo_or_404( RideRequest, pk=ObjectId(request.GET['request_id']) )
+    ride_request = get_mongo_or_404( RideRequest, pk=ObjectId(request_id) )
 
     # This information is used in the template to determine if the user has already
     # offered a ride to this RideRequest
@@ -629,17 +629,17 @@ def request_show( request ):
 
             offers = _offer_search( **searchParams )
             offers = [(str(offer.id),str(offer)) for offer in offers]
-            form = OfferRideForm(initial={'request_id':request.GET['request_id']},
+            form = OfferRideForm(initial={'request_id':request_id},
                                  offer_choices=offers)
         else:
-            form = OfferRideForm(initial={'request_id':request.GET['request_id']})
+            form = OfferRideForm(initial={'request_id':request_id})
 
     return render_to_response( 'ride_request.html', locals(), context_instance=RequestContext(request) )
 
-def offer_show( request ):
+def offer_show( request, offer_id ):
     ''' Renders a page displaying more information about a particular RideOffer '''
 
-    ride_offer = get_mongo_or_404( RideOffer, pk=ObjectId(request.GET['offer_id']) )
+    ride_offer = get_mongo_or_404( RideOffer, pk=ObjectId(offer_id) )
 
     # This information is used in the template to determine if the user has already
     # requested a ride from this RideOffer
@@ -661,10 +661,10 @@ def offer_show( request ):
             sys.stderr.write("request search in offer_show returned the following: %s"%str(requests))
 
             requests = [(str(req.id),str(req)) for req in requests]
-            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']},
+            form = AskForRideForm(initial={'offer_id':offer_id},
                                   request_choices=requests)
         else:
-            form = AskForRideForm(initial={'offer_id':request.GET['offer_id']})
+            form = AskForRideForm(initial={'offer_id':offer_id})
     return render_to_response( 'ride_offer.html', locals(), context_instance=RequestContext(request) )
 
 ############
@@ -847,35 +847,47 @@ def process_offer_update(request, offer_id):
 #####################
 
 @login_required
-def userprofile_show( request ):
+def userprofile_show( request, user_id ):
     ''' Shows all RideRequests and RideOffers for a particular user '''
-    if 'user_id' in request.GET:
-        profile = UserProfile.objects.get( pk=ObjectId( request.GET['user_id'] ) )
-    else:
-        profile = request.session['profile']
 
-    my_offers = RideOffer.objects.filter( driver=profile, completed=False, passengers__not__size=0 )
+    # if 'user_id' in request.GET:
+    #     profile = UserProfile.objects.get( pk=ObjectId( request.GET['user_id'] ) )
+    # else:
+    #     profile = request.session['profile']
+
+    #user = get_mongo_or_404(User, pk=ObjectId(user_id))
+    profile = get_mongo_or_404(UserProfile, user=user_id)
+
+    #TODO: add security, actually not necessary
+    # if not request.session.get('profile') == profile:
+    #     raise PermissionDenied
+
+    my_offers = RideOffer.objects.filter( driver=profile, completed=False )
     my_requests = RideRequest.objects.filter( passenger=profile )
 
     rides_requested, rides_offered, ride_requests_completed, ride_offers_completed = [], [], [], []
     now = datetime.now()
     for req in my_requests:
         if req.date < now:
-            ride_requests_completed.append( req )
+            if req.ride_offer:
+                ride_requests_completed.append( req )
         else:
             rides_requested.append( req )
     for o in my_offers:
         if o.date < now:
-            ride_offers_completed.append( o )
+            if not len(o.passengers) == 0:
+                ride_offers_completed.append( o )
         else:
             rides_offered.append( o )
-    # Show detail page (not user home page) if specific user was given and it's not the logged-in user
-    if 'user_id' in request.GET and request.GET.get("user_id") != str(request.session.get("profile").id):
+
+    # Show the user their home page if they are the logged-in user
+    if request.session.get('profile') == profile:
+    #if 'user_id' in request.GET and request.GET.get("user_id") != str(request.session.get("profile").id):
         # Additional context for detail pages here...
-        return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )
+        return render_to_response( "user_home.html", locals(), context_instance=RequestContext(request) )
 
     # Put other context variables for a user's home page here...
-    return render_to_response( "user_home.html", locals(), context_instance=RequestContext(request) )
+    return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )
 
 
 ###########

@@ -49,13 +49,12 @@ var ObietaxiMapper = ObietaxiMapper || {};
 	var boxes = routeBoxer.box( path, distance );
 
 	// Save the JSON'd boxes in the "polygon" field of the form
-	// (indicated by "dest")
 	$(ObietaxiMapper.polyfield || "#id_polygon").val( JSON.stringify(boxesToJSON(boxes)) );
     }
 
     // Find a route between two points. Find also all points we have
     // stored within a certain distance of that route.
-    ObietaxiMapper.route = function( callback, start, end, dest ) {
+    ObietaxiMapper.route = function( callback, start, end ) {
 	// The request to be sent to Google for directions
 	var request = {
 	    origin: $(start || "#id_start_location").val(),
@@ -65,7 +64,6 @@ var ObietaxiMapper = ObietaxiMapper || {};
 
 	// Make the request
 	directionService.route( request, function( result, status ) {
-	    $("#status").empty();
 	    if ( status == google.maps.DirectionsStatus.OK ) {
 		directionsRenderer.setDirections( result );
 
