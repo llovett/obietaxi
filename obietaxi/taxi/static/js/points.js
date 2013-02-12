@@ -32,85 +32,49 @@
 
 	// Setup directions/boxing utilities
 	directionService = new google.maps.DirectionsService();
-	directionsRenderer = new google.maps.DirectionsRenderer( {map: map} );
+	directionsRenderer = new google.maps.DirectionsRenderer( {
+	    'map':map,
+	    'draggable':true
+	} );
+	google.maps.event.addListener( directionsRenderer, 'directions_changed',
+				       function() {
+					   doPolygon( directionsRenderer.getDirections() );
+				       }
+				     );
 	routeBoxer = new RouteBoxer();
 
-	// What we do when the "Offer a Ride" button is pressed
-	$("#offer_button").click(
-	    function( event ) {
-		event.preventDefault();
-		route( function( results ) {
-		    // If there are no passenger results immediately, submit offer
-		    // and go to browse page showing requests
-		    if ( results.length == 0 ) {
-			$("#offer_or_request_form").attr( {"action":"/offer/new/"} );
-			console.log("no results... posting offer in foreground.");
-			$("#offer_or_request_form").submit();
-		    } else {
-			// Submit offer in the background
-			console.log("submitting offer via AJAX");
-			$.ajax( {
-			    type: "POST",
-			    url: "/offer/new/",
-			    data: $("#offer_or_request_form").serialize()
-			} );
-		    }
-		} );
+	// What we do when the "Search Offers" button is pressed
+	$("#search_offers_button").click(
+	    function() {
+		$("#offer_or_request_form").attr( {"action": "/offer/search/browse/"} );
 	    }
 	);
-	// What we do when the "Ask for a Ride" button is pressed
-	$("#ask_button").click(
+	// What we do when the "Search Rides" button is pressed
+	$("#search_rides_button").click(
 	    function( event ) {
 		event.preventDefault();
-		$("#offer_or_request_form").attr( {"action": "/request/new/"} );
-		searchOffers(
-		    function( results ) {
-			if ( results.length == 0 ) {
-			    console.log("No offer search results.");
-			    $("#offer_or_request_form").submit();
-			} else {
-			    // console.log("submitting request via AJAX");
-			    // $.ajax( {
-			    // 	type: "POST",
-			    // 	url: "/request/new/",
-			    // 	data: $("#offer_or_request_form").serialize()
-			    // } );
-			}
+
+		// Show suggested travel route on the map
+		route(
+		    function() {
+			//TODO: allow the driver to modify the route and
+			//update #id_polygon as necessary
+			$("#right_panel").css( {'margin-left':0} );
 		    }
 		);
 	    }
 	);
-
-	// Update the "repeat" options when date, so we can be clear what
-	// the repeat options mean.
-	var updateRepeat = function() {
-	    var day = parseInt($("#id_date_0").val().split('/')[1], 10);
-	    var dayOfWeek = (new Date( $("#id_date_0").val() )).getDay();
-	    var dowOrder = Math.ceil( day/7 );
-
-	    /* find suffix for numbers */
-	    function suffix( num ) {
-		if ( num%10 == 1 && num%100 != 11 ) {
-		    return "st";
-		} else if ( num%10 == 2 ) {
-		    return "nd";
-		} else if ( num%10 == 3 ) {
-		    return "rd";
-		} else {
-		    return "th";
-		}
+	// Submission after meddling with the map
+	$("#submit_from_map").click(
+	    function() {
+		// Save the JSON'd boxes in the "polygon" field of the form
+		$("#offer_or_request_form").attr( {"action": "/request/search/browse/"} );
+		$("#offer_or_request_form").submit();
 	    }
-	    var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-	    var dayName = days[dayOfWeek];
-	    var monthPerDay = "monthly (on the "+day+suffix(day)+")";
-	    var monthPerWeek = "monthly (on the "+dowOrder+suffix(dowOrder)+" "+dayName+")";
+	);
 
-	    $('#id_repeat option[value="month-per-day"]').text( monthPerDay );
-	    $('#id_repeat option[value="month-per-week"]').text( monthPerWeek );
-	}
-	$("#id_date_0").blur( updateRepeat );
-	// Set the repeat dates at load time
-	updateRepeat();
+	// Hide the right panel (containing the map, "OK" button for searching rides)
+	$("#right_panel").css( {'margin-left':1000} );
     }
 
     // This will submit the point's location to the server for storage in
@@ -176,12 +140,21 @@
 	} );
     }
 
-    // Find a route between two points. Find also all points we have
-    // stored within a certain distance of that route.
-    function route( callback ) {
+    function doPolygon( directions ) {
 	// Bounding-box encapsulation distance
 	var distance = "10";
 
+	// Box around the overview path of the first route
+	var path = directions.routes[0].overview_path;
+	var boxes = routeBoxer.box( path, distance );
+
+	// Save the JSON'd boxes in the "polygon" field of the form
+	$("#id_polygon").val( JSON.stringify(boxesToJSON(boxes)) );
+    }
+
+    // Find a route between two points. Find also all points we have
+    // stored within a certain distance of that route.
+    function route( callback ) {
 	// The request to be sent to Google for directions
 	var request = {
 	    origin: $("#id_start_location").val(),
@@ -195,55 +168,13 @@
 	    if ( status == google.maps.DirectionsStatus.OK ) {
 		directionsRenderer.setDirections( result );
 
-		// Box around the overview path of the first route
-		var path = result.routes[0].overview_path;
-		var boxes = routeBoxer.box( path, distance );
+		// Find bounding box polygon, set in form
+		doPolygon( result );
 
-		// Make a request to the server -------
-		// bounding boxes:
-		var request = boxesToJSON( boxes );
-		// Save the JSON'd boxes in the "polygon" field of the form
-		$("#id_polygon").val( JSON.stringify(request) );
-		var startDate = Date.parse($("#id_date_0").val()+" "+$("#id_date_1").val());
-		// Get approximate start/end times for this trip
-		request.start_time = startDate;
-		var rideLength = 0;
-		for ( var i=0; i<result.routes[0].legs.length; i++ ) {
-		    rideLength += result.routes[i].legs[0].duration.value;
-		}
-		var endDate = startDate + 1000.0*rideLength;
-		request.end_time = endDate;
-		// Get fuzzy
-		request.fuzziness = $("#id_fuzziness option:selected").val();
-
-		console.log( request );
-
-		$.ajax( {
-		    type: "POST",
-		    url: "/request/search/",
-		    data: JSON.stringify( request ),
-		    dataType: "text",
-		    success: function( data ) {
-			// Convert to object from JSON string
-			var requests = ( $.parseJSON( data ) ).requests;
-			var start_points = new Array();
-			var end_points = new Array();
-			for( var i = 0; i<requests.length; i++){
-			    //grabbing start and end points for each location
-			    start_points[i] = requests[i].location_start;
-			    end_points[i] = requests[i].location_end;
-			}
-
-			// Display markers that fit within the union of the boxes
-			clearMarkers();
-			showRides( requests );
-			if ( !(typeof callback === 'undefined') ) {
-			    callback( requests );
-			}
-		    }
-		} );
+		// Callback
+		callback();
 	    } else {
-		$("#status").text("Directions query failed: "+status);
+		console.log("Could not load directions from Google!");
 	    }
 	} );
     }

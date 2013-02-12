@@ -25,9 +25,13 @@
 
   </div>
 
-  <div id="right_panel" class="right_panel">
-    <div id="map_canvas"></div>
-    <div id="ride_listing"></div>
+  <div id="right_panel_wrapper">
+    <div id="right_panel" class="right_panel">
+      <p>For best results, check the route below against how you actually plan on getting to your destination. We'll use this information to show you passengers who also need rides along or near your route.</p>
+      <div id="map_canvas"></div>
+      <input type="button" value="OK" id="submit_from_map" class="btn btn-primary" />
+      <div id="ride_listing"></div>
+    </div>
   </div>
 
 {% endblock %}

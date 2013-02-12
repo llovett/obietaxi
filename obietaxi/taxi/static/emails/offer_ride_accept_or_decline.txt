@@ -1,0 +1,9 @@
+Hi {{req.passenger.user.first_name}},
+
+Someone found your request from {{req.start}} to {{req.end}} on {{req.time()}} and can give you a ride! Please note that the time and place from which your driver may want to depart may not match that of your request; find ride information at the bottom of this message.
+
+If you would like to accept this offer, please follow {{accept_link}}.
+If you would like to decline, follow {{decline_link}}.
+
+departing from: {{offer.start}}
+date: {{offer.time()}}

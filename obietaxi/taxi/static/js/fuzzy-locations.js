@@ -6,8 +6,11 @@ $(document).ready(function(){
 	new google.maps.LatLng(25.641526,-122.622072),
 	new google.maps.LatLng(49.837982, -64.174806));
 
-    var searchStartBox = new google.maps.places.SearchBox(startPoint, {bounds: defaultBounds});
-    var searchEndBox = new google.maps.places.SearchBox(endPoint, {bounds: defaultBounds});
+    var searchStartBox = new google.maps.places.SearchBox(startPoint,
+							  { 'bounds': defaultBounds,
+							    'autocomplete': true });
+    var searchEndBox = new google.maps.places.SearchBox(endPoint, { 'bounds': defaultBounds,
+								    'autocomplete': true});
 
     var updateLatLng = function( startOrEnd ) {
 	var places = (startOrEnd === 'start' ? searchStartBox : searchEndBox).getPlaces();
@@ -18,7 +21,7 @@ $(document).ready(function(){
 	    $("#id_"+startOrEnd+"_lng").val(lng);
 	}
     }
-	
+
     // Update lat/lng when input in fuzzy location inputs changes
     google.maps.event.addListener(searchStartBox, 'places_changed', function(){
 	updateLatLng( 'start' );
@@ -26,6 +29,13 @@ $(document).ready(function(){
     google.maps.event.addListener(searchEndBox, 'places_changed', function(){
 	updateLatLng( 'end' );
     });
+    // Also update when we loose focus on a search box
+    $("#id_start_location").blur( function () {
+	updateLatLng( 'start' );
+    } );
+    $("#id_end_location").blur( function () {
+	updateLatLng( 'end' );
+    } );
 
     // Set start/end lat/lng if there is already text in one of the
     // fuzzy location inputs.  This is useful when the form doesn't
@@ -35,5 +45,5 @@ $(document).ready(function(){
     }
     if ( $("#id_end_location").val().length > 0 ) {
 	updateLatLng( 'end' );
-    }	
+    }
 });

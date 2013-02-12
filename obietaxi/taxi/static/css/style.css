@@ -20,6 +20,19 @@ body {
   position: relative;
   margin: 0 auto -100px;
 }
+.modal-body {
+  max-height: 800px !important;
+}
+.pac-container {
+  /* this is needed so that bootstrap's modal views don't cover up google places autocomplete */
+
+  z-index: 1051 !important;
+}
+#right_panel_wrapper {
+  float: right;
+  width: 45%;
+  overflow: hidden;
+}
 #heading {
   margin-left: 10px;
 }
@@ -46,7 +59,7 @@ body {
 }
 #right_panel {
   float: left;
-  width: 45%;
+  width: 92%;
   height: 500px;
 }
 #map_canvas {
@@ -55,7 +68,6 @@ body {
   width: 80%;
   margin-left: auto;
   margin-right: auto;
-  overflow: auto !important;
 }
 #ride_listing {
   width: 100%;
@@ -106,8 +118,8 @@ body {
   font-size: 18px;
   display: inline;
   padding: 5px;
-  margin-left: 25px;
-  margin-right: 25px;
+  margin-left: 15px;
+  margin-right: 15px;
 }
 .maplabels {
   background-color: white;

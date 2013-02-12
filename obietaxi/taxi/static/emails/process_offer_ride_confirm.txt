@@ -1,0 +1,9 @@
+Hey there, {{req.passenger.user.first_name}}!
+
+This email is confirming your ride with {{offer.driver}} going from {{offer.start}} to {{offer.end}}! Be safe, and be sure to thank your driver and give them a little something for gas! Generosity is what makes ridesharing work.
+
+Trip info:
+driver's name: {{offer.driver}}
+phone: {{offer.driver.phone_number}}
+email: {{offer.driver.user.username}}
+departing at: {{offer.time()}}

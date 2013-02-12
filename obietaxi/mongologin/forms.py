@@ -2,7 +2,7 @@ from django import forms
 from django.core.validators import EMPTY_VALUES
 from django.utils.encoding import smart_text
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset
+from crispy_forms.layout import Submit, Layout, Fieldset, HTML
 from crispy_forms.bootstrap import FormActions
 from mongoengine.django.auth import User
 from django.core.urlresolvers import reverse
@@ -33,7 +33,7 @@ class LoginForm( forms.Form ):
               #  Submit('google_sign_in', 'Sign in with Google', css_id="google_button")
             )
         )
-        
+
         super(LoginForm, self).__init__(*args, **kwargs)
 
 class USPhoneNumberField( forms.CharField ):
@@ -111,3 +111,26 @@ class RegisterForm( forms.Form ):
 
         super(RegisterForm, self).__init__(*args, **kwargs)
 
+class GoogleRegisterForm( forms.Form ):
+    # Username is an email
+    phone = USPhoneNumberField()
+
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = reverse('google_register')
+        self.helper.form_method = 'POST'
+        self.form_id = 'google_register_form'
+        self.helper.layout = Layout(
+            Fieldset(
+                'Almost Done!',
+                HTML( """
+<p>Google does not supply us with your phone number, but we need that information \
+in order to connect passengers and drivers together with the most complete contact \
+information for each other. We keep information only to help with the logistical process \
+of finding and giving rides, and no more.</p>"""),
+                'phone',
+                ),
+            FormActions(Submit('register', 'Finish', css_id="finish_button")),
+        )
+
+        super(GoogleRegisterForm, self).__init__(*args, **kwargs)
