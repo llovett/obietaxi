@@ -1,0 +1,91 @@
+$(document).ready(
+    function() {
+	var startPoint = document.getElementById('id_start_location');
+	var endPoint = document.getElementById('id_end_location');
+
+	var defaultBounds = new google.maps.LatLngBounds(
+	    new google.maps.LatLng(25.641526,-122.622072),
+	    new google.maps.LatLng(49.837982, -64.174806));
+
+	var searchStartBox = new google.maps.places.SearchBox(startPoint,
+							      { 'bounds': defaultBounds,
+								'autocomplete': true });
+	var searchEndBox = new google.maps.places.SearchBox(endPoint, { 'bounds': defaultBounds,
+									'autocomplete': true});
+
+	var updateLatLng = function( startOrEnd ) {
+	    var places = (startOrEnd === 'start' ? searchStartBox : searchEndBox).getPlaces();
+	    if ( places ) {
+		var lat = places[0].geometry.location.Ya;
+		var lng = places[0].geometry.location.Za;
+		$("#id_"+startOrEnd+"_lat").val(lat);
+		$("#id_"+startOrEnd+"_lng").val(lng);
+	    }
+	}
+
+	// Update lat/lng when input in fuzzy location inputs changes
+	google.maps.event.addListener(searchStartBox, 'places_changed', function(){
+	    updateLatLng( 'start' );
+	});
+	google.maps.event.addListener(searchEndBox, 'places_changed', function(){
+	    updateLatLng( 'end' );
+	});
+	// Also update when we loose focus on a search box
+	$("#id_start_location").blur( function () {
+	    updateLatLng( 'start' );
+	} );
+	$("#id_end_location").blur( function () {
+	    updateLatLng( 'end' );
+	} );
+
+	// Set start/end lat/lng if there is already text in one of the
+	// fuzzy location inputs.  This is useful when the form doesn't
+	// validate the first time, and the browser needs to refresh.
+	if ( $("#id_start_location").val().length > 0 ) {
+	    updateLatLng( 'start' );
+	}
+	if ( $("#id_end_location").val().length > 0 ) {
+	    updateLatLng( 'end' );
+	}
+
+	// Initialize the date and time pickers
+	$('.datepicker-default').datepicker({
+	    format:'mm/dd/yyyy'
+	});
+	$('.timepicker-default').timepicker();
+
+	// What we do when the "Search Offers" button is pressed
+	$("#search_offers_button").click(
+	    function() {
+		$("#offer_or_request_form").attr( {"action": "/offer/search/browse/"} );
+	    }
+	);
+	// What we do when the "Search Rides" button is pressed
+	$("#search_rides_button").click(
+	    function( event ) {
+		event.preventDefault();
+
+		// Show suggested travel route on the map
+		ObietaxiMapper.route(
+		    function() {
+			//TODO: allow the driver to modify the route and
+			//update #id_polygon as necessary
+			$("#right_panel").css( {'margin-left':0} );
+		    }
+		);
+	    }
+	);
+	// Submission after meddling with the map
+	$("#submit_from_map").click(
+	    function() {
+		// Save the JSON'd boxes in the "polygon" field of the form
+		$("#offer_or_request_form").attr( {"action": "/request/search/browse/"} );
+		$("#offer_or_request_form").submit();
+	    }
+	);
+
+	// Hide the right panel (containing the map, "OK" button for searching rides)
+	$("#right_panel").css( {'margin-left':1000} );
+
+    }
+);

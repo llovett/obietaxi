@@ -584,6 +584,7 @@ def request_search_and_display( request ):
     '''
     form = RideRequestOfferSearchForm( request.POST )
     if form.is_valid():
+        rectangles = json.loads( form.cleaned_data['polygon'] )['rectangles']
         bboxArea, bboxContour = _merge_boxes( rectangles )
 
         offer_start_time = form.cleaned_data['date']
@@ -594,9 +595,6 @@ def request_search_and_display( request ):
                                           date=offer_start_time,
                                           fuzziness=offer_fuzziness )
         return _browse( request, locals() )
-
-    import sys
-    sys.stderr.write( str(form._errors) )
 
     return render_to_response( "index.html",
                                locals(),
