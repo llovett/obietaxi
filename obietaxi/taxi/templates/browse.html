@@ -6,6 +6,7 @@
   <script type="text/javascript" src="{{ STATIC_URL }}js/RouteBoxer.js"></script>
   <!-- <script type="text/javascript" src="{{ STATIC_URL }}js/points.js"></script> -->
   <script type="text/javascript" src="{{ STATIC_URL }}js/browse-fuzzy-locations.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/browse-elements.js"></script>
 
   <!-- this will re-display the right modal popup, if the form inside did not validate last time -->
   {% if invalid %}
@@ -42,6 +43,9 @@
       {% load crispy_forms_tags %}
       {% crispy offer_form %}
     </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" id="offer_show_map_button">Next</button>
+    </div>
   </div>
   <div id="new_request_modal" class="modal hide fade">
     <div class="modal-header">
@@ -51,6 +55,9 @@
     <div class="modal-body">
       {% load crispy_forms_tags %}
       {% crispy request_form %}
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" id="ask_for_ride_button">OK</button>
     </div>
   </div>
 

@@ -205,9 +205,6 @@ class RideRequestPutForm (RideRequestOfferForm):
         self.helper.form_action = reverse( 'request_ride_new' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'request_form'
-        self.helper.add_input(
-            Submit('ask_for_ride', 'OK', css_id="ask_for_ride_button" )
-        )
 
 class RideOfferPutForm (RideRequestOfferForm):
     def __init__( self, *args, **kwargs ):
@@ -222,9 +219,6 @@ class RideOfferPutForm (RideRequestOfferForm):
         self.helper.form_action = reverse( 'offer_ride_new' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'offer_form'
-        self.helper.add_input(
-                Submit('offer_ride', 'OK', css_id="offer_ride_button" )
-        )
 
 class OfferOptionsForm (forms.Form):
     '''
