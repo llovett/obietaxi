@@ -31,22 +31,36 @@
 {% block heading %}Browse{% endblock %}
 {% block content %}
 
-  <!-- ask for ride/offer a ride -->
+  <!-- ask for ride/offer a ride buttons -->
   <a href="#new_offer_modal" class="btn" role="button" data-toggle="modal">Offer a Ride</a>
   <a href="#new_request_modal" class="btn" role="button" data-toggle="modal">Ask for a Ride</a>
+
+  <!-- modal for offering a ride -->
   <div id="new_offer_modal" class="modal hide fade">
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
       <h3>Offer a Ride</h3>
     </div>
+    <!-- form in modal -->
     <div class="modal-body">
-      {% load crispy_forms_tags %}
-      {% crispy offer_form %}
+      <div id="new_offer_modal_form">
+	{% load crispy_forms_tags %}
+	{% crispy offer_form %}
+      </div>
+      <div id="new_offer_modal_map" style="display:none">
+	<p>Map goes here</p>
+      </div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-primary" id="offer_show_map_button">Next</button>
     </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" id="offer_show_form_button">Back</button>
+      <button type="button" class="btn btn-primary" id="offer_ride_button">OK</button>
+    </div>
   </div>
+
+  <!-- modal for requesting a ride -->
   <div id="new_request_modal" class="modal hide fade">
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
