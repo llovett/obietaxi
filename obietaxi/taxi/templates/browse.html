@@ -40,14 +40,16 @@
       <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
       <h3>Offer a Ride</h3>
     </div>
-    <!-- form in modal -->
     <div class="modal-body">
       <div class="new_offer_modal_form">
 	{% load crispy_forms_tags %}
 	{% crispy offer_form %}
       </div>
       <div class="new_offer_modal_map" style="display:none">
-	<p>Map goes here</p>
+	<p>Please check the route below against how you actually plan on getting
+	to your destination. We'll use this information to inform passengers who
+	also need rides along or near your route.</p>
+	<div id="map_canvas"></div>
       </div>
     </div>
     <div class="modal-footer">
