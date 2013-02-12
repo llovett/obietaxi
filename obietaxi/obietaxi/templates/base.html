@@ -8,10 +8,12 @@
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap-responsive.css" />
     {% block styles %}
     {% endblock %}
-	    
+
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>    
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/csrf.js"></script>
     {% block scripts %}
     {% endblock %}
   </head>
@@ -31,20 +33,20 @@
     <div id="content">
       {% block content %}
       {% endblock %}
-    </div>      
+    </div>
 
-    <div id="navigation">    
+    <div id="navigation">
       <ul class="navlinks">
 	<li><a href="{% url main_page %}">Home</a></li>
 	<li><a href="{% url browse %}">Browse</a></li>
 	{% if not user.is_authenticated %}
-	  <!-- TODO: make popup menu that allows login/login with google -->	  
+	  <!-- TODO: make popup menu that allows login/login with google -->
 	  <li><a href="{% url login %}">Login</a></li>
 	  <li><a href="{% url register %}">Register</a></li>
 	{% else %}
 	  <li><a href="{% url logout %}">Logout</a></li>
 	  <li><a href="{% url user_home user.id %}">(logged in as {{ user.username }})</a></li>
-	{% endif %}	  
+	{% endif %}
       </ul>
     </div>
   </body>

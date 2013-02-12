@@ -1,8 +1,8 @@
 from django import forms
 from bson.objectid import ObjectId
-from django.forms.widgets import Textarea
+from django.forms.widgets import Textarea, TextInput
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset
+from crispy_forms.layout import Submit, Layout, Fieldset, Div
 from crispy_forms.bootstrap import FormActions
 from django.core.urlresolvers import reverse
 from widgets import BootstrapSplitDateTimeWidget
@@ -105,16 +105,9 @@ class RideRequestOfferForm (forms.Form):
     Form for posting either RideRequests or RideOffers
     '''
 
-    start_lat = forms.DecimalField( widget=forms.HiddenInput )
-    start_lng = forms.DecimalField( widget=forms.HiddenInput )
-    end_lat = forms.DecimalField( widget=forms.HiddenInput )
-    end_lng = forms.DecimalField( widget=forms.HiddenInput )
     # This is used to store the "bounding box" polygon. It's value is
     # rendered by the JavaScript in points.js
     polygon = forms.CharField( widget=forms.HiddenInput, required=False )
-
-    start_location = forms.CharField()
-    end_location = forms.CharField()
 
     # TODO: make a custom widget for this
     input_formats = [
@@ -145,8 +138,39 @@ class RideRequestOfferForm (forms.Form):
     fuzziness = forms.ChoiceField(choices=FUZZY_OPTIONS)
 
     def __init__( self, *args, **kwargs ):
+        super( RideRequestOfferForm, self ).__init__( *args, **kwargs )
+
+        # We create these fields inside of __init__ because we want
+        # them to be able to adjust them dynamically in sub-classes
+        self.start_location = forms.CharField()
+        self.end_location = forms.CharField()
+        self.fields['start_location'] = self.start_location
+        self.fields['end_location'] = self.end_location
+        self.fields['start_lat'] = forms.DecimalField( widget=forms.HiddenInput )
+        self.fields['start_lng'] = forms.DecimalField( widget=forms.HiddenInput )
+        self.fields['end_lat'] = forms.DecimalField( widget=forms.HiddenInput )
+        self.fields['end_lng'] = forms.DecimalField( widget=forms.HiddenInput )
+
         self.helper = FormHelper()
-        self.helper.form_action = reverse( 'request_ride_new' )
+        self.helper.layout = Layout(
+            Div(
+                'start_lat',
+                'start_lng',
+                'end_lat',
+                'end_lng',
+                'polygon',
+                'start_location',
+                'end_location',
+                'date',
+                'fuzziness'
+            )
+        )
+
+class RideRequestOfferSearchForm (RideRequestOfferForm):
+    def __init__( self, *args, **kwargs ):
+        super( RideRequestOfferSearchForm, self ).__init__( *args, **kwargs )
+
+        self.helper.form_action = reverse( 'request_search_and_display' )
         self.helper.form_method = 'POST'
         self.helper.form_id = 'offer_or_request_form'
         self.helper.layout = Layout(
@@ -163,12 +187,38 @@ class RideRequestOfferForm (forms.Form):
                 'fuzziness'
                 ),
             FormActions(
-                Submit('ask', 'Search Rides', css_id="ask_button" ),
-                Submit('offer', 'Offer a Ride', css_id="offer_button" )
+                Submit('search_rides', 'Search Rides', css_id="search_rides_button" ),
+                Submit('search_offers', 'Search Offers', css_id="search_offers_button" )
             )
         )
 
-        super( RideRequestOfferForm, self ).__init__( *args, **kwargs )
+class RideRequestPutForm (RideRequestOfferForm):
+    def __init__( self, *args, **kwargs ):
+        super( RideRequestPutForm, self ).__init__( *args, **kwargs )
+        self.fields['start_location'].widget = TextInput( attrs={'id':'id_request_start_location'} )
+        self.fields['end_location'].widget = TextInput( attrs={'id':'id_request_end_location'} )
+        self.fields['start_lat'].widget.attrs['id'] = 'id_request_start_lat'
+        self.fields['end_lat'].widget.attrs['id'] = 'id_request_end_lat'
+        self.fields['start_lng'].widget.attrs['id'] = 'id_request_start_lng'
+        self.fields['end_lng'].widget.attrs['id'] = 'id_request_end_lng'
+
+        self.helper.form_action = reverse( 'request_ride_new' )
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'request_form'
+
+class RideOfferPutForm (RideRequestOfferForm):
+    def __init__( self, *args, **kwargs ):
+        super( RideOfferPutForm, self ).__init__( *args, **kwargs )
+        self.fields['start_location'].widget = TextInput( attrs={'id':'id_offer_start_location'} )
+        self.fields['end_location'].widget = TextInput( attrs={'id':'id_offer_end_location'} )
+        self.fields['start_lat'].widget.attrs['id'] = 'id_offer_start_lat'
+        self.fields['end_lat'].widget.attrs['id'] = 'id_offer_end_lat'
+        self.fields['start_lng'].widget.attrs['id'] = 'id_offer_start_lng'
+        self.fields['end_lng'].widget.attrs['id'] = 'id_offer_end_lng'
+
+        self.helper.form_action = reverse( 'offer_ride_new' )
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'offer_form'
 
 class OfferOptionsForm (forms.Form):
     '''
@@ -354,7 +404,7 @@ class RiderFeedbackForm(forms.Form):
         label='',
         required=False
     )
-        
+
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_action = '.'
@@ -369,5 +419,5 @@ class RiderFeedbackForm(forms.Form):
                 Submit('give','Give Feedback'),
             )
         )
-    
+
         super(RiderFeedbackForm, self).__init__(*args, **kwargs)

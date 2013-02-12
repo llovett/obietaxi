@@ -5,7 +5,7 @@ from django.contrib import messages
 from bson.objectid import ObjectId
 from mongoengine.queryset import Q
 from models import RideRequest, UserProfile, RideOffer, Location, Trust
-from forms import RideRequestOfferForm, AskForRideForm, OfferRideForm, OfferOptionsForm, RequestOptionsForm, CancellationForm, DriverFeedbackForm, RiderFeedbackForm
+from forms import AskForRideForm, OfferRideForm, OfferOptionsForm, RequestOptionsForm, CancellationForm, DriverFeedbackForm, RiderFeedbackForm, RideRequestOfferSearchForm, RideOfferPutForm, RideRequestPutForm
 from datetime import datetime, timedelta
 from random import random
 from time import strptime,mktime
@@ -438,7 +438,7 @@ def process_ask_for_ride( request ):
 
 def request_or_offer_ride( request ):
     ''' Renders the ride request/offer form the first time '''
-    form = RideRequestOfferForm()
+    form = RideRequestOfferSearchForm()
     return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
 
 def _process_ro_form( request, type ):
@@ -447,7 +447,13 @@ def _process_ro_form( request, type ):
 
     '''
 
-    form = RideRequestOfferForm( request.POST )
+    # The extra name for the form is used in case we need to render errors
+    if type == 'request':
+        request_form = RideRequestPutForm( request.POST )
+        form = request_form
+    elif type == 'offer':
+        offer_form = RideOfferPutForm( request.POST )
+        form = offer_form
 
     # Form validates
     if form.is_valid():
@@ -467,6 +473,7 @@ def _process_ro_form( request, type ):
         kwargs[ 'passenger' if type == 'request' else 'driver' ] = profile
 
         # Create offer/request object in database
+        ride_requests = ride_offers = None
         if type == 'offer':
             # Also grab "polygon" field, merge boxes into polygon
             boxes = json.loads( data['polygon'] )
@@ -497,11 +504,14 @@ def _process_ro_form( request, type ):
         profile.save()
 
         # Return listings of the other type
-        return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
+        return _browse( request, locals() )
 
-    # Render the form
-    return render_to_response( 'index.html', locals(), context_instance=RequestContext(request) )
+    import sys
+    sys.stderr.write( "processing ro form: %s\n"%str(form._errors) )
 
+    # Render the form if it was invalid
+    invalid = type
+    return _browse( request, locals() )
 
 @login_required
 def offer_new( request ):
@@ -516,17 +526,28 @@ def offer_search( request ):
     Searches for and returns any RideOffers whose driving area encompasses that
     of this RideRequest.
     '''
-
     # Use the form data
-    form = RideRequestOfferForm( request.POST )
-
+    form = RideRequestOfferSearchForm( request.POST )
     if form.is_valid():
         filtered_offers = _offer_search( **form.cleaned_data )
         return HttpResponse( json.dumps({"offers":filtered_offers}, cls=RideOfferEncoder),
                              mimetype='application/json' )
-
     # Something went wrong.... return an empty response?
     return HttpResponse()
+
+def offer_search_and_display( request ):
+    '''
+    Searches for ride offers per the restrictions given in <request>.POST.
+    Renders the results into the "browse.html" page. This is different from
+    the 'offer_search' view because it renders HTML instead of giving JSON.
+    '''
+    form = RideRequestOfferSearchForm( request.POST )
+    if form.is_valid():
+        ride_offers = _offer_search( **form.cleaned_data )
+        return _browse( request, locals() )
+    return render_to_response( "index.html",
+                               locals(),
+                               context_instance=RequestContext(request) )
 
 @login_required
 def request_new( request ):
@@ -553,8 +574,31 @@ def request_search( request ):
     requests = { "requests" : [requestEncoder.default(r) for r in _request_search( polygon=bboxContour,
                                                                                    date=offer_start_time,
                                                                                    fuzziness=offer_fuzziness )] }
-
     return HttpResponse( json.dumps(requests), mimetype='application/json' )
+
+def request_search_and_display( request ):
+    '''
+    Searches for RideRequests with the given filters in <request>.POST
+    Renders results of the search into "browse.html".
+    This view is different from 'request_search' because it returns HTML, not JSON.
+    '''
+    form = RideRequestOfferSearchForm( request.POST )
+    if form.is_valid():
+        rectangles = json.loads( form.cleaned_data['polygon'] )['rectangles']
+        bboxArea, bboxContour = _merge_boxes( rectangles )
+
+        offer_start_time = form.cleaned_data['date']
+        offer_fuzziness = form.cleaned_data['fuzziness']
+
+        requestEncoder = RideRequestEncoder()
+        ride_requests =  _request_search( polygon=bboxContour,
+                                          date=offer_start_time,
+                                          fuzziness=offer_fuzziness )
+        return _browse( request, locals() )
+
+    return render_to_response( "index.html",
+                               locals(),
+                               context_instance=RequestContext(request) )
 
 def request_show( request, request_id ):
     ''' Renders a page displaying more information about a particular RideRequest '''
@@ -627,6 +671,18 @@ def offer_show( request, offer_id ):
 # BROWSING #
 ############
 
+def _browse( request, context ):
+    import sys
+    write = sys.stderr.write
+    if not 'offer_form' in context:
+        write("no offer form\n")
+        offer_form = RideOfferPutForm()
+    if not 'request_form' in context:
+        write("no request form\n")
+        request_form = RideRequestPutForm()
+    ctx = dict( zip(locals().keys()+context.keys(), locals().values()+context.values()) )
+    return render_to_response("browse.html", ctx, context_instance=RequestContext(request))
+
 def browse( request ):
     '''
     Lists all RideRequests and RideOffers and renders them into "browse.html"
@@ -635,7 +691,7 @@ def browse( request ):
     ride_requests = RideRequest.objects.filter( date__gte=datetime.now() )
     ride_offers = RideOffer.objects.filter( date__gte=datetime.now() )
 
-    return render_to_response("browse.html", locals(), context_instance=RequestContext(request))
+    return _browse( request, locals() )
 
 #########################
 # REQUEST/OFFER OPTIONS #

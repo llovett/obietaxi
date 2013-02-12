@@ -160,9 +160,7 @@ def google_login_success( request ):
 
     profile.user.backend = 'mongoengine.django.auth.MongoEngineBackend'
     login( request, profile.user )
-    return render_to_response( 'google_login_success.html',
-                               locals(),
-                               context_instance=RequestContext(request) )
+    return HttpResponseRedirect( reverse('user_home') )
 
 def google_register( request ):
     if request.method == 'POST':
@@ -173,6 +171,7 @@ def google_register( request ):
             # Store the phone number
             profile.phone_number = form.cleaned_data['phone']
             profile.save()
+            login( request, profile.user )
             messages.add_message( request, messages.SUCCESS,
                                   "Your profile has been saved!" )
             return HttpResponseRedirect( reverse('user_home') )
@@ -181,7 +180,6 @@ def google_register( request ):
     return render_to_response( 'google_register.html',
                                locals(),
                                context_instance=RequestContext(request) )
-
 
 def activate( request ):
     # Try to find the user/stub to activate

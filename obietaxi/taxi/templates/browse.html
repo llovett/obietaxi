@@ -1,8 +1,82 @@
 {% extends "base.html" %}
-{% block scripts %}<script type="text/javascript" src="{{ STATIC_URL }}js/browse.js"></script>{% endblock %}
+{% block scripts %}
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBO-9pr8jiFPszeyxuABOc4RoTTSr1o5wE&sensor=false&libraries=places"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}datepicker/js/bootstrap-datepicker.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}timepicker/js/bootstrap-timepicker.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/RouteBoxer.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/browse-elements.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/points.js"></script>
+
+  <!-- this will re-display the right modal popup, if the form inside did not validate last time -->
+  {% if invalid %}
+    <script type="text/javascript">
+      $(document).ready(
+	 function() {
+	     if ( '{{invalid}}' === 'offer' ) {
+		 $("#new_offer_modal").modal('show');
+	     } else if ( '{{invalid}}' === 'request' ) {
+		 $("#new_request_modal").modal('show');
+	     }
+	 }
+      );
+    </script>
+  {% endif %}
+{% endblock %}
+{% block styles %}
+  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}datepicker/css/datepicker.css" />
+  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}timepicker/css/timepicker.css" />
+{% endblock %}
 {% block title %}Browse{% endblock %}
 {% block heading %}Browse{% endblock %}
 {% block content %}
+
+  <!-- ask for ride/offer a ride buttons -->
+  <a href="#new_offer_modal" class="btn" role="button" data-toggle="modal">Offer a Ride</a>
+  <a href="#new_request_modal" class="btn" role="button" data-toggle="modal">Ask for a Ride</a>
+
+  <!-- modal for offering a ride -->
+  <div id="new_offer_modal" class="modal hide fade">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3>Offer a Ride</h3>
+    </div>
+    <div class="modal-body">
+      <div class="new_offer_modal_form">
+	{% load crispy_forms_tags %}
+	{% crispy offer_form %}
+      </div>
+      <div class="new_offer_modal_map" style="display:none">
+	<p>Please check the route below against how you actually plan on getting
+	to your destination. We'll use this information to inform passengers who
+	also need rides along or near your route.</p>
+	<div id="map_canvas"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="new_offer_modal_form">
+	<button type="button" class="btn btn-primary" id="offer_show_map_button">Next</button>
+      </div>
+      <div class="new_offer_modal_map" style="display:none">
+	<button type="button" class="btn" id="offer_show_form_button">Back</button>
+	<button type="button" class="btn btn-primary" id="offer_ride_button">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal for requesting a ride -->
+  <div id="new_request_modal" class="modal hide fade">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3>Ask for a Ride</h3>
+    </div>
+    <div class="modal-body">
+      {% load crispy_forms_tags %}
+      {% crispy request_form %}
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" id="ask_for_ride_button">OK</button>
+    </div>
+  </div>
 
   {% if ride_requests %}
     <h2>Ride Requests</h2>
