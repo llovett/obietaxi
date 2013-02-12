@@ -19,14 +19,6 @@
     </head>
     <body>
 	<div id="wrapper">
-	    <div id="heading">
-		<img id="logo" src="{{ STATIC_URL }}images/obietaxi_logo2.png"
-		    alt="Obietaxi" 
-		    width='231' 
-		    height='209'> 
-		    <h1>{% block heading %}
-			{% endblock %}</h1>
-	    </div>
 	    <div id="messages">
 		{% if messages %}
 		<ul class="messages">
@@ -36,7 +28,12 @@
 		</ul>
 		{% endif %}
 	    </div>
+	    <div id="give_content_a_fucking_margin_top"></div>
 	    <div id="content">
+		<div id="heading">
+		<h1>{% block heading %}
+		    {% endblock %}</h1>
+		</div>
 		{% block content %}
 		{% endblock %}
 	    </div>      

@@ -21,30 +21,56 @@
 }
 
 html { width: 100%; height:100% }
-body { width: 100%; height:100%;padding:0; }
+body { width: 100%; height:100%;padding:0; margin-top: -10px; }
 #wrapper {
-    height: auto !important;
+    height: 100%;
+    /*height: auto !important;*/
     min-height: 100%;
     width: 100%;
     position: relative;
     margin: 0 auto -100px;
+    background-image: url('/static/images/Oberlin_street_big.png');
+    background-size: cover;
 }
 
+.modal-body {
+    max-height: 800px !important;
+}
+
+.pac-container {
+    /* this is needed so that bootstrap's modal views don't cover up google places autocomplete */
+    z-index:1051 !important;
+}
+
+#right_panel_wrapper {
+float:right;
+    width:45%;
+    overflow:hidden;
+}
+
+
 #heading {
-    margin-left:10px;
+    margin-left:auto;
+    margin-right:auto;
 }
 
 #logo {
 float: right;
 margin: 20px;
 	margin-right:40px;
+	margin-top: 20px;
+}
+#give_content_a_fucking_margin_top{
+height: 30px;
 }
 
 #content {
-    margin-left:10px;
+    margin-left:auto;
+    margin-right:auto;
     position:relative;
-    width:100%;
-    height:75%;
+    width:800px;
+height: 75%;
+	background-color: @pale-yellow;
 }
 
 #left_panel {
@@ -53,13 +79,13 @@ margin: 20px;
     height:100%;
     padding:5px;
 margin: 50px;
-    margin-top: 130px;
+    margin-top: 30px;
     /*border: 1px dotted #a0a0a0;*/
 }
 
 #right_panel {
     float:left;
-    width:45%;
+    width:92%;
     height:500px;
 }
 
@@ -80,7 +106,7 @@ width: 80%;
 
 #push {
     height: 100px;
-    z-index: 10;
+    z-index: -10;
 }
 
 #push, #footer{
@@ -98,7 +124,8 @@ width: 80%;
 .checkers {
 height: 30px;
 width: 100%;
-       background-image:url('images/checkers-mini.png');
+       background-image:url('/static/images/checkers-mini.png');
+position: relative;
 }
 
 #footer_navigation {
@@ -129,8 +156,8 @@ clear:both;
     font-size: 18px;
     display:inline;
     padding: 5px;
-	     margin-left: 25px;
-	     margin-right: 25px;
+	     margin-left: 15px;
+	     margin-right: 15px;
 }
 
 .maplabels {
