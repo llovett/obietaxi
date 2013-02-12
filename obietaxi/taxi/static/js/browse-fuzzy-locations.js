@@ -48,5 +48,11 @@ $(document).ready(
 	}
 	initSearchElements('request');
 	initSearchElements('offer');
+
+	// Initialize the date and time pickers
+	$('.datepicker-default').datepicker({
+	    format:'mm/dd/yyyy'
+	});
+	$('.timepicker-default').timepicker();
     }
 );

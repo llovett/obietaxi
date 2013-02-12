@@ -46,4 +46,10 @@ $(document).ready(function(){
     if ( $("#id_end_location").val().length > 0 ) {
 	updateLatLng( 'end' );
     }
+
+    // Initialize the date and time pickers
+    $('.datepicker-default').datepicker({
+	format:'mm/dd/yyyy'
+    });
+    $('.timepicker-default').timepicker();
 });
