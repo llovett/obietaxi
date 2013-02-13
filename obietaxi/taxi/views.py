@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from bson.objectid import ObjectId
 from mongoengine.queryset import Q
+from mongoengine.django.auth import User
 from models import RideRequest, UserProfile, RideOffer, Location, Trust
 from forms import AskForRideForm, OfferRideForm, OfferOptionsForm, RequestOptionsForm, CancellationForm, DriverFeedbackForm, RiderFeedbackForm, RideRequestOfferSearchForm, RideOfferPutForm, RideRequestPutForm
 from datetime import datetime, timedelta
@@ -263,7 +264,7 @@ def process_offer_ride( request ):
     # Do some error checking
     def fail( msg ):
         messages.add_message( request, messages.ERROR, msg )
-        return HttpResponseRedirect( reverse('user_home') )
+        return HttpResponseRedirect( reverse('user_home') ) #TODO: update reverse
     try:
         req = RideRequest.objects.get( id=ObjectId(request_id) )
         offer = RideOffer.objects.get( pk=ObjectId(offer_id) )
@@ -308,7 +309,7 @@ def process_offer_ride( request ):
     messages.add_message( request,
                           messages.SUCCESS, "You have {} {}'s offer".format('accepted' if response == 'accept' else 'declined',
                                                                             str(driver)) )
-    return HttpResponseRedirect( reverse('user_home') )
+    return HttpResponseRedirect( reverse('user_home') ) # TODO: update reverse
 
 @login_required
 def ask_for_ride( request ):
@@ -384,7 +385,7 @@ def process_ask_for_ride( request ):
     # Do some error checking
     def fail( msg ):
         messages.add_message( request, messages.ERROR, msg )
-        return HttpResponseRedirect( reverse('user_home') )
+        return HttpResponseRedirect( reverse('user_home') ) #TODO: update reverse
     try:
         offer = RideOffer.objects.get( id=ObjectId(offer_id) )
         req = RideRequest.objects.get( pk=ObjectId(request_id) )
@@ -430,7 +431,7 @@ def process_ask_for_ride( request ):
                           messages.SUCCESS,
                           "You have {} {}'s request".format('accepted' if response == 'accept' else 'declined',
                                                             str(rider.user)) )
-    return HttpResponseRedirect( reverse('user_home') )
+    return HttpResponseRedirect( reverse('user_home') ) #TODO: update reverse
 
 ###################
 # OFFERS/REQUESTS #
@@ -699,16 +700,18 @@ def browse( request ):
 
 def cancel_ride(request, ride_id):
     '''
-    Render and process a RideRequest cancellation
+    Render and process a RideRequest/RideOffer cancellation
     '''
 
     try:
-        driver = RideOffer.objects.get(pk=ObjectId(ride_id)).driver
+        ride_offer = RideOffer.objects.get(pk=ObjectId(ride_id))
+        driver = ride_offer.driver
     except (RideOffer.DoesNotExist):
         driver = None
 
     try:
-        rider = RideRequest.objects.get(pk=ObjectId(ride_id)).passenger
+        ride_request = RideRequest.objects.get(pk=ObjectId(ride_id))
+        rider = ride_request.passenger
     except (RideRequest.DoesNotExist):
         rider = None
 
@@ -747,7 +750,6 @@ def cancel_ride(request, ride_id):
                 req.delete()
             elif not offer == None:
                 reason_msg = data['reason']
-                # This is a rock'n mess. Clean up*
                 email_message = render_message( "taxi/static/emails/driver_cancelled.txt", locals() )
                 list_o_emails = [profile.user.username for profile in offer.passengers]
                 if list_o_emails:
@@ -762,9 +764,22 @@ def cancel_ride(request, ride_id):
                     each_ride.save()
                 offer.delete()
 
-            return HttpResponseRedirect(reverse('user_home'))
+            return HttpResponseRedirect(reverse('user_home', kwargs={'user_id':ride_id}))
 
         return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
+
+
+    #ret_id = User.objects.get(username=request.session.get('profile'))
+    if driver:
+        if not ride_offer.passengers:
+            d_id = User.objects.get(username=driver.user.username).id
+            ride_offer.delete()
+            return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':d_id}) )
+    elif rider:
+        if not ride_request.ride_offer:
+            r_id = User.objects.get(username=rider.user.username).id
+            ride_request.delete()
+            return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':r_id}) )
 
     form = CancellationForm(initial={'ride_id':ride_id})
     return render_to_response('cancel_ride.html', locals(), context_instance=RequestContext(request))
@@ -856,11 +871,8 @@ def userprofile_show( request, user_id ):
     #     profile = request.session['profile']
 
     #user = get_mongo_or_404(User, pk=ObjectId(user_id))
-    profile = get_mongo_or_404(UserProfile, user=user_id)
 
-    #TODO: add security, actually not necessary
-    # if not request.session.get('profile') == profile:
-    #     raise PermissionDenied
+    profile = get_mongo_or_404(UserProfile, user=user_id)
 
     my_offers = RideOffer.objects.filter( driver=profile, completed=False )
     my_requests = RideRequest.objects.filter( passenger=profile )
@@ -900,7 +912,7 @@ def driver_feedback( request ):
         def fail( msg ):
             ''' What to do when we get an error '''
             messages.add_message( request, messages.ERROR, msg )
-            return HttpResponseRedirect( reverse('user_home') )
+            return HttpResponseRedirect( reverse('user_home') ) #TODO: update reverse
 
         profile = request.session.get("profile")
         offer = get_mongo_or_404( RideOffer, pk=request.POST['offer_id'] )
@@ -951,7 +963,7 @@ def driver_feedback( request ):
             offer.save()
 
             messages.add_message( request, messages.SUCCESS, "Your correspondence has been recorded." )
-            return HttpResponseRedirect( reverse('user_home') )
+            return HttpResponseRedirect( reverse('user_home') ) #TODO: update reverse
 
     offer_id = request.GET.get("offer_id")
     form = DriverFeedbackForm( RideOffer.objects.get(pk=offer_id),
@@ -987,7 +999,7 @@ def rider_feedback(request, request_id):
             request.completed = True
             request.save()
 
-            return HttpResponseRedirect(reverse('user_home'))
+            return HttpResponseRedirect(reverse('user_home')) #TODO: update reverse
 
     form = RiderFeedbackForm(initial={'request_id':request_id})
     return render_to_response('rider_feedback.html', locals(), context_instance=RequestContext(request))
