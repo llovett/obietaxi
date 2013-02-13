@@ -68,13 +68,19 @@ $(document).ready(
 		// Show suggested travel route on the map
 		ObietaxiMapper.route(
 		    function() {
-			//TODO: allow the driver to modify the route and
-			//update #id_polygon as necessary
-			$("#right_panel").css( {'margin-left':0} );
+			$(".search_map").slideDown();
+			$(".search_form").slideUp();
 		    }
 		);
 	    }
 	);
+	$("#back_to_form").click(
+	    function() {
+		$(".search_map").slideUp();
+		$(".search_form").slideDown();
+	    }
+	);
+
 	// Submission after meddling with the map
 	$("#submit_from_map").click(
 	    function() {
@@ -83,9 +89,5 @@ $(document).ready(
 		$("#offer_or_request_form").submit();
 	    }
 	);
-
-	// Hide the right panel (containing the map, "OK" button for searching rides)
-	$("#right_panel").css( {'margin-left':1000} );
-
     }
 );

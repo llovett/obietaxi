@@ -45,10 +45,10 @@ body {
   height: 50px;
 }
 #logo {
-  float: right;
-  margin: 20px;
-  margin-right: 40px;
-  margin-top: 20px;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  margin: 20px 40px 0px 0px;
 }
 #give_content_a_fucking_margin_top {
   height: 30px;
@@ -72,16 +72,11 @@ body {
 
 }
 #right_panel {
-  float: left;
-  width: 92%;
-  height: 500px;
+  float: right;
 }
 #map_canvas {
-  position: relative;
-  height: 60%;
-  width: 80%;
-  margin-left: auto;
-  margin-right: auto;
+  height: 330px;
+  width: 430px;
 }
 #ride_listing {
   width: 100%;

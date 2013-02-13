@@ -15,28 +15,34 @@
 {% endblock %}
 
 {% block heading %}
-Obietaxi
+  Obietaxi
 {% endblock %}
 
 {% block content %}
-	<div id="left_panel" class="left_panel">
+  <div id="left_panel" class="left_panel">
 
-	    {% load crispy_forms_tags %}
-	    <!-- this renders the entire form, including start/end tags and submit buttons -->
-	    {% crispy form %}
+    <div class="search_form">
+      {% load crispy_forms_tags %}
+      <!-- this renders the entire form, including start/end tags and submit buttons -->
+      {% crispy form %}
+    </div>
 
-	</div>
-		<img id="logo" src="{{ STATIC_URL }}images/obietaxi_logo2.png"
-		    alt="Obietaxi" 
-		    width='231' 
-		    height='209'> 
+    <div class="search_map" style="display:none">
+      <p>For best results, check the route below against how you actually plan
+      on getting to your destination. We'll use this information to show you
+      passengers who also need rides along or near your route.</p>
+      <div id="map_canvas"></div>
+      <button type="button" id="back_to_form" class="btn">back</button>
+      <input type="button" value="OK" id="submit_from_map" class="btn btn-primary" />
+    </div>
 
-	<div id="right_panel_wrapper">
-	    <div id="right_panel" class="right_panel">
-		<p>For best results, check the route below against how you actually plan on getting to your destination. We'll use this information to show you passengers who also need rides along or near your route.</p>
-		<div id="map_canvas"></div>
-		<input type="button" value="OK" id="submit_from_map" class="btn btn-primary" />
-		<div id="ride_listing"></div>
-	    </div>
-	</div>
+  </div>
+
+  <div id="right_panel" class="right_panel">
+    <img id="logo" src="{{ STATIC_URL }}images/obietaxi_logo2.png"
+	 alt="Obietaxi"
+	 width='231'
+	 height='209' />
+  </div>
+
 {% endblock %}

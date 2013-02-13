@@ -21,12 +21,12 @@
 }
 
 html { width: 100%; height:100% }
-body { 
-width: 100%; 
-height:100%;
-padding:0;
-	margin-top: -10px; 
-	background-color:black;
+body {
+    width: 100%;
+    height:100%;
+    padding:0;
+    margin-top: -10px;
+    background-color:black;
 }
 #wrapper {
     height: 100%;
@@ -49,7 +49,7 @@ padding:0;
 }
 
 #right_panel_wrapper {
-float:right;
+    float:right;
     width:45%;
     overflow:hidden;
 }
@@ -62,13 +62,14 @@ float:right;
 }
 
 #logo {
-float: right;
-margin: 20px;
-	margin-right:40px;
-	margin-top: 20px;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    margin: 20px 40px 0px 0px;
 }
+
 #give_content_a_fucking_margin_top{
-height: 30px;
+    height: 30px;
 }
 
 #content {
@@ -76,8 +77,8 @@ height: 30px;
     margin-right:auto;
     position:relative;
     width:800px;
-height: 75%;
-	background-color: @pale-yellow;
+    height: 75%;
+    background-color: @pale-yellow;
 }
 
 #left_panel {
@@ -85,23 +86,18 @@ height: 75%;
     width:40%;
     height:auto;
     padding:5px;
-margin: 50px;
+    margin: 50px;
     margin-top: 30px;
-    /*border: 1px dotted #a0a0a0;*/
+/*border: 1px dotted #a0a0a0;*/
 }
 
 #right_panel {
-    float:left;
-    width:92%;
-    height:500px;
+    float:right;
 }
 
-#map_canvas { 
-position:relative;
-height: 60%;
-width: 80%;
-       margin-left: auto;
-       margin-right: auto;
+#map_canvas {
+    height: 330px;
+    width: 430px;
 }
 
 #ride_listing {
@@ -129,10 +125,10 @@ width: 80%;
 }
 
 .checkers {
-height: 30px;
-width: 100%;
-       background-image:url('/static/images/checkers-mini.png');
-position: relative;
+    height: 30px;
+    width: 100%;
+    background-image:url('/static/images/checkers-mini.png');
+    position: relative;
 }
 
 #footer_navigation {
@@ -140,11 +136,11 @@ position: relative;
 }
 
 #navigation {
-height:30px;
-clear:both;
-      background-color: black;
-      border-radius: 5px 5px 5px 5px;
-       text-align: center;
+    height:30px;
+    clear:both;
+    background-color: black;
+    border-radius: 5px 5px 5px 5px;
+    text-align: center;
 
 }
 
@@ -163,8 +159,8 @@ clear:both;
     font-size: 18px;
     display:inline;
     padding: 5px;
-	     margin-left: 15px;
-	     margin-right: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
 }
 
 .maplabels {
@@ -175,10 +171,10 @@ clear:both;
 }
 
 .navlinks a:hover {
-color: black;
-       text-decoration: none;
-       background-color: @main-yellow;
-       border-radius: 5px 5px 5px 5px;
+    color: black;
+    text-decoration: none;
+    background-color: @main-yellow;
+    border-radius: 5px 5px 5px 5px;
 }
 
 .form-actions {
@@ -187,8 +183,7 @@ color: black;
 }
 
 legend {
-border: none;
-	font-size: 34px;
-	font-weight: bold;
+    border: none;
+    font-size: 34px;
+    font-weight: bold;
 }
-
