@@ -19,11 +19,13 @@ var ObietaxiMapper = ObietaxiMapper || {};
 	var mapOptions = {
 	    center: latLng,
 	    zoom: 11,
+	    noClear: true,
 	    mapTypeId: google.maps.MapTypeId.ROADMAP
 	};
 
 	// This should match the id of the map div on points.html
-	map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+	var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+	ObietaxiMapper.map = map;
 
 	// Setup directions/boxing utilities
 	directionService = new google.maps.DirectionsService();

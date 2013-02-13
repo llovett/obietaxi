@@ -70,6 +70,7 @@ $(document).ready(
 		    function() {
 			$(".search_map").slideDown();
 			$(".search_form").slideUp();
+			google.maps.event.trigger(ObietaxiMapper.map, 'resize');
 		    }
 		);
 	    }
@@ -78,6 +79,7 @@ $(document).ready(
 	    function() {
 		$(".search_map").slideUp();
 		$(".search_form").slideDown();
+		google.maps.event.trigger(ObietaxiMapper.map, 'resize');
 	    }
 	);
 

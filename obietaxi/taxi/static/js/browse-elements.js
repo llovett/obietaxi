@@ -16,6 +16,7 @@ $(document).ready(
 		    function() {
 			$(".new_offer_modal_form").slideUp();
 			$(".new_offer_modal_map").slideDown();
+			google.maps.event.trigger(ObietaxiMapper.map, 'resize');
 		    },
 		    "#id_offer_start_location",
 		    "#id_offer_end_location"
