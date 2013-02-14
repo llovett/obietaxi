@@ -8,6 +8,7 @@
 @dark-yellow: #a67500;
 @light-yellow: #ffc740;
 @pale-yellow: #ffd673;
+@transparent-pale-yellow: rgba(255, 214, 115, 0.95);
 
 /* blues */
 @main-blue: #1531AE;
@@ -15,6 +16,15 @@
 @dark-blue: #071a71;
 @light-blue: #4962d6;
 @pale-blue: #6f81d6;
+
+/* some mixins */
+.rounded-corners (@radius: 5px) {
+    -webkit-border-radius: @radius;
+    -moz-border-radius: @radius;
+    -ms-border-radius: @radius;
+    -o-border-radius: @radius;
+    border-radius: @radius;
+}
 
 * {
     margin: 0;
@@ -72,19 +82,18 @@ body {
 }
 
 #content {
-    margin-left:auto;
-    margin-right:auto;
+    margin:auto;
     position:relative;
     width:800px;
-    background-color: @pale-yellow;
+    min-height: 600px;
+    padding: 20px;
+    background-color: @transparent-pale-yellow;
+    .rounded-corners;
 }
 
 #left_panel {
     width:50%;
     height:auto;
-    padding:5px;
-    margin: 50px;
-    margin-top: 30px;
 /*border: 1px dotted #a0a0a0;*/
 }
 

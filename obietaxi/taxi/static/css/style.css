@@ -1,6 +1,7 @@
 /* color palette */
 /* yellows */
 /* blues */
+/* some mixins */
 * {
   margin: 0;
 }
@@ -53,18 +54,21 @@ body {
   height: 30px;
 }
 #content {
-  margin-left: auto;
-  margin-right: auto;
+  margin: auto;
   position: relative;
   width: 800px;
-  background-color: #ffd673;
+  min-height: 600px;
+  padding: 20px;
+  background-color: rgba(255, 214, 115, 0.95);
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
 }
 #left_panel {
   width: 50%;
   height: auto;
-  padding: 5px;
-  margin: 50px;
-  margin-top: 30px;
   /*border: 1px dotted #a0a0a0;*/
 
 }
