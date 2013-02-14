@@ -79,7 +79,7 @@
   </div>
 
   {% if ride_requests %}
-    <h2>Ride Requests</h2>
+    <h2>Looking for Rides</h2>
     <table name="ride_requests" id="ride_request_table" class="browse_table">
       <tr><th><!--blank--></th><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
       {% for item in ride_requests %}
@@ -95,9 +95,9 @@
   {% endif %}
 
   {% if ride_offers %}
-    <h2>Ride Offers</h2>
+    <h2>Offering Rides</h2>
     <table name="ride_offers" id="ride_offer_table" class="browse_table">
-      <tr><th><!--blank--></th><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
+      <tr><th><!--blank--></th><th>Departing from</th><th>Going to</th><th>Date</th><th>Driver</th></tr>
       {% for item in ride_offers %}
 	<tr id="ride_offer_listing_{{ item.id }}">
 	  <td><a href="{% url offer_show item.id %}"> view </a></td>
