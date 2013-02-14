@@ -5,4 +5,7 @@
   <h2>Activity</h2>
   <p>{{ rides_requested|length }} ride{{ rides_requested|pluralize }} asked for</p>
   <p>{{ rides_offered|length }} ride{{ rides_offered|pluralize }} offered</p>
+
+  <h3>Trust</h3>
+<p>{{profile}} has earned <strong>{{profile.trust|length}} Trust point{{profile.trust|pluralize}}</strong>. {% if profile.trust|length < 1 %}This may be be because {{profile.user.first_name}} has never completed a ride through Obietaxi.</p>{% endif %}
 {% endblock %}

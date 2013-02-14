@@ -74,4 +74,8 @@
   {% else %}
     <p>You aren't driving in any upcoming trips.</p>
   {% endif %}
+
+  <h3>Trust</h3>
+  <p>You have earned <strong>{{profile.trust|length}} Trust point{{profile.trust|pluralize}}</strong>. You can earn more Trust by completing more rides through Obietaxi.</p>
+
 {% endblock %}
