@@ -20,6 +20,17 @@ FUZZY_OPTIONS = (
     ('anytime', 'anytime at all')
 )
 
+# Start/destination presets
+PLACE_OPTIONS = (
+    "Oberlin, OH",
+    "Cleveland Airport - 5300 Riverside Dr, Cleveland, OH",
+    "Crocker Park - 159 Crocker Park Blvd #260  Westlake, OH",
+    "CVS Pharmacy - 297 S Main St, Oberlin, OH",
+    "IGA -  331 E Lorain St, Oberlin, OH",
+    "Johnny's Carryout - 12290 Leavitt Rd, Oberlin, OH",
+    "Walmart - 46440 U.S. 20, Oberlin, OH"
+)
+
 class AskForRideForm( forms.Form ):
     '''
     Form to facilitate asking for a ride from a posted RideOffer
@@ -143,7 +154,9 @@ class RideRequestOfferForm (forms.Form):
         # We create these fields inside of __init__ because we want
         # them to be able to adjust them dynamically in sub-classes
         self.start_location = forms.CharField()
+        self.start_location.widget.attrs = { 'class':'combo-box' }
         self.end_location = forms.CharField()
+        self.end_location.widget.attrs = { 'class':'combo-box' }
         self.fields['start_location'] = self.start_location
         self.fields['end_location'] = self.end_location
         self.fields['start_lat'] = forms.DecimalField( widget=forms.HiddenInput )

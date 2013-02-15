@@ -153,3 +153,18 @@ legend {
   font-size: 34px;
   font-weight: bold;
 }
+/* combo-boxes */
+.selectBox {
+  position: relative;
+  z-index: 0 !important;
+}
+.selectBox input[type=text] {
+  width: 100%;
+}
+.selectBox img {
+  position: absolute;
+  right: -6px;
+  /* offset bootstrap input text padding */
+
+  top: 5px;
+}
