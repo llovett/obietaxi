@@ -58,9 +58,11 @@ var ObietaxiMapper = ObietaxiMapper || {};
     // stored within a certain distance of that route.
     ObietaxiMapper.route = function( callback, start, end ) {
 	// The request to be sent to Google for directions
+	var _start = $(start || "#id_start_location").val().replace(/.* - /g,"");
+	var _end = $(end || "#id_end_location").val().replace(/.* - /g,"");
 	var request = {
-	    origin: $(start || "#id_start_location").val(),
-	    destination: $(end || "#id_end_location").val(),
+	    origin: _start,
+	    destination: _end,
 	    travelMode: google.maps.DirectionsTravelMode.DRIVING
 	};
 

@@ -34,7 +34,7 @@
         this.selector = new ComboboxSelector(this);
         this.setSelectOptions(selectOptions);
         var inputHeight = this.textInputElement.outerHeight();
-	var sizeDelta = 4;
+	var sizeDelta = 6;
 	var dropdownButtonSize = inputHeight - sizeDelta;
         var buttonLeftPosition = this.textInputElement.outerWidth() + 0;
         var showSelectorButton = jQuery(
