@@ -20,17 +20,6 @@ FUZZY_OPTIONS = (
     ('anytime', 'anytime at all')
 )
 
-# Start/destination presets
-PLACE_OPTIONS = (
-    "Oberlin, OH",
-    "Cleveland Airport - 5300 Riverside Dr, Cleveland, OH",
-    "Crocker Park - 159 Crocker Park Blvd #260  Westlake, OH",
-    "CVS Pharmacy - 297 S Main St, Oberlin, OH",
-    "IGA -  331 E Lorain St, Oberlin, OH",
-    "Johnny's Carryout - 12290 Leavitt Rd, Oberlin, OH",
-    "Walmart - 46440 U.S. 20, Oberlin, OH"
-)
-
 class AskForRideForm( forms.Form ):
     '''
     Form to facilitate asking for a ride from a posted RideOffer
