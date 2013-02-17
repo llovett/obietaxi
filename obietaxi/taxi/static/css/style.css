@@ -2,6 +2,19 @@
 /* yellows */
 /* blues */
 /* some mixins */
+.checker-border {
+  border: 15px solid transparent;
+  -moz-border-image: url('/static/images/checkers-mini.png') 30 30 round;
+  /* Old Firefox */
+
+  -webkit-border-image: url('/static/images/checkers-mini.png') 30 30 round;
+  /* Safari */
+
+  -o-border-image: url('/static/images/checkers-mini.png') 30 30 round;
+  /* Opera */
+
+  border-image: url('/static/images/checkers-mini.png') 30 30 30 repeat;
+}
 * {
   margin: 0;
 }
@@ -59,12 +72,20 @@ body {
   width: 800px;
   min-height: 600px;
   padding: 20px;
-  background-color: rgba(255, 214, 115, 0.95);
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
+  background-color: rgba(255, 240, 220, 0.93);
+  /*.rounded-corners;*/
+
+  border: 15px solid transparent;
+  -moz-border-image: url('/static/images/checkers-mini.png') 30 30 round;
+  /* Old Firefox */
+
+  -webkit-border-image: url('/static/images/checkers-mini.png') 30 30 round;
+  /* Safari */
+
+  -o-border-image: url('/static/images/checkers-mini.png') 30 30 round;
+  /* Opera */
+
+  border-image: url('/static/images/checkers-mini.png') 30 30 30 repeat;
 }
 #left_panel {
   width: 50%;
@@ -152,4 +173,7 @@ legend {
   border: none;
   font-size: 34px;
   font-weight: bold;
+}
+.form-actions {
+  background-color: inherit;
 }
