@@ -10,7 +10,7 @@
 	{% endblock %}
 
 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>    
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.min.js"></script>
 	<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="{{ STATIC_URL }}js/csrf.js"></script>
@@ -36,7 +36,7 @@
 		</div>
 		{% block content %}
 		{% endblock %}
-	    </div>      
+	    </div>
 	    <!-- empty div, pushes the footer to the bottom of the page -->
 	    <div id="push"></div>
 	</div> <!-- wrapper -->
@@ -45,18 +45,18 @@
 
 	    <div class="checkers"></div>
 	    <div id="footer">
-	    <div id="navigation">    
+	    <div id="navigation">
 		<ul id="footer_navigation" class="navlinks">
 		    <li><a href="{% url main_page %}">HOME</a></li>
 		    <li><a href="{% url browse %}">BROWSE</a></li>
 		    {% if not user.is_authenticated %}
-		    <!-- TODO: make popup menu that allows login/login with google -->	  
+		    <!-- TODO: make popup menu that allows login/login with google -->
 		    <li><a href="{% url login %}">LOGIN</a></li>
 		    <li><a href="{% url register %}">REGISTER</a></li>
 		    {% else %}
 		    <li><a href="{% url logout %}">LOGOUT</a></li>
 		    <li><a href="{% url user_home user.id %}">(logged in as {{ user.username }})</a></li>
-		    {% endif %}	  
+		    {% endif %}
 		</ul>
 	    </div>
 	</div> <!-- footer -->

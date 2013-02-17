@@ -206,3 +206,73 @@ legend {
 .form-actions{
     background-color: inherit;
 }
+/*!
+ * Combobox Plugin for jQuery, version 0.5.0
+ *
+ * Copyright 2012, Dell Sala
+ * http://dellsala.com/
+ * https://github.com/dellsala/Combo-Box-jQuery-Plugin
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * Date: 2012-01-15
+ */
+
+.combobox {
+    margin-right: 0.1em;
+}
+.combobox_arrow {
+    background: transparent url("/static/images/down-arrow.png") no-repeat center center;
+    display: block;
+    height: 100%;
+    width: 100%;
+
+}
+.combobox_button {
+    -webkit-border-radius: 4px;
+    -moz-border-radius   : 4px;
+    border-radius        : 4px;
+    -moz-background-clip   : padding;
+    -webkit-background-clip: padding-box;
+    background-clip        : padding-box;
+    background: #ccc;
+    position: absolute;
+    right: 0;
+    top: 0;
+    display: block;
+    height: 100%;
+    width: 18px;
+}
+
+.combobox_button:hover {
+    text-decoration: none;
+}
+
+.combobox_selector {
+    background-color: white;
+    font-family: Helvetia, Arial, sans-serif;
+    font-size: 12px;
+    z-index: 1052; /* on top of google autocomplete div */
+    max-height: 200px;
+    overflow: auto;
+}
+
+.combobox_selector ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    border:1px solid #CCC;
+}
+
+.combobox_selector li {
+    padding: 2px 5px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+.combobox_selector li:hover,
+.combobox_selector li.selected {
+    background-color: #0066CC;
+    color: #FFF;
+}

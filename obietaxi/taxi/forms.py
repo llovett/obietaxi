@@ -143,7 +143,9 @@ class RideRequestOfferForm (forms.Form):
         # We create these fields inside of __init__ because we want
         # them to be able to adjust them dynamically in sub-classes
         self.start_location = forms.CharField()
+        self.start_location.widget.attrs = { 'class':'combo-box' }
         self.end_location = forms.CharField()
+        self.end_location.widget.attrs = { 'class':'combo-box' }
         self.fields['start_location'] = self.start_location
         self.fields['end_location'] = self.end_location
         self.fields['start_lat'] = forms.DecimalField( widget=forms.HiddenInput )

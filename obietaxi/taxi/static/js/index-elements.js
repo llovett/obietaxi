@@ -7,6 +7,28 @@ $(document).ready(
 	    new google.maps.LatLng(25.641526,-122.622072),
 	    new google.maps.LatLng(49.837982, -64.174806));
 
+	// Initialize combo-boxes
+	// createEditableSelect( startPoint );
+	// createEditableSelect( endPoint );
+	$("#id_start_location").combobox(
+	    ["Oberlin, OH",
+	     "Cleveland Airport - 5300 Riverside Dr, Cleveland, OH",
+	     "Crocker Park - 159 Crocker Park Blvd #260  Westlake, OH",
+	     "CVS Pharmacy - 297 S Main St, Oberlin, OH",
+	     "IGA -  331 E Lorain St, Oberlin, OH",
+	     "Johnny's Carryout - 12290 Leavitt Rd, Oberlin, OH",
+	     "Walmart - 46440 U.S. 20, Oberlin, OH"]
+	);
+	$("#id_end_location").combobox(
+	    ["Oberlin, OH",
+	     "Cleveland Airport - 5300 Riverside Dr, Cleveland, OH",
+	     "Crocker Park - 159 Crocker Park Blvd #260  Westlake, OH",
+	     "CVS Pharmacy - 297 S Main St, Oberlin, OH",
+	     "IGA -  331 E Lorain St, Oberlin, OH",
+	     "Johnny's Carryout - 12290 Leavitt Rd, Oberlin, OH",
+	     "Walmart - 46440 U.S. 20, Oberlin, OH"]
+	);
+
 	var searchStartBox = new google.maps.places.SearchBox(startPoint,
 							      { 'bounds': defaultBounds,
 								'autocomplete': true });
