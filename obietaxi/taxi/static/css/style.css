@@ -245,3 +245,28 @@ legend {
   background-color: #0066CC;
   color: #FFF;
 }
+.select_div {
+  overflow: hidden;
+  background: url("/static/images/menu_dropdown.png") no-repeat right #ffffff;
+  border: 1px solid #ccc;
+  vertical-align: middle;
+  /* same as other bootstrap UI components */
+
+  line-height: 20px;
+  height: 28px;
+  width: 212px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  border-radius: 4px;
+}
+.select_div select {
+  -webkit-appearance: none;
+  background: transparent;
+  width: 120%;
+  border: none;
+  border-radius: 0;
+  margin: 0px;
+  padding: 0px;
+}

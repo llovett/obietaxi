@@ -160,7 +160,7 @@ def google_login_success( request ):
 
     profile.user.backend = 'mongoengine.django.auth.MongoEngineBackend'
     login( request, profile.user )
-    return HttpResponseRedirect( reverse('user_home') )
+    return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':profile.user.id}) )
 
 def google_register( request ):
     if request.method == 'POST':
@@ -174,7 +174,7 @@ def google_register( request ):
             login( request, profile.user )
             messages.add_message( request, messages.SUCCESS,
                                   "Your profile has been saved!" )
-            return HttpResponseRedirect( reverse('user_home') )
+            return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':profile.user.id}) )
     else:
         form = GoogleRegisterForm()
     return render_to_response( 'google_register.html',
@@ -198,7 +198,7 @@ def activate( request ):
 
     # Create a success message
     messages.add_message( request, messages.SUCCESS, 'Your account has been successfully activated.' )
-    return HttpResponseRedirect( reverse('user_home') )
+    return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':user.id}) )
 
 def register( request ):
     # Cannot register if logged in already
