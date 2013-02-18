@@ -8,7 +8,7 @@
 @dark-yellow: #a67500;
 @light-yellow: #ffc740;
 @pale-yellow: #ffd673;
-@transparent-pale-yellow: rgba(255, 240, 220, 0.93);
+@transparent-pale-yellow: rgba(255, 214, 115, 0.91);
 
 /* blues */
 @main-blue: #1531AE;
@@ -27,11 +27,11 @@
 }
 
 .checker-border {
-border:15px solid transparent;
-    -moz-border-image:url('/static/images/checkers-mini.png') 30 30 round; /* Old Firefox */
-    -webkit-border-image:url('/static/images/checkers-mini.png') 30 30 round; /* Safari */
-    -o-border-image:url('/static/images/checkers-mini.png') 30 30 round; /* Opera */
-    border-image:url('/static/images/checkers-mini.png') 30 30 30 repeat;
+border:25px solid black;
+    -moz-border-image:url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat; /* Old Firefox */
+    -webkit-border-image:url('/static/images/stripe-border.png') 25 repeat; /* Safari */
+    -o-border-image:url('/static/images/stripe-border.png') 25 repeat; /* Opera */
+    border-image:url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
 }
 
 * {
@@ -96,8 +96,9 @@ body {
     min-height: 600px;
     padding: 20px;
     background-color: @transparent-pale-yellow;
-    /*.rounded-corners;*/
+    .rounded-corners(20px);
     .checker-border;
+//border: 20px solid black;
 }
 
 #left_panel {
