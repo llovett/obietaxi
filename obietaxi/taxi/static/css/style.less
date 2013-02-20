@@ -8,7 +8,7 @@
 @dark-yellow: #a67500;
 @light-yellow: #ffc740;
 @pale-yellow: #ffd673;
-@transparent-pale-yellow: rgba(255, 214, 115, 0.95);
+@transparent-pale-yellow: rgba(255, 214, 115, 0.91);
 
 /* blues */
 @main-blue: #1531AE;
@@ -26,6 +26,24 @@
     border-radius: @radius;
 }
 
+.stripe-border {
+border:25px solid black;
+    -moz-border-image:url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat; /* Old Firefox */
+    -webkit-border-image:url('/static/images/stripe-border.png') 25 repeat; /* Safari */
+    -o-border-image:url('/static/images/stripe-border.png') 25 repeat; /* Opera */
+    border-image:url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+}
+
+.drop-shadow {
+    -moz-box-shadow: 5px 5px 7px #222;
+    -webkit-box-shadow: 5px 5px 7px #222;
+    box-shadow: 5px 5px 7px #222;
+    /* For IE 8 */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
+    /* For IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
+}
+
 * {
     margin: 0;
 }
@@ -38,6 +56,18 @@ body {
     margin-top: -10px;
     background-color:black;
 }
+
+h1{
+    font-size: 60px;
+    //letter-spacing: -3px;
+    color: @light-yellow;
+   text-shadow:
+	   -3px -3px 0 #333333,  
+	   3px -3px 0 #333333,
+	   -3px 3px 0 #333333,
+	   3px 3px 0 #333333;
+}
+
 #wrapper {
     /*height: auto !important;*/
     min-height: 100%;
@@ -67,15 +97,23 @@ body {
 #heading {
     margin-left:auto;
     margin-right:auto;
-    height:50px;
+    height:70px;
 }
 
 #logo {
     position: absolute;
     right: 0px;
     top: 0px;
-    margin: 20px 40px 0px 0px;
+    margin: 75px 75px 0px 0px;
 }
+
+#logo_small {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    margin: 10px 10px 0px 0px;
+}
+    
 
 #give_content_a_fucking_margin_top{
     height: 30px;
@@ -88,7 +126,9 @@ body {
     min-height: 600px;
     padding: 20px;
     background-color: @transparent-pale-yellow;
-    .rounded-corners;
+    .rounded-corners(20px);
+    .stripe-border;
+    .drop-shadow;
 }
 
 #left_panel {
@@ -194,6 +234,9 @@ legend {
     font-weight: bold;
 }
 
+.form-actions{
+    background-color: inherit;
+}
 /*!
  * Combobox Plugin for jQuery, version 0.5.0
  *
