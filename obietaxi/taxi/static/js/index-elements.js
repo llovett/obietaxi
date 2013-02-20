@@ -7,26 +7,59 @@ $(document).ready(
 	    new google.maps.LatLng(25.641526,-122.622072),
 	    new google.maps.LatLng(49.837982, -64.174806));
 
+	// Available locations for drop-downs
+	var locations = [
+	    {'name':"Oberlin, OH",
+	     'lat':41.2939386,
+	     'lng':-82.21737859999996},
+	    {'name':"Cleveland Airport - 5300 Riverside Dr, Cleveland, OH",
+	     'lat':41.410339,
+	     'lng':-81.83616699999999},
+	    {'name':"Crocker Park - 159 Crocker Park Blvd #260  Westlake, OH",
+	     'lat':41.45953129999999,
+	     'lng':-81.95110779999999},
+	    {'name':"CVS Pharmacy - 297 S Main St, Oberlin, OH",
+	     'lat':41.2847,
+	     'lng':-82.21809999999999},
+	    {'name':"IGA -  331 E Lorain St, Oberlin, OH",
+	     'lat':41.293209,
+	     'lng':-82.20551899999998},
+	    {'name':"Johnny's Carryout - 12290 Leavitt Rd, Oberlin, OH",
+	     'lat':41.308722,
+	     'lng':-82.2168201},
+	    {'name':"Walmart - 46440 U.S. 20, Oberlin, OH",
+	     'lat':41.266583,
+	     'lng':-82.223344}
+	];
+	var location_names = new Array();
+	for ( var i=0; i<locations.length; i++ ) {
+	    location_names.push( locations[i].name );
+	}
+
 	// Initialize combo-boxes
-	// createEditableSelect( startPoint );
-	// createEditableSelect( endPoint );
-	$("#id_start_location").combobox(
-	    ["Oberlin, OH",
-	     "Cleveland Airport - 5300 Riverside Dr, Cleveland, OH",
-	     "Crocker Park - 159 Crocker Park Blvd #260  Westlake, OH",
-	     "CVS Pharmacy - 297 S Main St, Oberlin, OH",
-	     "IGA -  331 E Lorain St, Oberlin, OH",
-	     "Johnny's Carryout - 12290 Leavitt Rd, Oberlin, OH",
-	     "Walmart - 46440 U.S. 20, Oberlin, OH"]
+	$("#id_start_location").combobox( location_names );
+	$("#id_end_location").combobox( location_names );
+
+	// Click handlers for combo-boxes
+	var doLatLng = function( who, startOrEnd ) {
+	    var index = 0;
+	    for (; index<locations.length; index++ ) {
+		if ( locations[index].name === who.text() ) {
+		    $("#id_"+startOrEnd+"_lat").val(locations[index].lat);
+		    $("#id_"+startOrEnd+"_lng").val(locations[index].lng);
+		    break;
+		}
+	    }
+	}
+	$(document).on(
+	    'click',
+	    "#div_id_start_location .combobox_selector ul li",
+	    function() { doLatLng($(this), 'start'); }
 	);
-	$("#id_end_location").combobox(
-	    ["Oberlin, OH",
-	     "Cleveland Airport - 5300 Riverside Dr, Cleveland, OH",
-	     "Crocker Park - 159 Crocker Park Blvd #260  Westlake, OH",
-	     "CVS Pharmacy - 297 S Main St, Oberlin, OH",
-	     "IGA -  331 E Lorain St, Oberlin, OH",
-	     "Johnny's Carryout - 12290 Leavitt Rd, Oberlin, OH",
-	     "Walmart - 46440 U.S. 20, Oberlin, OH"]
+	$(document).on(
+	    'click',
+	    "#div_id_end_location .combobox_selector ul li",
+	    function() { doLatLng($(this), 'end'); }
 	);
 
 	var searchStartBox = new google.maps.places.SearchBox(startPoint,
@@ -37,9 +70,9 @@ $(document).ready(
 
 	var updateLatLng = function( startOrEnd ) {
 	    var places = (startOrEnd === 'start' ? searchStartBox : searchEndBox).getPlaces();
-	    if ( places ) {
-		var lat = places[0].geometry.location.Ya;
-		var lng = places[0].geometry.location.Za;
+	    if ( places && places.length > 0 ) {
+		var lat = places[0].geometry.location.lat();
+		var lng = places[0].geometry.location.lng();
 		$("#id_"+startOrEnd+"_lat").val(lat);
 		$("#id_"+startOrEnd+"_lng").val(lng);
 	    }
