@@ -24,7 +24,7 @@ $(document).ready(
 	    {'name':"IGA -  331 E Lorain St, Oberlin, OH",
 	     'lat':41.293209,
 	     'lng':-82.20551899999998},
-	    {'name':"Johnny's Carryout - 12290 Leavitt Rd, Oberlin, OH",
+	    {'name':"Johnny's Liquor Store - 12290 Leavitt Rd, Oberlin, OH",
 	     'lat':41.308722,
 	     'lng':-82.2168201},
 	    {'name':"Walmart - 46440 U.S. 20, Oberlin, OH",

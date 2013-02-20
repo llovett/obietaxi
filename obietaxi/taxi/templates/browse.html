@@ -101,9 +101,9 @@
       {% for item in ride_offers %}
 	<tr id="ride_offer_listing_{{ item.id }}">
 	  <td><a href="{% url offer_show item.id %}"> view </a></td>
-	  <td>{% url offer_show item.id %}{{ item.start }}</td>
-	  <td>{% url offer_show item.id %}{{ item.end }}</td>
-	  <td>{% url offer_show item.id %}{{ item.date }}</td>
+	  <td>{{ item.start }}</td>
+	  <td>{{ item.end }}</td>
+	  <td>{{ item.date }}</td>
 	  <td><a href="{% url user_home item.driver.user.id %}">{{ item.driver }}</a></td>
 	</tr>
       {% endfor %}
