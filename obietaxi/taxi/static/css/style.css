@@ -211,6 +211,13 @@ legend {
 .form-actions {
   background-color: inherit;
 }
+table th {
+  text-align: left;
+}
+table td,
+table th {
+  padding: 2px 9px;
+}
 /*!
  * Combobox Plugin for jQuery, version 0.5.0
  *
