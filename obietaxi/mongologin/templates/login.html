@@ -1,24 +1,22 @@
 {% extends "mol_base.html" %}
 {% block content %}
 
-{% load crispy_forms_tags %}
-<!-- renders the form -->
-{% crispy form %}
+  <div id="forms_container">
+    {% load crispy_forms_tags %}
+    <!-- renders the form -->
+    {% crispy form %}
 
-<!--
-  {{ block.super }}  
-  <form action="." method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="login" />
-  </form> -->
-  <strong>or</strong>
-  <form action="{{ endpoint }}" method="POST">
-    {% csrf_token %}
-    <!-- used for openid POST request to Google -->
-    {% for key, value in params.items %}
-      <input type="hidden" name="{{ key }}" value="{{ value }}" />
-    {% endfor %}
-    <input type="submit" value="Sign in with Google" />
-  </form>
+    <div id="google_signin_div">
+      <strong>or</strong>
+      <form action="{{ endpoint }}" method="POST">
+	{% csrf_token %}
+	<!-- used for openid POST request to Google -->
+	{% for key, value in params.items %}
+	  <input type="hidden" name="{{ key }}" value="{{ value }}" />
+	{% endfor %}
+	<input type="submit" value="Sign in with Google" />
+      </form>
+    </div>
+  </div>
+
 {% endblock %}

@@ -5,14 +5,15 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
-from forms import LoginForm, RegisterForm, GoogleRegisterForm
+from forms import LoginForm, RegisterForm, GoogleRegisterForm, ForgotPasswordForm, ResetPasswordForm
 from mongoengine.django.auth import User
 from random import choice
 from models import RegistrationStub, OpenidAuthStub
 from taxi.models import UserProfile
-from taxi.helpers import _hostname, send_email, random_string
+from taxi.helpers import _hostname, send_email, random_string, render_message
 import smtplib
 from obietaxi import settings
+from bson.objectid import ObjectId
 
 GOOGLE_GET_ENDPOINT_URL = 'https://www.google.com/accounts/o8/id'
 
@@ -255,3 +256,81 @@ def user_show( request ):
 def user_logout( request ):
     logout( request )
     return HttpResponseRedirect( reverse('login') )
+
+def forgot_password( request ):
+    ''' if the user forgot their password
+    renders ForgotPasswordForm, or processes it if a POST request
+    '''
+    if request.method == 'POST':
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            # Does the user in the email field even exist?
+            try:
+                user = User.objects.get(username=data['username'])
+                profile = UserProfile.objects.get(user=user)
+            except User.DoesNotExist:
+                return HttpResponseRedirect( reverse('main_page') )
+            # Ok, they do. Send them an email
+            reset_string = random_string()
+            profile.password_reset_stub = reset_string
+            profile.save()
+            reset_link = '%s%s?rid=%s&uid=%s'%(
+                    _hostname(),
+                    reverse( 'reset_password' ),
+                    reset_string,
+                    str(profile.id)
+            )
+            email_body = render_message(
+                'mongologin/static/emails/forgot_password.txt',
+                locals()
+            )
+
+            send_email( email_to=user.username, email_body=email_body, email_subject="Reset your password" )
+            messages.add_message( request, messages.SUCCESS, "An email has been sent to you with instructions on resetting your password." )
+            return HttpResponseRedirect( reverse('main_page') )
+    else:
+        form = ForgotPasswordForm()
+
+    return render_to_response( 'forgot_password.html',
+                               locals(),
+                               context_instance=RequestContext(request) )
+
+def reset_password( request ):
+    def reset_fail( msg ):
+        messages.add_message( request, messages.ERROR, msg )
+        return HttpResponseRedirect( reverse('main_page') )
+
+    if request.method == 'GET':
+        reset_string = request.GET.get('rid')
+        user_id = request.GET.get('uid')
+        if reset_string and user_id:
+            profile = UserProfile.objects.get(pk=ObjectId(user_id))
+            if profile.password_reset_stub == reset_string:
+                form = ResetPasswordForm(initial={'user':user_id,
+                                                  'reset_string':reset_string})
+                return render_to_response( 'reset_password.html',
+                                           locals(),
+                                           context_instance=RequestContext(request) )
+        return HttpResponseRedirect( reverse('main_page') )
+
+    form = ResetPasswordForm(request.POST)
+    if form.is_valid():
+        data = form.cleaned_data
+        try:
+            profile = UserProfile.objects.get(pk=ObjectId(data['user']))
+        except UserProfile.DoesNotExist:
+            return reset_fail("An error occurred while resetting your password.")
+        if profile.password_reset_stub == data['reset_string']:
+            profile.password_reset_stub = ""
+            profile.user.set_password(data['password1'])
+            profile.user.save()
+            profile.save()
+            messages.add_message( request, messages.SUCCESS,
+                                  "Your password has been reset successfully." )
+            return HttpResponseRedirect( reverse('login') )
+        return reset_fail("An error occurred while resetting your password.")
+
+    return render_to_response( 'reset_password.html',
+                               locals(),
+                               context_instance=RequestContext(request) )
