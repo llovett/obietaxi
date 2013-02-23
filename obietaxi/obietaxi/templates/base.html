@@ -19,15 +19,6 @@
     </head>
     <body>
 	<div id="wrapper">
-	    <div id="messages">
-		{% if messages %}
-		<ul class="messages">
-		    {% for message in messages %}
-		    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-		    {% endfor %}
-		</ul>
-		{% endif %}
-	    </div>
 	    <div id="give_content_a_fucking_margin_top"></div>
 	    <div id="content">
 		<div id="heading">
@@ -41,6 +32,15 @@
 			height='135' />
 		    {% endblock %}
 
+		</div>
+		<div id="messages">
+		  {% if messages %}
+		    <ul class="messages">
+		      {% for message in messages %}
+			<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+		      {% endfor %}
+		    </ul>
+		  {% endif %}
 		</div>
 		{% block content %}
 		{% endblock %}
