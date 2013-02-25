@@ -309,7 +309,13 @@ def process_offer_ride( request ):
     messages.add_message( request,
                           messages.SUCCESS, "You have {} {}'s offer".format('accepted' if response == 'accept' else 'declined',
                                                                             str(driver)) )
-    return HttpResponseRedirect( reverse('user_home') ) # TODO: update reverse
+    
+    if (driver == profile):
+        user_id = driver.id
+    elif (req.passenger == profile):
+        user_id = req.passenger.id
+
+    return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':user_id}) ) # TODO: test this code
 
 @login_required
 def ask_for_ride( request ):
@@ -431,7 +437,12 @@ def process_ask_for_ride( request ):
                           messages.SUCCESS,
                           "You have {} {}'s request".format('accepted' if response == 'accept' else 'declined',
                                                             str(rider.user)) )
-    return HttpResponseRedirect( reverse('user_home') ) #TODO: update reverse
+    if (offer.driver == profile):
+        user_id = offer.driver.id
+    elif (rider == profile):
+        user_id = rider.id
+    
+    return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':user_id}) ) #TODO: test this code
 
 ###################
 # OFFERS/REQUESTS #
@@ -746,7 +757,7 @@ def cancel_ride(request, ride_id):
                         email_to=req.offer.driver.user.username,
                         email_body=email_message
                     )
-
+                #user_id = req.
                 req.delete()
             elif not offer == None:
                 reason_msg = data['reason']
@@ -963,7 +974,7 @@ def driver_feedback( request ):
             offer.save()
 
             messages.add_message( request, messages.SUCCESS, "Your correspondence has been recorded." )
-            return HttpResponseRedirect( reverse('user_home') ) #TODO: update reverse
+            return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':offer.driver.id}) ) #TODO: test this code
 
     offer_id = request.GET.get("offer_id")
     form = DriverFeedbackForm( RideOffer.objects.get(pk=offer_id),
@@ -999,7 +1010,7 @@ def rider_feedback(request, request_id):
             request.completed = True
             request.save()
 
-            return HttpResponseRedirect(reverse('user_home')) #TODO: update reverse
+            return HttpResponseRedirect(reverse('user_home', kwargs={'user_id':request.passenger.id})) #TODO: test this code
 
     form = RiderFeedbackForm(initial={'request_id':request_id})
     return render_to_response('rider_feedback.html', locals(), context_instance=RequestContext(request))
