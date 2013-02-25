@@ -81,23 +81,37 @@
 
   <h2>Rides</h2>
   <table name="rides" id="ride_table" class="browse_table">
-    <tr><th>asking/offering</th><th>departing from</th><th>going to</th><th>date/time</th><th>contact</th></tr>
+    <tr>
+      <th class="askoffer_cell_hdg">asking/offering</th>
+      <th class="startpos_cell_hdg">departing from</th>
+      <th class="endpos_cell_hdg">going to</th>
+      <th class="datetime_cell_hdg">date/time</th>
+      <th class="contact_cell_hdg">contact</th>
+    </tr>
     {% for req in ride_requests %}
       <tr>
-	<td><a href="{% url request_show req.id %}">looking for a ride</a></td>
-  	<td>{{ req.start }}</td>
-  	<td>{{ req.end }}</td>
-  	<td>{{ req.date }}</td>
-	<td><a href="{% url user_home req.passenger.id %}">{{ req.passenger }}</a></td>
+	<td class="askoffer_cell">
+	  <a href="{% url request_show req.id %}">looking for a ride</a>
+	</td>
+  	<td class="startpos_cell">{{ req.start }}</td>
+  	<td class="endpos_cell">{{ req.end }}</td>
+  	<td class="datetime_cell">{{ req.date }}</td>
+	<td class="contact_cell">
+	  <a href="{% url user_home req.passenger.id %}">{{ req.passenger }}</a>
+	</td>
       </tr>
     {% endfor %}
     {% for offer in ride_offers %}
       <tr>
-	<td><a href="{% url offer_show offer.id %}">offering a ride</a></td>
-  	<td>{{ offer.start }}</td>
-  	<td>{{ offer.end }}</td>
-  	<td>{{ offer.date }}</td>
-	<td><a href="{% url user_home offer.driver.id %}">{{ offer.driver }}</a></td>
+	<td class="askoffer_cell">
+	  <a href="{% url offer_show offer.id %}">offering a ride</a>
+	</td>
+  	<td class="startpos_cell">{{ offer.start }}</td>
+  	<td class="endpos_cell">{{ offer.end }}</td>
+  	<td class="datetime_cell">{{ offer.date }}</td>
+	<td class="contact_cell">
+	  <a href="{% url user_home offer.driver.id %}">{{ offer.driver }}</a>
+	</td>
       </tr>
     {% endfor %}
   </table>
