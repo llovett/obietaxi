@@ -309,7 +309,9 @@ def process_offer_ride( request ):
     messages.add_message( request,
                           messages.SUCCESS, "You have {} {}'s offer".format('accepted' if response == 'accept' else 'declined',
                                                                             str(driver)) )
+
     return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':profile.user.id}) )
+
 
 @login_required
 def ask_for_ride( request ):
@@ -431,6 +433,7 @@ def process_ask_for_ride( request ):
                           messages.SUCCESS,
                           "You have {} {}'s request".format('accepted' if response == 'accept' else 'declined',
                                                             str(rider.user)) )
+
     return HttpResponseRedirect( reverse('user_home', kwargs={'user_id':profile.user.id}) )
 
 ###################
@@ -747,7 +750,7 @@ def cancel_ride(request, ride_id):
                         email_to=req.offer.driver.user.username,
                         email_body=email_message
                     )
-
+                #user_id = req.
                 req.delete()
             elif not offer == None:
                 reason_msg = data['reason']
