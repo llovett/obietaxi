@@ -81,12 +81,12 @@
 
   <h2>Rides</h2>
   <table name="rides" id="ride_table" class="browse_table">
-    <tr>
-      <th class="askoffer_cell_hdg">asking/offering</th>
-      <th class="startpos_cell_hdg">departing from</th>
-      <th class="endpos_cell_hdg">going to</th>
-      <th class="datetime_cell_hdg">date/time</th>
-      <th class="contact_cell_hdg">contact</th>
+    <tr class="rt_headings">
+      <th class="askoffer_cell_hdg"><a href="#">asking</a>/<a href="#">offering</a></th>
+      <th class="startpos_cell_hdg"><a href="#">departing from</a></th>
+      <th class="endpos_cell_hdg"><a href="#">going to</a></th>
+      <th class="datetime_cell_hdg"><a href="#">date/time</a></th>
+      <th class="contact_cell_hdg"><a href="#">contact</a></th>
     </tr>
     {% for req in ride_requests %}
       <tr>

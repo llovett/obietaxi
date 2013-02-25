@@ -238,26 +238,35 @@ legend {
     background-color: inherit;
 }
 
-table {
-    th {
-	text-align:left;
-    }
+/* table on the browse page */
+#ride_table {
     td, th {
 	padding: 2px 9px;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+    }
+    .rt_headings {
+	a {
+	    text-decoration:none;
+	    font:inherit;
+	    color:inherit;
+	}
+	a:hover {
+	    text-decoration:underline;
+	}
+    }
+    .askoffer_cell, .startpos_cell, .askoffer_cell_hdg, .startpos_cell_hdg {
+	text-align:right;
+    }
+    .endpos_cell, .datetime_cell, .contact_cell,
+    .endpos_cell_hdg, .datetime_cell_hdg, .contact_cell_hdg {
+	text-align:left;
+    }
+    .startpos_cell, .endpos_cell {
+	font-style:italic;
     }
 }
-
-.askoffer_cell, .startpos_cell, .askoffer_cell_hdg, .startpos_cell_hdg {
-    text-align:right;
-}
-.endpos_cell, .datetime_cell, .contact_cell,
-.endpos_cell_hdg, .datetime_cell_hdg, .contact_cell_hdg {
-    text-align:left;
-}
-.startpos_cell, .endpos_cell {
-    font-style:italic;
-}
-
 
 /*!
  * Combobox Plugin for jQuery, version 0.5.0
