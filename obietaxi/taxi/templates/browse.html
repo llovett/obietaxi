@@ -79,36 +79,27 @@
     </div>
   </div>
 
-  {% if ride_requests %}
-    <h2>Looking for Rides</h2>
-    <table name="ride_requests" id="ride_request_table" class="browse_table">
-      <tr><th><!--blank--></th><th>Departing from</th><th>Going to</th><th>Date</th><th>Name</th></tr>
-      {% for item in ride_requests %}
-	<tr id="ride_request_listing_{{ item.id }}">
-	  <td><a href="{% url request_show item.id %}">view</td>
-	  <td>{{ item.start }}</td>
-	  <td>{{ item.end }}</td>
-	  <td>{{ item.date }}</td>
-	  <td><a href="{% url user_home item.passenger.id %}">{{ item.passenger }}</a></td>
-	</tr>
-      {% endfor %}
-    </table>
-  {% endif %}
-
-  {% if ride_offers %}
-    <h2>Offering Rides</h2>
-    <table name="ride_offers" id="ride_offer_table" class="browse_table">
-      <tr><th><!--blank--></th><th>Departing from</th><th>Going to</th><th>Date</th><th>Driver</th></tr>
-      {% for item in ride_offers %}
-	<tr id="ride_offer_listing_{{ item.id }}">
-	  <td><a href="{% url offer_show item.id %}"> view </a></td>
-	  <td>{{ item.start }}</td>
-	  <td>{{ item.end }}</td>
-	  <td>{{ item.date }}</td>
-	  <td><a href="{% url user_home item.driver.user.id %}">{{ item.driver }}</a></td>
-	</tr>
-      {% endfor %}
-    </table>
-  {% endif %}
+  <h2>Rides</h2>
+  <table name="rides" id="ride_table" class="browse_table">
+    <tr><th>asking/offering</th><th>departing from</th><th>going to</th><th>date/time</th><th>contact</th></tr>
+    {% for req in ride_requests %}
+      <tr>
+	<td><a href="{% url request_show req.id %}">looking for a ride</a></td>
+  	<td>{{ req.start }}</td>
+  	<td>{{ req.end }}</td>
+  	<td>{{ req.date }}</td>
+	<td><a href="{% url user_home req.passenger.id %}">{{ req.passenger }}</a></td>
+      </tr>
+    {% endfor %}
+    {% for offer in ride_offers %}
+      <tr>
+	<td><a href="{% url offer_show offer.id %}">offering a ride</a></td>
+  	<td>{{ offer.start }}</td>
+  	<td>{{ offer.end }}</td>
+  	<td>{{ offer.date }}</td>
+	<td><a href="{% url user_home offer.driver.id %}">{{ offer.driver }}</a></td>
+      </tr>
+    {% endfor %}
+  </table>
 
 {% endblock %}
