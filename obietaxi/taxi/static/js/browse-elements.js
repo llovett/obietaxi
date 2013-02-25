@@ -48,6 +48,64 @@ $(document).ready(
 		new google.maps.LatLng(25.641526,-122.622072),
 		new google.maps.LatLng(49.837982, -64.174806));
 
+	    // Available locations for drop-downs
+	    var locations = [
+		{'name':"Oberlin, OH",
+		 'lat':41.2939386,
+		 'lng':-82.21737859999996},
+		{'name':"Cleveland Airport - 5300 Riverside Dr, Cleveland, OH",
+		 'lat':41.410339,
+		 'lng':-81.83616699999999},
+		{'name':"Crocker Park - 159 Crocker Park Blvd #260  Westlake, OH",
+		 'lat':41.45953129999999,
+		 'lng':-81.95110779999999},
+		{'name':"CVS Pharmacy - 297 S Main St, Oberlin, OH",
+		 'lat':41.2847,
+		 'lng':-82.21809999999999},
+		{'name':"IGA -  331 E Lorain St, Oberlin, OH",
+		 'lat':41.293209,
+		 'lng':-82.20551899999998},
+		{'name':"Johnny's Liquor Store - 12290 Leavitt Rd, Oberlin, OH",
+		 'lat':41.308722,
+		 'lng':-82.2168201},
+		{'name':"Walmart - 46440 U.S. 20, Oberlin, OH",
+		 'lat':41.266583,
+		 'lng':-82.223344}
+	    ];
+	    var location_names = new Array();
+	    for ( var i=0; i<locations.length; i++ ) {
+		location_names.push( locations[i].name );
+	    }
+
+	    // Initialize combo-boxes
+	    $("#id_"+type+"_start_location").combobox( location_names );
+	    $("#id_"+type+"_end_location").combobox( location_names );
+
+	    // Click handlers for combo-boxes
+	    var doLatLng = function( who, startOrEnd ) {
+		var index = 0;
+		for (; index<locations.length; index++ ) {
+		    if ( locations[index].name === who.text() ) {
+			$("#id_"+type+"_"+startOrEnd+"_lat").val(locations[index].lat);
+			$("#id_"+type+"_"+startOrEnd+"_lng").val(locations[index].lng);
+			break;
+		    }
+		}
+	    }
+	    // N.B.: changing the start/end location on either
+	    // offering or asking for a ride will result in changing
+	    // the lat/lng for both!
+	    $(document).on(
+		'click',
+		"#div_id_start_location .combobox_selector ul li",
+		function() { doLatLng($(this), 'start'); }
+	    );
+	    $(document).on(
+		'click',
+		"#div_id_end_location .combobox_selector ul li",
+		function() { doLatLng($(this), 'end'); }
+	    );
+
 	    var searchStartBox = new google.maps.places.Autocomplete(startPoint, { 'bounds': defaultBounds });
 	    var searchEndBox = new google.maps.places.Autocomplete(endPoint, { 'bounds': defaultBounds });
 
