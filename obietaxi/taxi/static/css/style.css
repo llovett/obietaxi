@@ -2,6 +2,30 @@
 /* yellows */
 /* blues */
 /* some mixins */
+.stripe-border {
+  border: 25px solid black;
+  -moz-border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+  /* Old Firefox */
+
+  -webkit-border-image: url('/static/images/stripe-border.png') 25 repeat;
+  /* Safari */
+
+  -o-border-image: url('/static/images/stripe-border.png') 25 repeat;
+  /* Opera */
+
+  border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+}
+.drop-shadow {
+  -moz-box-shadow: 5px 5px 7px #222;
+  -webkit-box-shadow: 5px 5px 7px #222;
+  box-shadow: 5px 5px 7px #222;
+  /* For IE 8 */
+
+  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
+  /* For IE 5.5 - 7 */
+
+  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
+}
 * {
   margin: 0;
 }
@@ -15,6 +39,11 @@ body {
   padding: 0;
   margin-top: -10px;
   background-color: black;
+}
+h1 {
+  font-size: 60px;
+  color: #ffc740;
+  text-shadow: -3px -3px 0 #333333, 3px -3px 0 #333333, -3px 3px 0 #333333, 3px 3px 0 #333333;
 }
 #wrapper {
   /*height: auto !important;*/
@@ -42,13 +71,19 @@ body {
 #heading {
   margin-left: auto;
   margin-right: auto;
-  height: 50px;
+  height: 70px;
 }
 #logo {
   position: absolute;
   right: 0px;
   top: 0px;
-  margin: 20px 40px 0px 0px;
+  margin: 75px 75px 0px 0px;
+}
+#logo_small {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  margin: 10px 10px 0px 0px;
 }
 #give_content_a_fucking_margin_top {
   height: 30px;
@@ -59,12 +94,32 @@ body {
   width: 800px;
   min-height: 600px;
   padding: 20px;
-  background-color: rgba(255, 214, 115, 0.95);
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
+  background-color: rgba(255, 214, 115, 0.91);
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  -ms-border-radius: 20px;
+  -o-border-radius: 20px;
+  border-radius: 20px;
+  border: 25px solid black;
+  -moz-border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+  /* Old Firefox */
+
+  -webkit-border-image: url('/static/images/stripe-border.png') 25 repeat;
+  /* Safari */
+
+  -o-border-image: url('/static/images/stripe-border.png') 25 repeat;
+  /* Opera */
+
+  border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+  -moz-box-shadow: 5px 5px 7px #222;
+  -webkit-box-shadow: 5px 5px 7px #222;
+  box-shadow: 5px 5px 7px #222;
+  /* For IE 8 */
+
+  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
+  /* For IE 5.5 - 7 */
+
+  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
 }
 #left_panel {
   width: 50%;
@@ -153,6 +208,16 @@ legend {
   font-size: 34px;
   font-weight: bold;
 }
+.form-actions {
+  background-color: inherit;
+}
+table th {
+  text-align: left;
+}
+table td,
+table th {
+  padding: 2px 9px;
+}
 /*!
  * Combobox Plugin for jQuery, version 0.5.0
  *
@@ -217,4 +282,44 @@ legend {
 .combobox_selector li.selected {
   background-color: #0066CC;
   color: #FFF;
+}
+.select_div {
+  overflow: hidden;
+  background: url("/static/images/menu_dropdown.png") no-repeat right #ffffff;
+  border: 1px solid #ccc;
+  vertical-align: middle;
+  /* same as other bootstrap UI components */
+
+  line-height: 20px;
+  height: 28px;
+  width: 212px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  border-radius: 4px;
+}
+.select_div select {
+  -webkit-appearance: none;
+  background: transparent;
+  width: 120%;
+  border: none;
+  border-radius: 0;
+  margin: 0px;
+  padding: 0px;
+}
+#forms_container {
+  position: relative;
+}
+#forms_container #google_signin_div {
+  position: absolute;
+  bottom: 0px;
+  left: 300px;
+}
+#forms_container #google_signin_div form {
+  display: inline;
+  margin-left: 10px;
+}
+.safewidth {
+  max-width: 630px;
 }

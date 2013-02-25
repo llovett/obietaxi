@@ -19,20 +19,28 @@
     </head>
     <body>
 	<div id="wrapper">
-	    <div id="messages">
-		{% if messages %}
-		<ul class="messages">
-		    {% for message in messages %}
-		    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-		    {% endfor %}
-		</ul>
-		{% endif %}
-	    </div>
 	    <div id="give_content_a_fucking_margin_top"></div>
 	    <div id="content">
 		<div id="heading">
-		<h1>{% block heading %}
-		    {% endblock %}</h1>
+		    <h1>{% block heading %}
+			{% endblock %}</h1>
+
+		    {% block logo %}
+			<img id="logo_small" src="{{ STATIC_URL }}images/obietaxi_logo2_small.png"
+			alt="Obietaxi"
+			width='150'
+			height='135' />
+		    {% endblock %}
+
+		</div>
+		<div id="messages">
+		  {% if messages %}
+		    <ul class="messages">
+		      {% for message in messages %}
+			<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+		      {% endfor %}
+		    </ul>
+		  {% endif %}
 		</div>
 		{% block content %}
 		{% endblock %}

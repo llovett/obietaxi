@@ -1,10 +1,11 @@
 from django import forms
 from bson.objectid import ObjectId
-from django.forms.widgets import Textarea, TextInput
+from django.forms.widgets import Textarea, TextInput, Select
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, Div
 from crispy_forms.bootstrap import FormActions
 from django.core.urlresolvers import reverse
+from django.utils.safestring import mark_safe
 from widgets import BootstrapSplitDateTimeWidget
 from datetime import datetime
 from models import RideOffer, RideRequest
@@ -19,6 +20,26 @@ FUZZY_OPTIONS = (
     ('week', 'within the week'),
     ('anytime', 'anytime at all')
 )
+
+class WrappedSelect(Select):
+    '''
+    Wraps a Select widget in a div
+    '''
+    def __init__(self, attrs=None, choices=()):
+        self.css_class = attrs.get('css_class')
+        self.css_id = attrs.get('css_id')
+        if self.css_class:
+            del attrs['css_class']
+        if self.css_id:
+            del attrs['css_id']
+        super(WrappedSelect, self).__init__(attrs, choices)
+
+    def render(self, name, value, attrs=None, choices=()):
+        selectHTML = super(WrappedSelect, self).render(name, value, attrs, choices)
+        return mark_safe('\n'.join(('<div %s %s>'%('class="%s"'%self.css_class if self.css_class else '',
+                                                              'id="%s"'%self.css_id if self.css_id else ''),
+                                               selectHTML,
+                                               '</div>')))
 
 class AskForRideForm( forms.Form ):
     '''
@@ -135,7 +156,8 @@ class RideRequestOfferForm (forms.Form):
         label="Departure",
         input_formats = input_formats
     )
-    fuzziness = forms.ChoiceField(choices=FUZZY_OPTIONS)
+    fuzziness = forms.ChoiceField(choices=FUZZY_OPTIONS,
+                                  widget=WrappedSelect(attrs={'css_class':'select_div'}))
 
     def __init__( self, *args, **kwargs ):
         super( RideRequestOfferForm, self ).__init__( *args, **kwargs )
@@ -143,9 +165,9 @@ class RideRequestOfferForm (forms.Form):
         # We create these fields inside of __init__ because we want
         # them to be able to adjust them dynamically in sub-classes
         self.start_location = forms.CharField()
-        self.start_location.widget.attrs = { 'class':'combo-box' }
+        self.start_location.widget.attrs = { 'class':'combo-box', 'placeholder':'type or select' }
         self.end_location = forms.CharField()
-        self.end_location.widget.attrs = { 'class':'combo-box' }
+        self.end_location.widget.attrs = { 'class':'combo-box', 'placeholder':'type or select' }
         self.fields['start_location'] = self.start_location
         self.fields['end_location'] = self.end_location
         self.fields['start_lat'] = forms.DecimalField( widget=forms.HiddenInput )

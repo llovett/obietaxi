@@ -41,6 +41,9 @@ class UserProfile(mdb.Document):
     # Holds openid data
     openid_auth_stub = mdb.EmbeddedDocumentField( OpenidAuthStub )
 
+    # In case the user forgets their password
+    password_reset_stub = mdb.StringField()
+
     def __unicode__( self ):
         return '{} {}'.format( self.user.first_name, self.user.last_name )
 

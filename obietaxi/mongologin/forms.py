@@ -22,15 +22,13 @@ class LoginForm( forms.Form ):
         self.helper.form_action = reverse('login')
         self.helper.form_method = 'POST'
         self.form_id = 'login_form'
+        forgot_password_uri = reverse('forgot_password')
         self.helper.layout = Layout(
-            Fieldset(
-                '',
-                'username',
-                'password',
-            ),
+            'username',
+            'password',
+            HTML('<a href="%s">forgot password</a>'%forgot_password_uri),
             FormActions(
                 Submit('login', 'Login', css_id="login_button"),
-              #  Submit('google_sign_in', 'Sign in with Google', css_id="google_button")
             )
         )
 
@@ -134,3 +132,57 @@ of finding and giving rides, and no more.</p>"""),
         )
 
         super(GoogleRegisterForm, self).__init__(*args, **kwargs)
+
+class ForgotPasswordForm( forms.Form ):
+    username = forms.EmailField(required=True, label="email")
+
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = '.'
+        self.helper.form_method = 'POST'
+        self.form_id = 'forgot_password_form'
+        self.helper.layout = Layout(
+            'username',
+            FormActions(Submit('OK', 'OK')),
+        )
+
+        super(ForgotPasswordForm, self).__init__(*args, **kwargs)
+
+class ResetPasswordForm( forms.Form ):
+    password1 = forms.CharField( widget=forms.PasswordInput(render_value=False),
+                                 max_length=20,
+                                 label="new password",
+                                 required=True )
+    password2 = forms.CharField( widget=forms.PasswordInput(render_value=False),
+                                 max_length=20,
+                                 label="password (again)",
+                                 required=True )
+    user = forms.CharField( widget=forms.HiddenInput() )
+    reset_string = forms.CharField( widget=forms.HiddenInput() )
+
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_action = '.'
+        self.helper.form_method = 'POST'
+        self.form_id = 'forgot_password_form'
+        self.helper.layout = Layout(
+            'user',
+            'reset_string',
+            'password1',
+            'password2',
+            FormActions(Submit('OK', 'OK')),
+        )
+
+        super(ResetPasswordForm, self).__init__(*args, **kwargs)
+
+    def clean( self ):
+        cleaned_data = super( ResetPasswordForm, self ).clean()
+
+        pw1 = cleaned_data.get('password1')
+        pw2 = cleaned_data.get('password2')
+
+        # Passwords must match
+        if pw1 and pw2:
+            if cleaned_data['password1'] != cleaned_data['password2']:
+                raise forms.ValidationError("Passwords must match.")
+        return cleaned_data
