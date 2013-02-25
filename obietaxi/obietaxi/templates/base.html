@@ -25,7 +25,9 @@
 	<div id="heading">
 	  <h1>{% block heading %}{% endblock %}</h1>
 	  {% block logo %}
-	    <img id="logo_small" src="{{ STATIC_URL }}images/obietaxi_logo_small.png" alt="Obietaxi" />
+	    <a href="{% url main_page %}">
+	      <img id="logo_small" src="{{ STATIC_URL }}images/obietaxi_logo_small.png" alt="Obietaxi" />
+	    </a>
 	  {% endblock %}
 	</div>
 
