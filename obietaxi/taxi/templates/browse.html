@@ -7,6 +7,7 @@
   <script type="text/javascript" src="{{ STATIC_URL }}combobox/js/jquery.combobox.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}js/browse-elements.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}js/points.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/date.js"></script>
 
   <!-- this will re-display the right modal popup, if the form inside did not validate last time -->
   {% if invalid %}
@@ -22,6 +23,102 @@
       );
     </script>
   {% endif %}
+  <script type="text/javascript">
+    // Sorting on the browse table
+    $(document).ready(
+	function() {
+	    // All rides in the browse page
+	    var rides = [
+		{% for req in ride_requests %}
+		  {"type":"request",
+		   "start":"{{ req.start }}",
+		   "end":"{{ req.end }}",
+		   "date":Date.parse("{{ req.date }}"),
+		   "link":"{% url request_show req.id %}",
+		   "contact":"{{ req.passenger }}",
+		   "contact_link":"{% url user_home req.passenger.id %}"},
+		{% endfor %}
+		{% for offer in ride_offers %}
+		  {"type":"offer",
+		   "start":"{{ offer.start }}",
+		   "end":"{{ offer.end }}",
+		   "date":Date.parse("{{ offer.date }}"),
+		   "link":"{% url offer_show offer.id %}",
+		   "contact":"{{ offer.driver }}",
+		   "contact_link":"{% url user_home offer.driver.id %}"},
+		{% endfor %}
+	    ];
+
+	    console.log(rides);
+
+	    // What to do when sorting
+	    var sortBrowse = function( comparator ) {
+		// Remove all rows in the table except for the headings
+		$("#ride_table").remove("tr:not(.rt_headings)");
+		// Do the sorting
+		rides.sort(comparator);
+		// Write the HTML
+		for ( var i=0; i<rides.length; i++ ) {
+		    var row = $("<tr></tr>");
+		    var linktext = rides[i].type === "offer" ? "offering a ride" : "asking for a ride";
+		    row
+			.append("<td class=\"askoffer_cell\">"
+			       +"<a href=\""+rides[i].link+"\">"
+			       +linktext
+			       +"</a></td>")
+			.append("<td class=\"startpos_cell\">"
+				+rides[i].start
+				+"</td>")
+			.append("<td class=\"endpos_cell\">"
+				+rides[i].end
+				+"</td>")
+			.append("<td class=\"datetime_cell\">"
+				+rides[i].date
+				+"</td>")
+			.append("<td class=\"contact_cell\">"
+				+"<a href=\""+rides[i].contact_link+"\">"
+				+rides[i].contact
+				+"</a></td>");
+		    $("#ride_table").append( row );
+		}
+	    };
+
+	    // Various comparators
+	    var sortAsking = function(a,b) {
+		return a.type.localeCompare(b);
+	    }
+	    var sortOffering = function(a,b) {
+		return -1*sortAsking(a,b);
+	    };
+	    var sortStarting = function(a,b) {
+
+	    };
+	    var sortEnding = function(a,b) {
+
+	    };
+	    var sortDateTime = function(a,b) {
+
+	    };
+	    var sortContact = function(a,b) {
+
+	    };
+
+	    // Handlers for sorting links
+	    $(".askoffer_cell_hdg a:contains('asking')").click(
+		function(event) {
+		    event.preventDefault();
+		    sortBrowse(sortAsking);
+		}
+	    );
+	    $(".askoffer_cell_hdg a:contains('offering')").click(
+		function(event) {
+		    event.preventDefault();
+		    sortBrowse(sortOffering);
+		}
+	    );
+	}
+    );
+  </script>
 {% endblock %}
 {% block styles %}
   <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}datepicker/css/datepicker.css" />
