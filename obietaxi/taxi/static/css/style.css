@@ -213,6 +213,10 @@ legend {
   background-color: inherit;
 }
 /* table on the browse page */
+.ride_table_wrapper {
+  width: 100%;
+  overflow: auto;
+}
 #ride_table td,
 #ride_table th {
   padding: 2px 9px;
@@ -245,6 +249,10 @@ legend {
 #ride_table .startpos_cell,
 #ride_table .endpos_cell {
   font-style: italic;
+  max-width: 200px;
+  word-wrap: break-word;
+  white-space: normal;
+  text-overflow: clip;
 }
 /*!
  * Combobox Plugin for jQuery, version 0.5.0

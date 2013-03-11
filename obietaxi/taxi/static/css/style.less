@@ -239,6 +239,10 @@ legend {
 }
 
 /* table on the browse page */
+.ride_table_wrapper {
+    width:100%;
+    overflow:auto;
+}
 #ride_table {
     td, th {
 	padding: 2px 9px;
@@ -265,6 +269,10 @@ legend {
     }
     .startpos_cell, .endpos_cell {
 	font-style:italic;
+	max-width:200px;
+	word-wrap:break-word;
+	white-space:normal;
+	text-overflow:clip;
     }
 }
 
