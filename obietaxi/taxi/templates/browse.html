@@ -91,13 +91,13 @@
 		return -1*sortOffering(a,b);
 	    }
 	    var sortStarting = function(a,b) {
-
+		return a.start.localeCompare(b.start);
 	    };
 	    var sortEnding = function(a,b) {
-
+		return a.end.localeCompare(b.end);
 	    };
 	    var sortDateTime = function(a,b) {
-
+		return a.date - b.date;
 	    };
 	    var sortContact = function(a,b) {
 
@@ -114,6 +114,24 @@
 		function(event) {
 		    event.preventDefault();
 		    sortBrowse(sortOffering);
+		}
+	    );
+	    $(".startpos_cell_hdg a").click(
+		function(event) {
+		    event.preventDefault();
+		    sortBrowse(sortStarting);
+		}
+	    );
+	    $(".endpos_cell_hdg a").click(
+		function(event) {
+		    event.preventDefault();
+		    sortBrowse(sortEnding);
+		}
+	    );
+	    $(".datetime_cell_hdg a").click(
+		function(event) {
+		    event.preventDefault();
+		    sortBrowse(sortDateTime);
 		}
 	    );
 	}
