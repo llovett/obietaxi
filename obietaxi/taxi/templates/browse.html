@@ -54,13 +54,13 @@
 	    // What to do when sorting
 	    var sortBrowse = function( comparator ) {
 		// Remove all rows in the table except for the headings
-		$("#ride_table").remove("tr:not(.rt_headings)");
+		$("#ride_table tr:not(.rt_headings)").remove();
 		// Do the sorting
 		rides.sort(comparator);
 		// Write the HTML
 		for ( var i=0; i<rides.length; i++ ) {
 		    var row = $("<tr></tr>");
-		    var linktext = rides[i].type === "offer" ? "offering a ride" : "asking for a ride";
+		    var linktext = rides[i].type === "offer" ? "offering a ride" : "looking for a ride";
 		    row
 			.append("<td class=\"askoffer_cell\">"
 			       +"<a href=\""+rides[i].link+"\">"
@@ -84,12 +84,12 @@
 	    };
 
 	    // Various comparators
-	    var sortAsking = function(a,b) {
-		return a.type.localeCompare(b);
-	    }
 	    var sortOffering = function(a,b) {
-		return -1*sortAsking(a,b);
+		return a.type.localeCompare(b.type);
 	    };
+	    var sortAsking = function(a,b) {
+		return -1*sortOffering(a,b);
+	    }
 	    var sortStarting = function(a,b) {
 
 	    };
