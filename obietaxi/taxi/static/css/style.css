@@ -1,6 +1,7 @@
 /* color palette */
 /* yellows */
 /* blues */
+/* functional colors */
 /* some mixins */
 .stripe-border {
   border: 25px solid black;
@@ -253,6 +254,20 @@ legend {
   word-wrap: break-word;
   white-space: normal;
   text-overflow: clip;
+}
+/* styling error/sucess/info messages */
+.messages {
+  list-style-type: none;
+  font-weight: bold;
+}
+.messages .error {
+  color: #b94a48;
+}
+.messages .success {
+  color: #468847;
+}
+.messages .info {
+  color: #3a87ad;
 }
 /*!
  * Combobox Plugin for jQuery, version 0.5.0

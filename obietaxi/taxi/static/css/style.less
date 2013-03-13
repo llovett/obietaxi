@@ -17,6 +17,11 @@
 @light-blue: #4962d6;
 @pale-blue: #6f81d6;
 
+/* functional colors */
+@error-color: #B94A48;
+@info-color: #3a87ad;
+@success-color: #468847;
+
 /* some mixins */
 .rounded-corners (@radius: 5px) {
     -webkit-border-radius: @radius;
@@ -273,6 +278,21 @@ legend {
 	word-wrap:break-word;
 	white-space:normal;
 	text-overflow:clip;
+    }
+}
+
+/* styling error/sucess/info messages */
+.messages {
+    list-style-type:none;
+    font-weight:bold;
+    .error {
+	color:@error-color;
+    }
+    .success {
+	color:@success-color;
+    }
+    .info {
+	color:@info-color;
     }
 }
 
