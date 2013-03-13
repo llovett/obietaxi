@@ -692,11 +692,8 @@ def browse( request ):
     Lists all RideRequests and RideOffers and renders them into "browse.html"
 
     '''
-    # ride_requests = RideRequest.objects.filter( date__gte=datetime.now() )
-    # ride_offers = RideOffer.objects.filter( date__gte=datetime.now() )
-
-    ride_requests = RideRequest.objects.all()
-    ride_offers = RideOffer.objects.all()
+    ride_requests = RideRequest.objects.filter( date__gte=datetime.now() )
+    ride_offers = RideOffer.objects.filter( date__gte=datetime.now() )
 
     return _browse( request, locals() )
 
