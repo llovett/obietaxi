@@ -87,19 +87,19 @@
 
 	    // Various comparators
 	    var sortOffering = function(a,b) {
-		return a.type.localeCompare(b.type);
+		return (a.type.localeCompare(b.type));
 	    };
 	    var sortAsking = function(a,b) {
-		return -1*sortOffering(a,b);
+		return (-1*sortOffering(a,b));
 	    }
 	    var sortStarting = function(a,b) {
 		return a.start.localeCompare(b.start);
 	    };
 	    var sortEnding = function(a,b) {
-		return a.end.localeCompare(b.end);
+		return (a.end.localeCompare(b.end));
 	    };
 	    var sortDateTime = function(a,b) {
-		return a.date - b.date;
+		return (a.date - b.date);
 	    };
 	    var sortContact = function(a,b) {
 		return a.contact.localeCompare(b.contact);
@@ -118,30 +118,58 @@
 		    sortBrowse(sortOffering);
 		}
 	    );
-	    $(".startpos_cell_hdg a").click(
-		function(event) {
-		    event.preventDefault();
-		    sortBrowse(sortStarting);
-		}
-	    );
-	    $(".endpos_cell_hdg a").click(
-		function(event) {
-		    event.preventDefault();
-		    sortBrowse(sortEnding);
-		}
-	    );
-	    $(".datetime_cell_hdg a").click(
-		function(event) {
-		    event.preventDefault();
-		    sortBrowse(sortDateTime);
-		}
-	    );
-	    $(".contact_cell_hdg a").click(
-		function(event) {
-		    event.preventDefault();
-		    sortBrowse(sortContact);
-		}
-	    );
+	    (function () {
+		var flip = 1;
+		$(".startpos_cell_hdg a").click(
+		    function(event) {
+			event.preventDefault();
+			var sortWrap = function(a,b) {
+			    return flip*sortStarting(a,b);
+			};
+			sortBrowse(sortWrap);
+			flip *= -1;
+		    }
+		)
+	    })();
+	    (function() {
+		var flip = 1;
+		$(".endpos_cell_hdg a").click(
+		    function(event) {
+			event.preventDefault();
+			var sortWrap = function(a,b) {
+			    return flip*sortEnding(a,b);
+			};
+			sortBrowse(sortWrap);
+			flip *= -1;
+		    }
+		);
+	    })();
+	    (function() {
+		var flip = 1;
+		$(".datetime_cell_hdg a").click(
+		    function(event) {
+			event.preventDefault();
+			var sortWrap = function(a,b) {
+			    return flip*sortDateTime(a,b);
+			};
+			sortBrowse(sortWrap);
+			flip *= -1;
+		    }
+		);
+	    })();
+	    (function() {
+		var flip = 1;
+		$(".contact_cell_hdg a").click(
+		    function(event) {
+			event.preventDefault();
+			var sortWrap = function(a,b) {
+			    return flip*sortContact(a,b);
+			};
+			sortBrowse(sortWrap);
+			flip *= -1;
+		    }
+		);
+	    })();
 	}
     );
   </script>
