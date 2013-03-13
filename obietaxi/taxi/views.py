@@ -492,7 +492,6 @@ def _process_ro_form( request, type ):
                                          end=ro.end ).count() == 0:
                 ro.save()
                 profile.offers.append( ro )
-            ride_requests = RideRequest.objects.filter( date__gte=datetime.now() )
         elif type == 'request':
             rr = RideRequest( **kwargs )
 
@@ -503,11 +502,11 @@ def _process_ro_form( request, type ):
                                            end=rr.end ).count() == 0:
                 rr.save()
                 profile.requests.append( rr )
-            ride_offers = RideOffer.objects.filter( date__gte=datetime.now() )
-
         profile.save()
 
-        # Return listings of the other type
+        ride_requests = RideRequest.objects.filter( date__gte=datetime.now() )
+        ride_offers = RideOffer.objects.filter( date__gte=datetime.now() )
+
         return _browse( request, locals() )
 
     # Render the form if it was invalid
