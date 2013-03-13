@@ -65,7 +65,7 @@ def _offer_search( **kwargs ):
     end_lat
     end_lng
     date : a datetime object giving the departure date and time
-    fuzziness : the fuzziness to search with
+    fuzziness : the fuzziness (time range) to search with
 
     NOT REQUIRED:
     other_filters : a dictionary containing other filters to apply in the query
@@ -492,7 +492,7 @@ def _process_ro_form( request, type ):
                                          end=ro.end ).count() == 0:
                 ro.save()
                 profile.offers.append( ro )
-            ride_requests = RideRequest.objects.all()
+            ride_requests = RideRequest.objects.filter( date__gte=datetime.now() )
         elif type == 'request':
             rr = RideRequest( **kwargs )
 
@@ -503,15 +503,12 @@ def _process_ro_form( request, type ):
                                            end=rr.end ).count() == 0:
                 rr.save()
                 profile.requests.append( rr )
-            ride_offers = RideOffer.objects.all()
+            ride_offers = RideOffer.objects.filter( date__gte=datetime.now() )
 
         profile.save()
 
         # Return listings of the other type
         return _browse( request, locals() )
-
-    import sys
-    sys.stderr.write( "processing ro form: %s\n"%str(form._errors) )
 
     # Render the form if it was invalid
     invalid = type
@@ -548,6 +545,8 @@ def offer_search_and_display( request ):
     form = RideRequestOfferSearchForm( request.POST )
     if form.is_valid():
         ride_offers = _offer_search( **form.cleaned_data )
+        # Filter outdated results
+        ride_offers = [o for o in ride_offers if o.date >= datetime.now()]
         return _browse( request, locals() )
     return render_to_response( "index.html",
                                locals(),
@@ -598,6 +597,8 @@ def request_search_and_display( request ):
         ride_requests =  _request_search( polygon=bboxContour,
                                           date=offer_start_time,
                                           fuzziness=offer_fuzziness )
+        # Filter out outdated requests
+        ride_requests = [r for r in ride_requests if r.date >= datetime.now()]
         return _browse( request, locals() )
 
     return render_to_response( "index.html",
@@ -676,13 +677,9 @@ def offer_show( request, offer_id ):
 ############
 
 def _browse( request, context ):
-    import sys
-    write = sys.stderr.write
     if not 'offer_form' in context:
-        write("no offer form\n")
         offer_form = RideOfferPutForm()
     if not 'request_form' in context:
-        write("no request form\n")
         request_form = RideRequestPutForm()
     ctx = dict( zip(locals().keys()+context.keys(), locals().values()+context.values()) )
     return render_to_response("browse.html", ctx, context_instance=RequestContext(request))
