@@ -123,6 +123,35 @@ h1 {
 
   filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
 }
+.modal {
+  padding: 20px;
+  background-color: rgba(255, 214, 115, 0.91);
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  -ms-border-radius: 20px;
+  -o-border-radius: 20px;
+  border-radius: 20px;
+  border: 25px solid black;
+  -moz-border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+  /* Old Firefox */
+
+  -webkit-border-image: url('/static/images/stripe-border.png') 25 repeat;
+  /* Safari */
+
+  -o-border-image: url('/static/images/stripe-border.png') 25 repeat;
+  /* Opera */
+
+  border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+  -moz-box-shadow: 5px 5px 7px #222;
+  -webkit-box-shadow: 5px 5px 7px #222;
+  box-shadow: 5px 5px 7px #222;
+  /* For IE 8 */
+
+  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
+  /* For IE 5.5 - 7 */
+
+  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
+}
 #left_panel {
   width: 50%;
   height: auto;
