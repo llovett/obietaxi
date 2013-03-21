@@ -16,17 +16,6 @@
 
   border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
 }
-.drop-shadow {
-  -moz-box-shadow: 5px 5px 7px #222;
-  -webkit-box-shadow: 5px 5px 7px #222;
-  box-shadow: 5px 5px 7px #222;
-  /* For IE 8 */
-
-  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
-  /* For IE 5.5 - 7 */
-
-  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
-}
 * {
   margin: 0;
 }
@@ -113,9 +102,9 @@ h1 {
   /* Opera */
 
   border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
-  -moz-box-shadow: 5px 5px 7px #222;
-  -webkit-box-shadow: 5px 5px 7px #222;
-  box-shadow: 5px 5px 7px #222;
+  -moz-box-shadow: 5px 5px 7.5px #222222;
+  -webkit-box-shadow: 5px 5px 7.5px #222222;
+  box-shadow: 5px 5px 7.5px #222222;
   /* For IE 8 */
 
   -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
@@ -142,9 +131,9 @@ h1 {
   /* Opera */
 
   border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
-  -moz-box-shadow: 5px 5px 7px #222;
-  -webkit-box-shadow: 5px 5px 7px #222;
-  box-shadow: 5px 5px 7px #222;
+  -moz-box-shadow: 5px 5px 7.5px #222222;
+  -webkit-box-shadow: 5px 5px 7.5px #222222;
+  box-shadow: 5px 5px 7.5px #222222;
   /* For IE 8 */
 
   -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
@@ -230,17 +219,29 @@ h1 {
   background-color: #ffb400;
   border-radius: 5px 5px 5px 5px;
 }
-.form-actions {
-  background-color: #ffffff;
+.form-actions,
+.modal-footer {
+  background-color: inherit;
   border: none;
+  -moz-box-shadow: 0 0 0 #222222;
+  -webkit-box-shadow: 0 0 0 #222222;
+  box-shadow: 0 0 0 #222222;
+  /* For IE 8 */
+
+  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
+  /* For IE 5.5 - 7 */
+
+  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
 }
 legend {
   border: none;
   font-size: 34px;
   font-weight: bold;
-}
-.form-actions {
-  background-color: inherit;
 }
 /* table on the browse page */
 .ride_table_wrapper {

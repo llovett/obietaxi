@@ -39,10 +39,10 @@ border:25px solid black;
     border-image:url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
 }
 
-.drop-shadow {
-    -moz-box-shadow: 5px 5px 7px #222;
-    -webkit-box-shadow: 5px 5px 7px #222;
-    box-shadow: 5px 5px 7px #222;
+.drop-shadow(@size: 5px) {
+    -moz-box-shadow: @size @size @size*1.5 #222;
+    -webkit-box-shadow: @size @size @size*1.5 #222;
+    box-shadow: @size @size @size*1.5 #222;
     /* For IE 8 */
     -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
     /* For IE 5.5 - 7 */
@@ -236,19 +236,17 @@ h1{
     border-radius: 5px 5px 5px 5px;
 }
 
-.form-actions {
-    background-color: #ffffff;
+.form-actions, .modal-footer {
+    background-color: inherit;
     border: none;
+    .drop-shadow(0);
+    .rounded-corners(3px);
 }
 
 legend {
     border: none;
     font-size: 34px;
     font-weight: bold;
-}
-
-.form-actions{
-    background-color: inherit;
 }
 
 /* table on the browse page */
