@@ -64,7 +64,7 @@
 	    <li><a href="{% url register %}">REGISTER</a></li>
 	  {% else %}
 	    <li><a href="{% url logout %}">LOGOUT</a></li>
-	    <li><a href="{% url user_home user.id %}">(logged in as {{ user.username }})</a></li>
+	    <li><a href="{% url user_landing %}">(logged in as {{ user.username }})</a></li>
 	  {% endif %}
 	  </ul>
 	</div>

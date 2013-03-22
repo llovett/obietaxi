@@ -353,7 +353,7 @@ class CancellationForm(forms.Form):
                 'reason',
             ),
             FormActions(
-                Submit('cancel', 'Cancel', css_id='cancel_button'),
+                Submit('cancel', 'Cancel', css_id='cancel_button btn-danger'),
             )
         )
 

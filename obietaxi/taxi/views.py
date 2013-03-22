@@ -870,7 +870,7 @@ def userprofile_show( request, user_id ):
 
     #user = get_mongo_or_404(User, pk=ObjectId(user_id))
 
-    profile = get_mongo_or_404(UserProfile, user=user_id)
+    profile = get_mongo_or_404(UserProfile, pk=user_id)
 
     my_offers = RideOffer.objects.filter( driver=profile, completed=False )
     my_requests = RideRequest.objects.filter( passenger=profile )
@@ -898,6 +898,12 @@ def userprofile_show( request, user_id ):
 
     # Put other context variables for a user's home page here...
     return render_to_response( "user_detail.html", locals(), context_instance=RequestContext(request) )
+
+@login_required
+def user_landing( request ):
+    ''' Shows all RideRequests and RideOffers for the logged-in user.
+    user_id is the id of the User, not of the Profile'''
+    return userprofile_show( request, request.session.get("profile").id )
 
 
 ###########

@@ -8,6 +8,8 @@ urlpatterns = patterns(
     url( r'^google/success/$', views.google_login_success, name="google_login_success" ),
     url( r'^google/register/$', views.google_register, name="google_register" ),
     url( r'^profile/(?P<user_id>[a-z0-9]+)/$', taxi_views.userprofile_show, name="user_home" ),
+    url( r'^home/$', taxi_views.user_landing, name="user_landing" ),
+
     url( r'^logout/$', views.user_logout, name="logout" ),
     url( r'^register/$', views.register, name="register" ),
     url( r'^activate/$', views.activate, name="activate" ),
