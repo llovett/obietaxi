@@ -6,9 +6,10 @@
 @main-yellow: #ffb400;
 @dusty-yellow: #bf9530;
 @dark-yellow: #a67500;
-@light-yellow: #ffc740;
+@light-yellow: #FCC44F;
 @pale-yellow: #ffd673;
 @transparent-pale-yellow: rgba(255, 214, 115, 0.91);
+@transparent-light-yellow: rgba(252, 196, 79, 0.96);
 
 /* blues */
 @main-blue: #1531AE;
@@ -34,10 +35,10 @@ border:25px solid black;
     border-image:url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
 }
 
-.drop-shadow {
-    -moz-box-shadow: 5px 5px 7px #222;
-    -webkit-box-shadow: 5px 5px 7px #222;
-    box-shadow: 5px 5px 7px #222;
+.drop-shadow(@size: 5px, @fuzzy: 7px) {
+    -moz-box-shadow: @size @size @fuzzy #222;
+    -webkit-box-shadow: @size @size @fuzzy #222;
+    box-shadow: @size @size @fuzzy #222;
     /* For IE 8 */
     -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
     /* For IE 5.5 - 7 */
@@ -59,13 +60,19 @@ body {
 
 h1{
     font-size: 60px;
-    //letter-spacing: -3px;
+    letter-spacing: -3px;
     color: @light-yellow;
    text-shadow:
-	   -3px -3px 0 #333333,
-	   3px -3px 0 #333333,
-	   -3px 3px 0 #333333,
-	   3px 3px 0 #333333;
+	   -2px -2px 1px #333333,
+	   2px -2px 1px #333333,
+	   -2px 2px 1px #333333,
+	   2px 2px 1px #333333;
+}
+
+h2{
+    font-size: 35px;
+    letter-spacing: -2px;
+   //text-shadow: -2px -2px 1px #333333;
 }
 
 #wrapper {
@@ -95,15 +102,15 @@ h1{
 
 #heading {
     margin-left:auto;
-    margin-right:auto;
+    margin-right:135px;
     height:70px;
 }
 
 #logo {
     position: absolute;
     right: 0px;
-    top: 0px;
-    margin: 75px 75px 0px 0px;
+    top: 114px;
+    //margin: 75px 0px 0px 0px;
 }
 
 #logo_small {
@@ -124,7 +131,7 @@ h1{
     position:relative;
     width:800px;
     min-height: 600px;
-    padding: 20px;
+    padding: 25px;
     background-color: @transparent-pale-yellow;
     .rounded-corners(20px);
     .stripe-border;
@@ -132,7 +139,7 @@ h1{
 }
 
 #left_panel {
-    width:50%;
+    width:45%;
     height:auto;
 /*border: 1px dotted #a0a0a0;*/
 }
@@ -230,12 +237,13 @@ h1{
 
 legend {
     border: none;
-    font-size: 34px;
+    font-size: 38px;
     font-weight: bold;
 }
 
 .form-actions{
     background-color: inherit;
+        padding-bottom: 10px;
 }
 
 /* table on the browse page */
@@ -313,7 +321,7 @@ legend {
 .combobox_selector {
     background-color: white;
     font-family: Helvetia, Arial, sans-serif;
-    font-size: 12px;
+    font-size: 17px;
     z-index: 1052; /* on top of google autocomplete div */
     max-height: 200px;
     overflow: auto;
@@ -348,7 +356,7 @@ legend {
     /* same as other bootstrap UI components */
     line-height: 20px;
     height: 28px;
-    width:212px;
+    width:218px;
     .rounded-corners(4px);
 
     select {
@@ -373,6 +381,19 @@ legend {
 	    margin-left:10px;
 	}
     }
+}
+
+.control-label.requiredField {
+	font-weight: bold;
+	font-size: 1.2em;
+}
+
+.control-group {
+    margin-bottom: 20px;
+}
+
+#id_date_0, #id_date_1 {
+width: 168px;
 }
 
 // Any item with this class cannot run into the logo

@@ -15,17 +15,6 @@
 
   border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
 }
-.drop-shadow {
-  -moz-box-shadow: 5px 5px 7px #222;
-  -webkit-box-shadow: 5px 5px 7px #222;
-  box-shadow: 5px 5px 7px #222;
-  /* For IE 8 */
-
-  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
-  /* For IE 5.5 - 7 */
-
-  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
-}
 * {
   margin: 0;
 }
@@ -42,8 +31,13 @@ body {
 }
 h1 {
   font-size: 60px;
-  color: #ffc740;
-  text-shadow: -3px -3px 0 #333333, 3px -3px 0 #333333, -3px 3px 0 #333333, 3px 3px 0 #333333;
+  letter-spacing: -3px;
+  color: #fcc44f;
+  text-shadow: -2px -2px 1px #333333, 2px -2px 1px #333333, -2px 2px 1px #333333, 2px 2px 1px #333333;
+}
+h2 {
+  font-size: 35px;
+  letter-spacing: -2px;
 }
 #wrapper {
   /*height: auto !important;*/
@@ -70,14 +64,13 @@ h1 {
 }
 #heading {
   margin-left: auto;
-  margin-right: auto;
+  margin-right: 135px;
   height: 70px;
 }
 #logo {
   position: absolute;
   right: 0px;
-  top: 0px;
-  margin: 75px 75px 0px 0px;
+  top: 114px;
 }
 #logo_small {
   position: absolute;
@@ -94,7 +87,7 @@ h1 {
   position: relative;
   width: 800px;
   min-height: 600px;
-  padding: 20px;
+  padding: 25px;
   background-color: rgba(255, 214, 115, 0.91);
   -webkit-border-radius: 20px;
   -moz-border-radius: 20px;
@@ -112,9 +105,9 @@ h1 {
   /* Opera */
 
   border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
-  -moz-box-shadow: 5px 5px 7px #222;
-  -webkit-box-shadow: 5px 5px 7px #222;
-  box-shadow: 5px 5px 7px #222;
+  -moz-box-shadow: 5px 5px 7px #222222;
+  -webkit-box-shadow: 5px 5px 7px #222222;
+  box-shadow: 5px 5px 7px #222222;
   /* For IE 8 */
 
   -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
@@ -123,7 +116,7 @@ h1 {
   filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
 }
 #left_panel {
-  width: 50%;
+  width: 45%;
   height: auto;
   /*border: 1px dotted #a0a0a0;*/
 
@@ -206,11 +199,12 @@ h1 {
 }
 legend {
   border: none;
-  font-size: 34px;
+  font-size: 38px;
   font-weight: bold;
 }
 .form-actions {
   background-color: inherit;
+  padding-bottom: 10px;
 }
 /* table on the browse page */
 #ride_table td,
@@ -287,7 +281,7 @@ legend {
 .combobox_selector {
   background-color: white;
   font-family: Helvetia, Arial, sans-serif;
-  font-size: 12px;
+  font-size: 17px;
   z-index: 1052;
   /* on top of google autocomplete div */
 
@@ -320,7 +314,7 @@ legend {
 
   line-height: 20px;
   height: 28px;
-  width: 212px;
+  width: 218px;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
   -ms-border-radius: 4px;
@@ -347,6 +341,17 @@ legend {
 #forms_container #google_signin_div form {
   display: inline;
   margin-left: 10px;
+}
+.control-label.requiredField {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+.control-group {
+  margin-bottom: 20px;
+}
+#id_date_0,
+#id_date_1 {
+  width: 168px;
 }
 .safewidth {
   max-width: 630px;
