@@ -7,6 +7,7 @@
   <script type="text/javascript" src="{{ STATIC_URL }}combobox/js/jquery.combobox.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}js/browse-elements.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}js/points.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/date.js"></script>
 
   <!-- this will re-display the right modal popup, if the form inside did not validate last time -->
   {% if invalid %}
@@ -22,6 +23,156 @@
       );
     </script>
   {% endif %}
+  <script type="text/javascript">
+    // Sorting on the browse table
+    $(document).ready(
+	function() {
+	    // All rides in the browse page
+	    var rides = [
+		{% for req in ride_requests %}
+		  {"type":"request",
+		   "start":"{{ req.start }}",
+		   "end":"{{ req.end }}",
+		   "date":Date.parse("{{ req.date|date:"m/d/Y H:i:s" }}"),
+		   "link":"{% url request_show req.id %}",
+		   "contact":"{{ req.passenger }}",
+		   "contact_link":"{% url user_home req.passenger.id %}"},
+		{% endfor %}
+		{% for offer in ride_offers %}
+		  {"type":"offer",
+		   "start":"{{ offer.start }}",
+		   "end":"{{ offer.end }}",
+		   "date":Date.parse("{{ offer.date|date:"m/d/Y H:i:s" }}"),
+		   "link":"{% url offer_show offer.id %}",
+		   "contact":"{{ offer.driver }}",
+		   "contact_link":"{% url user_home offer.driver.id %}"},
+		{% endfor %}
+	    ];
+
+	    // What to do when sorting
+	    var sortBrowse = function( comparator ) {
+		// Remove all rows in the table except for the headings
+		$("#ride_table tr:not(.rt_headings)").remove();
+		// Do the sorting
+		rides.sort(comparator);
+		// Write the HTML
+		for ( var i=0; i<rides.length; i++ ) {
+		    var row = $("<tr></tr>");
+		    var linktext = rides[i].type === "offer" ? "offering a ride" : "looking for a ride";
+		    var datestring = rides[i].date
+			.toString("MMMM d, yyyy, h:mm tt")
+			.replace("AM","a.m.")
+			.replace("PM","p.m.");
+		    row
+			.append("<td class=\"askoffer_cell\">"
+				+"<a href=\""+rides[i].link+"\">"
+				+linktext
+				+"</a></td>")
+			.append("<td class=\"startpos_cell\">"
+				+rides[i].start
+				+"</td>")
+			.append("<td class=\"endpos_cell\">"
+				+rides[i].end
+				+"</td>")
+			.append("<td class=\"datetime_cell\">"
+				+datestring
+				+"</td>")
+			.append("<td class=\"contact_cell\">"
+				+"<a href=\""+rides[i].contact_link+"\">"
+				+rides[i].contact
+				+"</a></td>");
+		    $("#ride_table").append( row );
+		}
+	    };
+
+	    // Various comparators
+	    var sortOffering = function(a,b) {
+		return (a.type.localeCompare(b.type));
+	    };
+	    var sortAsking = function(a,b) {
+		return (-1*sortOffering(a,b));
+	    }
+	    var sortStarting = function(a,b) {
+		return a.start.localeCompare(b.start);
+	    };
+	    var sortEnding = function(a,b) {
+		return (a.end.localeCompare(b.end));
+	    };
+	    var sortDateTime = function(a,b) {
+		return (a.date - b.date);
+	    };
+	    var sortContact = function(a,b) {
+		return a.contact.localeCompare(b.contact);
+	    };
+
+	    // Handlers for sorting links
+	    $(".askoffer_cell_hdg a:contains('asking')").click(
+		function(event) {
+		    event.preventDefault();
+		    sortBrowse(sortAsking);
+		}
+	    );
+	    $(".askoffer_cell_hdg a:contains('offering')").click(
+		function(event) {
+		    event.preventDefault();
+		    sortBrowse(sortOffering);
+		}
+	    );
+	    (function () {
+		var flip = 1;
+		$(".startpos_cell_hdg a").click(
+		    function(event) {
+			event.preventDefault();
+			var sortWrap = function(a,b) {
+			    return flip*sortStarting(a,b);
+			};
+			sortBrowse(sortWrap);
+			flip *= -1;
+		    }
+		)
+	    })();
+	    (function() {
+		var flip = 1;
+		$(".endpos_cell_hdg a").click(
+		    function(event) {
+			event.preventDefault();
+			var sortWrap = function(a,b) {
+			    return flip*sortEnding(a,b);
+			};
+			sortBrowse(sortWrap);
+			flip *= -1;
+		    }
+		);
+	    })();
+	    (function() {
+		var flip = 1;
+		$(".datetime_cell_hdg a").click(
+		    function(event) {
+			event.preventDefault();
+			var sortWrap = function(a,b) {
+			    return flip*sortDateTime(a,b);
+			};
+			sortBrowse(sortWrap);
+			flip *= -1;
+		    }
+		);
+	    })();
+	    (function() {
+		var flip = 1;
+		$(".contact_cell_hdg a").click(
+		    function(event) {
+			event.preventDefault();
+			var sortWrap = function(a,b) {
+			    return flip*sortContact(a,b);
+			};
+			sortBrowse(sortWrap);
+			flip *= -1;
+		    }
+		);
+	    })();
+	}
+    );
+  </script>
 {% endblock %}
 {% block styles %}
   <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}datepicker/css/datepicker.css" />
@@ -80,40 +231,46 @@
   </div>
 
   <h2>Rides</h2>
-  <table name="rides" id="ride_table" class="browse_table">
-    <tr class="rt_headings">
-      <th class="askoffer_cell_hdg"><a href="#">asking</a>/<a href="#">offering</a></th>
-      <th class="startpos_cell_hdg"><a href="#">departing from</a></th>
-      <th class="endpos_cell_hdg"><a href="#">going to</a></th>
-      <th class="datetime_cell_hdg"><a href="#">date/time</a></th>
-      <th class="contact_cell_hdg"><a href="#">contact</a></th>
-    </tr>
-    {% for req in ride_requests %}
-      <tr>
-	<td class="askoffer_cell">
-	  <a href="{% url request_show req.id %}">looking for a ride</a>
-	</td>
-  	<td class="startpos_cell">{{ req.start }}</td>
-  	<td class="endpos_cell">{{ req.end }}</td>
-  	<td class="datetime_cell">{{ req.date }}</td>
-	<td class="contact_cell">
-	  <a href="{% url user_home req.passenger.id %}">{{ req.passenger }}</a>
-	</td>
-      </tr>
-    {% endfor %}
-    {% for offer in ride_offers %}
-      <tr>
-	<td class="askoffer_cell">
-	  <a href="{% url offer_show offer.id %}">offering a ride</a>
-	</td>
-  	<td class="startpos_cell">{{ offer.start }}</td>
-  	<td class="endpos_cell">{{ offer.end }}</td>
-  	<td class="datetime_cell">{{ offer.date }}</td>
-	<td class="contact_cell">
-	  <a href="{% url user_home offer.driver.id %}">{{ offer.driver }}</a>
-	</td>
-      </tr>
-    {% endfor %}
-  </table>
+  <div class="ride_table_wrapper">
+    {% if ride_requests|length < 1 and ride_offers|length < 1 %}
+      <p>No one's traveling yet. Ask for a ride or post an offer, and be the first!</p>
+    {% else %}
+      <table name="rides" id="ride_table" class="browse_table">
+	<tr class="rt_headings">
+	  <th class="askoffer_cell_hdg"><a href="#">asking</a>/<a href="#">offering</a></th>
+	  <th class="startpos_cell_hdg"><a href="#">departing from</a></th>
+	  <th class="endpos_cell_hdg"><a href="#">going to</a></th>
+	  <th class="datetime_cell_hdg"><a href="#">date/time</a></th>
+	  <th class="contact_cell_hdg"><a href="#">contact</a></th>
+	</tr>
+	{% for req in ride_requests %}
+	  <tr>
+	    <td class="askoffer_cell">
+	      <a href="{% url request_show req.id %}">looking for a ride</a>
+	    </td>
+  	    <td class="startpos_cell">{{ req.start }}</td>
+  	    <td class="endpos_cell">{{ req.end }}</td>
+  	    <td class="datetime_cell">{{ req.date }}</td>
+	    <td class="contact_cell">
+	      <a href="{% url user_home req.passenger.id %}">{{ req.passenger }}</a>
+	    </td>
+	  </tr>
+	{% endfor %}
+	{% for offer in ride_offers %}
+	  <tr>
+	    <td class="askoffer_cell">
+	      <a href="{% url offer_show offer.id %}">offering a ride</a>
+	    </td>
+  	    <td class="startpos_cell">{{ offer.start }}</td>
+  	    <td class="endpos_cell">{{ offer.end }}</td>
+  	    <td class="datetime_cell">{{ offer.date }}</td>
+	    <td class="contact_cell">
+	      <a href="{% url user_home offer.driver.id %}">{{ offer.driver }}</a>
+	    </td>
+	  </tr>
+	{% endfor %}
+      </table>
+    {% endif %}
+  </div>
 
 {% endblock %}

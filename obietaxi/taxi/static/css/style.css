@@ -1,6 +1,7 @@
 /* color palette */
 /* yellows */
 /* blues */
+/* functional colors */
 /* some mixins */
 .stripe-border {
   border: 25px solid black;
@@ -105,9 +106,44 @@ h2 {
   /* Opera */
 
   border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+<<<<<<< HEAD
   -moz-box-shadow: 5px 5px 7px #222222;
   -webkit-box-shadow: 5px 5px 7px #222222;
   box-shadow: 5px 5px 7px #222222;
+=======
+  -moz-box-shadow: 5px 5px 7.5px #222222;
+  -webkit-box-shadow: 5px 5px 7.5px #222222;
+  box-shadow: 5px 5px 7.5px #222222;
+  /* For IE 8 */
+
+  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
+  /* For IE 5.5 - 7 */
+
+  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
+}
+.modal {
+  padding: 20px;
+  background-color: rgba(255, 214, 115, 0.91);
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  -ms-border-radius: 20px;
+  -o-border-radius: 20px;
+  border-radius: 20px;
+  border: 25px solid black;
+  -moz-border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+  /* Old Firefox */
+
+  -webkit-border-image: url('/static/images/stripe-border.png') 25 repeat;
+  /* Safari */
+
+  -o-border-image: url('/static/images/stripe-border.png') 25 repeat;
+  /* Opera */
+
+  border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
+  -moz-box-shadow: 5px 5px 7.5px #222222;
+  -webkit-box-shadow: 5px 5px 7.5px #222222;
+  box-shadow: 5px 5px 7.5px #222222;
+>>>>>>> 3bdcee37bb2a627bd4c5d47ef90f8ad382ee437e
   /* For IE 8 */
 
   -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
@@ -193,20 +229,42 @@ h2 {
   background-color: #ffb400;
   border-radius: 5px 5px 5px 5px;
 }
-.form-actions {
-  background-color: #ffffff;
+.form-actions,
+.modal-footer {
+  background-color: inherit;
   border: none;
+  -moz-box-shadow: 0 0 0 #222222;
+  -webkit-box-shadow: 0 0 0 #222222;
+  box-shadow: 0 0 0 #222222;
+  /* For IE 8 */
+
+  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
+  /* For IE 5.5 - 7 */
+
+  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222');
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
 }
 legend {
   border: none;
   font-size: 38px;
   font-weight: bold;
 }
+<<<<<<< HEAD
 .form-actions {
   background-color: inherit;
   padding-bottom: 10px;
 }
+=======
+>>>>>>> 3bdcee37bb2a627bd4c5d47ef90f8ad382ee437e
 /* table on the browse page */
+.ride_table_wrapper {
+  width: 100%;
+  overflow: auto;
+}
 #ride_table td,
 #ride_table th {
   padding: 2px 9px;
@@ -239,6 +297,24 @@ legend {
 #ride_table .startpos_cell,
 #ride_table .endpos_cell {
   font-style: italic;
+  max-width: 200px;
+  word-wrap: break-word;
+  white-space: normal;
+  text-overflow: clip;
+}
+/* styling error/sucess/info messages */
+.messages {
+  list-style-type: none;
+  font-weight: bold;
+}
+.messages .error {
+  color: #b94a48;
+}
+.messages .success {
+  color: #468847;
+}
+.messages .info {
+  color: #3a87ad;
 }
 /*!
  * Combobox Plugin for jQuery, version 0.5.0
