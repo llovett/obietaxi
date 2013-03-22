@@ -237,10 +237,17 @@ h1{
 }
 
 .form-actions, .modal-footer {
-    background-color: inherit;
+    background-color: @pale-yellow;
     border: none;
+    min-height: 50px;
+
     .drop-shadow(0);
     .rounded-corners(3px);
+
+    a, .btn, button {
+	margin:10px 0 10px 10px;
+    }
+
 }
 
 legend {
