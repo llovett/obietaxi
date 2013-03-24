@@ -106,11 +106,6 @@ h2 {
   /* Opera */
 
   border-image: url('/static/images/stripe-border.png') 25 25 25 25 repeat repeat;
-<<<<<<< HEAD
-  -moz-box-shadow: 5px 5px 7px #222222;
-  -webkit-box-shadow: 5px 5px 7px #222222;
-  box-shadow: 5px 5px 7px #222222;
-=======
   -moz-box-shadow: 5px 5px 7.5px #222222;
   -webkit-box-shadow: 5px 5px 7.5px #222222;
   box-shadow: 5px 5px 7.5px #222222;
@@ -143,7 +138,6 @@ h2 {
   -moz-box-shadow: 5px 5px 7.5px #222222;
   -webkit-box-shadow: 5px 5px 7.5px #222222;
   box-shadow: 5px 5px 7.5px #222222;
->>>>>>> 3bdcee37bb2a627bd4c5d47ef90f8ad382ee437e
   /* For IE 8 */
 
   -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=7, Direction=135, Color='#222222')";
@@ -231,7 +225,7 @@ h2 {
 }
 .form-actions,
 .modal-footer {
-  background-color: #ffd673;
+  background-color: #bf9530;
   border: none;
   min-height: 50px;
   -moz-box-shadow: 0 0 0 #222222;
@@ -262,13 +256,10 @@ legend {
   font-size: 38px;
   font-weight: bold;
 }
-<<<<<<< HEAD
 .form-actions {
   background-color: inherit;
   padding-bottom: 10px;
 }
-=======
->>>>>>> 3bdcee37bb2a627bd4c5d47ef90f8ad382ee437e
 /* table on the browse page */
 .ride_table_wrapper {
   width: 100%;

@@ -7,6 +7,7 @@
     {% crispy form %}
 
     <div id="google_signin_div">
+      <p>This will work with your oberlin.edu mail address and password.</p>
       <strong>or</strong>
       <form action="{{ endpoint }}" method="POST">
 	{% csrf_token %}
