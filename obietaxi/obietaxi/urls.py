@@ -28,4 +28,6 @@ urlpatterns = patterns(
 
     url( r'^browse/$', views.browse, name="browse" ),
     url( r'^accounts/', include( 'mongologin.urls' ) ),
+
+    url( r'^about/$', direct_to_template, {'template':'about.html'} ),
 )
