@@ -680,6 +680,10 @@ def _browse( request, context ):
         offer_form = RideOfferPutForm()
     if not 'request_form' in context:
         request_form = RideRequestPutForm()
+    if not 'ride_offers' in context:
+        ride_offers = []
+    if not 'ride_requests' in context:
+        ride_requests = []
     ctx = dict( zip(locals().keys()+context.keys(), locals().values()+context.values()) )
     return render_to_response("browse.html", ctx, context_instance=RequestContext(request))
 
