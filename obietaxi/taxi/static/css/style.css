@@ -265,10 +265,13 @@ legend {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+#ride_table .rt_headings {
+  background-color: black;
+}
 #ride_table .rt_headings a {
   text-decoration: none;
   font: inherit;
-  color: inherit;
+  color: #ffb400;
 }
 #ride_table .rt_headings a:hover {
   text-decoration: underline;
@@ -294,6 +297,9 @@ legend {
   word-wrap: break-word;
   white-space: normal;
   text-overflow: clip;
+}
+#ride_table .tr1 {
+  background-color: #bf9530;
 }
 /* styling error/sucess/info messages */
 .messages {
