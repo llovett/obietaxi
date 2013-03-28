@@ -211,8 +211,8 @@ class RideRequestOfferSearchForm (RideRequestOfferForm):
                 'fuzziness'
                 ),
             FormActions(
-                Submit('search_rides', 'Search Rides', css_id="search_rides_button" ),
-                Submit('search_offers', 'Search Offers', css_id="search_offers_button" )
+                Submit('search_rides', 'Search Rides', css_id="search_rides_button", css_class="btn btn-info" ),
+                Submit('search_offers', 'Search Offers', css_id="search_offers_button", css_class="btn btn-info" )
             )
         )
 
@@ -280,7 +280,7 @@ class OfferOptionsForm (forms.Form):
                 ),
             FormActions(
                 Submit('update', 'Update', css_id='update_button'),
-                Submit('cancel', 'Cancel Offer', css_id='cancel_button')
+                Submit('cancel', 'Cancel Offer', css_id='cancel_button', css_class="btn btn-danger" )
             )
         )
 
@@ -322,7 +322,7 @@ class RequestOptionsForm (forms.Form):
                 ),
             FormActions(
                 Submit('update', 'Update', css_id='update_button'),
-                Submit('cancel', 'Cancel Request', css_id='cancel_button')
+                Submit('cancel', 'Cancel Request', css_id='cancel_button', css_class='btn btn-danger')
             )
         )
 
@@ -353,7 +353,7 @@ class CancellationForm(forms.Form):
                 'reason',
             ),
             FormActions(
-                Submit('cancel', 'Cancel', css_id='cancel_button btn-danger'),
+                Submit('cancel', 'Cancel', css_id='cancel_button', css_class='btn btn-danger'),
             )
         )
 
