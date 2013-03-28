@@ -428,19 +428,19 @@ legend {
     */
 
 }
-#forms_container #google_signin_div {
+#google_signin_div {
   position: absolute;
-  left: 150px;
-  top: 220px;
+  left: 178px;
+  top: 325px;
 }
-#forms_container #google_signin_div form {
+#google_signin_div form {
   display: inline;
   margin-left: 10px;
 }
-#forms_container strong {
+#google_signin_div strong {
   position: absolute;
   bottom: 0px;
-  left: -40px;
+  left: -45px;
 }
 .control-label.requiredField {
   font-weight: bold;
