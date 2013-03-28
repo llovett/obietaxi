@@ -284,8 +284,6 @@ def process_offer_ride( request ):
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
         req.ride_offer = offer
-        req.askers.remove( driver )
-        req.save()
 
         if len(offer.passengers) == 0:
             offer.passengers = [profile]
@@ -306,6 +304,8 @@ def process_offer_ride( request ):
                     email_body=body_requester,
                     email_subject="Your ride %s"%str(req) )
 
+    req.askers.remove( driver )
+    req.save()
     messages.add_message( request,
                           messages.SUCCESS, "You have {} {}'s offer".format('accepted' if response == 'accept' else 'declined',
                                                                             str(driver)) )
@@ -406,12 +406,10 @@ def process_ask_for_ride( request ):
 
     # Update the RideOffer instance to accept/decline the request
     if response == 'accept':
-        offer.askers.remove( rider )
         if len(offer.passengers) == 0:
             offer.passengers = [rider]
         else:
             offer.passengers.append( rider )
-        offer.save()
         # Save this offer inside of the RideRequest
         req.ride_offer = offer
         req.save()
@@ -429,6 +427,8 @@ def process_ask_for_ride( request ):
                     email_body=body_requester,
                     email_subject="Your ride from %s to %s"%(offer.start,offer.end) )
 
+    offer.askers.remove( rider )
+    offer.save()
     messages.add_message( request,
                           messages.SUCCESS,
                           "You have {} {}'s request".format('accepted' if response == 'accept' else 'declined',
@@ -834,7 +834,6 @@ def process_offer_update(request, offer_id):
     if not request.session.get('profile') == RideOffer.objects.get(pk=ObjectId(offer_id)).driver:
         raise PermissionDenied
 
-
     if request.method =='POST':
         form = OfferOptionsForm(request.POST)
 
@@ -869,15 +868,7 @@ def process_offer_update(request, offer_id):
 def userprofile_show( request, user_id ):
     ''' Shows all RideRequests and RideOffers for a particular user '''
 
-    # if 'user_id' in request.GET:
-    #     profile = UserProfile.objects.get( pk=ObjectId( request.GET['user_id'] ) )
-    # else:
-    #     profile = request.session['profile']
-
-    #user = get_mongo_or_404(User, pk=ObjectId(user_id))
-
     profile = get_mongo_or_404(UserProfile, pk=user_id)
-
     my_offers = RideOffer.objects.filter( driver=profile, completed=False )
     my_requests = RideRequest.objects.filter( passenger=profile )
 
@@ -898,8 +889,6 @@ def userprofile_show( request, user_id ):
 
     # Show the user their home page if they are the logged-in user
     if request.session.get('profile') == profile:
-    #if 'user_id' in request.GET and request.GET.get("user_id") != str(request.session.get("profile").id):
-        # Additional context for detail pages here...
         return render_to_response( "user_home.html", locals(), context_instance=RequestContext(request) )
 
     # Put other context variables for a user's home page here...
