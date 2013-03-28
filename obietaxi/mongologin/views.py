@@ -161,7 +161,7 @@ def google_login_success( request ):
 
     profile.user.backend = 'mongoengine.django.auth.MongoEngineBackend'
     login( request, profile.user )
-    return HttpResponseRedirect( reverse('user_landing' )
+    return HttpResponseRedirect( reverse('user_landing' ) )
 
 def google_register( request ):
     if request.method == 'POST':
@@ -175,7 +175,7 @@ def google_register( request ):
             login( request, profile.user )
             messages.add_message( request, messages.SUCCESS,
                                   "Your profile has been saved!" )
-            return HttpResponseRedirect( reverse('user_landing' )
+            return HttpResponseRedirect( reverse('user_landing' ) )
     else:
         form = GoogleRegisterForm()
     return render_to_response( 'google_register.html',
