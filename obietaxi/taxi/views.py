@@ -222,22 +222,19 @@ def offer_ride( request ):
         offer.save()
 
     # Message to be sent to the passenger
-    accept_link = '{}{}?req={}&response={}&offer={}'.format(
-            _hostname(),
-            reverse( 'process_offer_ride' ),
-            data['request_id'],
-            'accept',
-            str(offer.id)
+    accept_link = '%s%s'%(
+        _hostname(),
+        reverse( 'process_offer_ride', args=('accept',
+                                             offer.id,
+                                             request_id) )
     )
-    decline_link = '{}{}?req={}&response={}&offer={}'.format(
+    decline_link = '%s%s'%(
             _hostname(),
-            reverse( 'process_offer_ride' ),
-            data['request_id'],
-            'decline',
-            str(offer.id)
+            reverse( 'process_offer_ride', args=('decline',
+                                                 offer.id,
+                                                 request_id) )
     )
     appended = render_message( 'taxi/static/emails/offer_ride_accept_or_decline.txt', locals() )
-
     msg = "\r\n".join( (msg,30*'-',appended) )
 
     # Save this asker in the offer's 'askers' field
@@ -311,7 +308,6 @@ def process_offer_ride( request ):
     messages.add_message( request,
                           messages.SUCCESS, "You have {} {}'s offer".format('accepted' if response == 'accept' else 'declined',
                                                                             str(driver)) )
-
     return HttpResponseRedirect( reverse('user_landing') )
 
 

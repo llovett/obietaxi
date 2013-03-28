@@ -36,30 +36,37 @@
     {% endif %}
   {% endif %}
 
-  <h3>Rides You Requested</h3>
+  <h3>You Need a Ride</h3>
   {% if rides_requested %}
     <ul>
       {% for ride in rides_requested %}
 	<!-- brief description of ride requested -->
       <li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
+	<br />
 	<!-- if there was an offer accepted -->
 	{% if ride.ride_offer %}
-	  (accepted an <a href="/offer/show/?offer_id={{ ride.ride_offer.id }}">offer</a>)
+	  <a href="/offer/show/?offer_id={{ ride.ride_offer.id }}">going on this trip</a> |
+	  <!-- "options" link -->
+	  <a href="{% url request_options ride.id %}">manage</a>
 	  <!-- no offer accepted, show standing offers if any -->
 	{% else %}
 	  {% with askers=ride.askers %}
-	    {% if askers|length > 0 %}({{ askers|length }} offer{{ askers|pluralize }}){% endif %}
+	    <strong>
+	      {% if askers|length > 0 %}({{ askers|length }} offer{{ askers|pluralize }}){% endif %}
+	    </strong> |
+	    <!-- "options" link -->
+	    <strong>
+	      <a href="{% url request_options ride.id %}">manage</a>
+	    </strong>
 	  {% endwith %}
 	{% endif %}
-	<!-- "options" link -->
-	<a href="{% url request_options ride.id %}">options</a>
       </li>
     {% endfor %}
     </ul>
   {% else %}
     <p>You aren't riding in any upcoming trips.</p>
   {% endif %}
-  <h3>Rides You Offered</h3>
+  <h3>You're Offering a Ride</h3>
   {% if rides_offered %}
     <ul>
       {% for ride in rides_offered %}

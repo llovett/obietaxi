@@ -1,16 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %} Request Options {% endblock %}
-{% block heading %} Options {% endblock %}
+{% block title %}Options{% endblock %}
+{% block heading %}Ride Request Options{% endblock %}
 
 {% block scripts %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/options.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/options.js"></script>
 {% endblock %}
 
 {% block content %}
+  
+  {% if not ride_request.offer and ride_request.askers|length > 0 %}
+    <h3>Pending Offers</h3>
+    {% with askers=ride_request.askers %}
+      <ul>
+	{% for asker in askers %}
+	  <li>{{ asker.driver }}:<br />
+	    <em>{{ asker.message }}</em><br />
+	    <a href="{% url process_offer_ride 'accept' asker.id ride_request.id %}" class="btn btn-primary">accept</a>
+	    <a href="{% url process_offer_ride 'decline' asker.id ride_request.id %}" class="btn btn-danger">decline</a>
+	  </li>
+	{% endfor %}
+      </ul>
+    {% endwith %}
+  {% endif %}
 
-{% load crispy_forms_tags %}
-<!-- this renders the form -->
-{% crispy form %}
-
+  {% load crispy_forms_tags %}
+  <!-- this renders the form -->
+  {% crispy form %}
+  
 {% endblock %}
