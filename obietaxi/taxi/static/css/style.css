@@ -225,9 +225,9 @@ h2 {
 }
 .form-actions,
 .modal-footer {
-  background-color: #bf9530;
+  background-color: #bf9530 !important;
   border: none;
-  min-height: 50px;
+  padding: 10px 10px 10px 10px;
   -moz-box-shadow: 0 0 0 #222222;
   -webkit-box-shadow: 0 0 0 #222222;
   box-shadow: 0 0 0 #222222;
@@ -242,14 +242,6 @@ h2 {
   -ms-border-radius: 3px;
   -o-border-radius: 3px;
   border-radius: 3px;
-}
-.form-actions a,
-.modal-footer a,
-.form-actions .btn,
-.modal-footer .btn,
-.form-actions button,
-.modal-footer button {
-  margin: 10px 0 10px 10px;
 }
 legend {
   border: none;
