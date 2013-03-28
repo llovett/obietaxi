@@ -264,10 +264,13 @@ legend {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+#ride_table .rt_headings {
+  background-color: black;
+}
 #ride_table .rt_headings a {
   text-decoration: none;
   font: inherit;
-  color: inherit;
+  color: #ffb400;
 }
 #ride_table .rt_headings a:hover {
   text-decoration: underline;
