@@ -31,8 +31,6 @@ class BootstrapSplitDateTimeWidget(MultiWidget):
         super(BootstrapSplitDateTimeWidget, self).__init__(widgets, attrs)
 
     def decompress(self, value):
-        import sys
-        sys.stderr.write("value in decompress() is %s"%str(value))    
         if value:
             d = strftime("%Y-%m-%d", value.timetuple())
             hour = strftime("%H", value.timetuple())
