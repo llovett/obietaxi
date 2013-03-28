@@ -294,6 +294,9 @@ legend {
   white-space: normal;
   text-overflow: clip;
 }
+#ride_table .tr1 {
+  background-color: #bf9530;
+}
 /* styling error/sucess/info messages */
 .messages {
   list-style-type: none;
