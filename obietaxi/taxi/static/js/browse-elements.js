@@ -112,8 +112,9 @@ $(document).ready(
 	    var updateLatLng = function( startOrEnd ) {
 		var place = (startOrEnd === 'start' ? searchStartBox : searchEndBox).getPlace();
 		if ( place ) {
-		    var lat = place.geometry.location.Ya;
-		    var lng = place.geometry.location.Za;
+		    // Seems like this could be either one... ?
+		    var lat = place.geometry.location.Ya || place.geometry.location.lat();
+		    var lng = place.geometry.location.Za || place.geometry.location.lng();
 		    $("#id_"+type+"_"+startOrEnd+"_lat").val(lat);
 		    $("#id_"+type+"_"+startOrEnd+"_lng").val(lng);
 		}
