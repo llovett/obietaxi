@@ -7,7 +7,6 @@
     {% crispy form %}
 
     <div id="google_signin_div">
-      <p>This will work with your oberlin.edu mail address and password.</p>
       <strong>or</strong>
       <form action="{{ endpoint }}" method="POST">
 	{% csrf_token %}
@@ -15,9 +14,12 @@
 	{% for key, value in params.items %}
 	  <input type="hidden" name="{{ key }}" value="{{ value }}" />
 	{% endfor %}
-	<input type="submit" value="Sign in with Google" />
+	<input id="google_signin_btn" class="btn" type="submit" value="Sign in with Google" />
       </form>
     </div>
+  <h4 style="margin-top: 30px;"> Don't have an Obietaxi account? </h4>
+  <p style="color:#743308"> <a href="{% url register %}">Register for an Obietaxi account</a>, or avoid creating an account by logging in with your Google account. Just click on the 'Sign in with Google' button above. Signing in with Google will
+  work with your oberlin.edu mail address and password.</p>
   </div>
 
 {% endblock %}

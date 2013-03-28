@@ -23,7 +23,13 @@
       <div id="content">
 
 	<div id="heading">
-	    <h1>{% block heading %}{% endblock %}</h1>
+	    <!--[if IE]>
+	    <h1 style="color: #222222 !important;">
+	    <![endif]-->
+	    <!--[if !IE]>-->
+	    <h1>
+		<!-- <![endif]-->
+		{% block heading %}{% endblock %}</h1>
 	    <h2>{% block smaller_heading %}{% endblock %}</h2>
 	  {% block logo %}
 	    <a href="{% url main_page %}">

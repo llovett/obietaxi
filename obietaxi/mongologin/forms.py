@@ -26,7 +26,7 @@ class LoginForm( forms.Form ):
         self.helper.layout = Layout(
             'username',
             'password',
-            HTML('<a href="%s">forgot password</a>'%forgot_password_uri),
+            HTML('<a href="%s">derp, I forgot my password</a>'%forgot_password_uri),
             FormActions(
                 Submit('login', 'Login', css_id="login_button"),
             )

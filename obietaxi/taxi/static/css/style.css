@@ -85,6 +85,7 @@ h2 {
 }
 #content {
   margin: auto;
+  margin-bottom: 30px;
   position: relative;
   width: 800px;
   min-height: 600px;
@@ -406,15 +407,27 @@ legend {
 }
 #forms_container {
   position: relative;
+  width: 320px;
+  /*
+    #google_signin_btn{
+	background: url('/static/images/logo4w.png') no-repeat scroll 7px 7px;
+    }
+    */
+
 }
 #forms_container #google_signin_div {
   position: absolute;
-  bottom: 0px;
-  left: 300px;
+  left: 150px;
+  top: 220px;
 }
 #forms_container #google_signin_div form {
   display: inline;
   margin-left: 10px;
+}
+#forms_container strong {
+  position: absolute;
+  bottom: 0px;
+  left: -40px;
 }
 .control-label.requiredField {
   font-weight: bold;
