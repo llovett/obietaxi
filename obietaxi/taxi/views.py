@@ -511,6 +511,8 @@ def _process_ro_form( request, type ):
 
     # Render the form if it was invalid
     invalid = type
+    import sys
+    sys.stderr.write("form errors: %s\n"%str(form._errors))
     return _browse( request, locals() )
 
 @login_required
