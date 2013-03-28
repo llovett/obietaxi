@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}{{ ride_request.start.title }} to {{ ride_request.end.title }}{% endblock %}
-{% block smaller_heading %}{{ ride_request.start.title }} to {{ ride_request.end.title }}{% endblock %}
+{% block smaller_heading %}<em>{{ ride_request.start.title }} </em> to <em>{{ ride_request.end.title }}</em>{% endblock %}
 {% block content %}
+<div id="ride_details_div">
   <h3>Details</h3>
   <table name="offer_details" id="offer_details" class="item_detail">
     <tr><th>Passenger</th><td>{{ ride_request.passenger }}</td></tr>
@@ -9,6 +10,7 @@
     <tr><th>Departing from</th><td>{{ ride_request.start }}</td></tr>
     <tr><th>Going to</th><td>{{ ride_request.end }}</td></tr>
   </table>
+  </div>
 
   {% if form %}
     {% load crispy_forms_tags %}
