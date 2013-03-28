@@ -81,6 +81,12 @@
 				+"<a href=\""+rides[i].contact_link+"\">"
 				+rides[i].contact
 				+"</a></td>");
+		    // Even/odd row coloring/styling
+		    if ( i%2 == 0 ) {
+			row.addClass("tr1");
+		    } else {
+			row.addClass("tr2");
+		    }
 		    $("#ride_table").append( row );
 		}
 	    };
@@ -244,7 +250,7 @@
 	  <th class="contact_cell_hdg"><a href="#">contact</a></th>
 	</tr>
 	{% for req in ride_requests %}
-	  <tr>
+	  <tr class="{% cycle 'tr1' 'tr2' as rowstyles %}">
 	    <td class="askoffer_cell">
 	      <a href="{% url request_show req.id %}">looking for a ride</a>
 	    </td>
@@ -257,7 +263,7 @@
 	  </tr>
 	{% endfor %}
 	{% for offer in ride_offers %}
-	  <tr>
+	  <tr class="{% cycle rowstyles %}">
 	    <td class="askoffer_cell">
 	      <a href="{% url offer_show offer.id %}">offering a ride</a>
 	    </td>
