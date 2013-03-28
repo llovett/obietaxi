@@ -36,7 +36,7 @@ def login_view( request ):
                     login( request, user )
                     # Put profile in the session
                     request.session['profile'] = UserProfile.objects.get(user=user)
-                    return HttpResponseRedirect( reverse('user_landing' )
+                    return HttpResponseRedirect( reverse('user_landing' ) )
                     #return render_to_response('
                 else:
                     return _fail_login( request, 'invalid login (note: you must Sign in with Google if that\'s how you signed up initially)' )
