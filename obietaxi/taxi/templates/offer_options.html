@@ -9,16 +9,35 @@
 
 {% block content %}
 
-  <h3>Passengers</h3>
-  {% if rider_list %}
-    <ul>
-      {% for rider in rider_list %}
-	<li>{{ rider }}</li>
-      {% endfor %}      
-    </ul>
-  {% else %}
-    <p>Your ride has no passengers.</p>
-  {% endif %}
+  <h3>Current Passengers</h3>
+  {% with passengers=ride_offer.passengers %}
+    {% if passengers|length > 0 %}
+      <ul>
+	{% for passenger in passengers %}
+	  <li>{{ passenger }}</li>
+	{% endfor %}
+      </ul>
+    {% else %}
+      <p>Your ride has no passengers.</p>
+    {% endif %}
+  {% endwith %}
+
+  <h3>Pending Passengers</h3>
+  {% with askers=ride_offer.askers %}
+    {% if askers|length > 0 %}
+      <ul>
+	{% for asker in askers %}
+	  <li>{{ asker.passenger }}:<br />
+	    <em>{{ asker.message }}</em><br />
+	    <a href="{% url process_ask_for_ride 'accept' ride_offer.id asker.id %}" class="btn btn-primary">accept</a>
+	    <a href="{% url process_ask_for_ride 'decline' ride_offer.id asker.id %}" class="btn btn-danger">decline</a>
+	  </li>
+	{% endfor %}
+      </ul>
+    {% else %}
+      <p>No one else has asked for a ride.</p>
+    {% endif %}
+  {% endwith %}
 
   {% load crispy_forms_tags %}
   <!-- this renders the form -->

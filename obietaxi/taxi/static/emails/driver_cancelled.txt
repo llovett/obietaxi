@@ -1,6 +1,6 @@
-Hello {{req.passenger}},
+Hello {{passenger.user.first_name}},
 
-This is an email concerning your upcoming trip {{offer}}. Your driver, {{offer.driver}} is no longer able to drive on this trip for the following reason:
+This is an email concerning your upcoming trip {{offer}}. Your driver, {{offer.driver}} is no longer able to drive on this trip. A message from your driver:
 
 {{reason_msg}}
 

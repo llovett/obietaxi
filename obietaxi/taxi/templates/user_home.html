@@ -65,14 +65,14 @@
       {% for ride in rides_offered %}
 	<!-- brief description of ride offered -->
         <li>{{ ride.start }} to {{ ride.end }} on {{ ride.date }}
+	  <!-- TODO: show all pending passengers -->
+	  <br />
 	  <!-- show all passengers on the ride -->
 	  {% with passengers=ride.passengers %}
 	    {% if passengers|length > 0 %}
-	      ({{ passengers|length }} passenger{{ passengers|pluralize }})
+	      {{ passengers|length }} passenger{{ passengers|pluralize }} |
 	    {% endif %}
 	  {% endwith %}
-	  <!-- TODO: show all pending passengers -->
-	  <br />
 	  {% with askers=ride.askers %}
 	    {% if askers|length > 0 %}
 	      <strong>
