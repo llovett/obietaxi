@@ -57,7 +57,7 @@ class RideRequest(mdb.Document):
     message = mdb.StringField()
     date = mdb.DateTimeField()
     # Holds those who are proposing rides (but have not yet been accepted/declined)
-    askers = mdb.ListField( mdb.ReferenceField(UserProfile) )
+    askers = mdb.ListField( mdb.ReferenceField('RideOffer') )
     # Possible values for fuzziness:
     # 1. +/- an hour (default)  "1-hours"
     # 2. +/- 2 hours            "2-hours"
@@ -96,7 +96,7 @@ class RideOffer(mdb.Document):
     repeat = mdb.StringField()
 
     # Holds those who are asking for rides (but have not yet been accepted/declined)
-    askers = mdb.ListField( mdb.ReferenceField(UserProfile) )
+    askers = mdb.ListField( mdb.ReferenceField('RideRequest') )
     # Whether or not this trip has taken place already
     completed = mdb.BooleanField(default=False)
     # Stores the polygon over the driver's route from start --> end
