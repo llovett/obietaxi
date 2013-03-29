@@ -244,6 +244,46 @@ h2 {
   -o-border-radius: 3px;
   border-radius: 3px;
 }
+.form-actions #search_rides_button,
+.modal-footer #search_rides_button {
+  background: url("/static/images/users_search_yellow.png") no-repeat right #66b8d0;
+  width: 132px;
+  text-align: left;
+  padding-left: 7px;
+}
+.form-actions #search_rides_button:hover,
+.modal-footer #search_rides_button:hover {
+  background-color: #2F96B4;
+}
+.form-actions #search_offers_button,
+.modal-footer #search_offers_button {
+  background: url("/static/images/search_car.png") no-repeat right #66b8d0;
+  width: 135px;
+  text-align: left;
+  padding-left: 7px;
+}
+.form-actions #search_offers_button:hover,
+.modal-footer #search_offers_button:hover {
+  background-color: #2F96B4;
+}
+#new_offer_btn {
+  background: url("/static/images/offer_ride.png") no-repeat right #0088cc;
+  width: 100px;
+  text-align: left;
+  padding-left: 7px;
+}
+#new_offer_btn:hover {
+  background-color: #0044CC;
+}
+#new_request_btn {
+  background: url("/static/images/thumbs_up.png") no-repeat right #0088cc;
+  width: 110px;
+  text-align: left;
+  padding-left: 7px;
+}
+#new_request_btn:hover {
+  background-color: #0044CC;
+}
 legend {
   border: none;
   font-size: 25px;
@@ -418,7 +458,8 @@ legend {
   margin: 0px;
   padding: 0px;
 }
-#forms_container {
+#forms_container,
+#login_paragraph {
   position: relative;
   width: 320px;
   /*
@@ -430,8 +471,8 @@ legend {
 }
 #google_signin_div {
   position: absolute;
-  left: 178px;
-  top: 325px;
+  left: 153px;
+  bottom: 10px;
 }
 #google_signin_div form {
   display: inline;

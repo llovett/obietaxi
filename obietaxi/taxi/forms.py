@@ -211,7 +211,7 @@ class RideRequestOfferSearchForm (RideRequestOfferForm):
                 'fuzziness'
                 ),
             FormActions(
-                Submit('search_rides', 'Search Rides', css_id="search_rides_button", css_class="btn btn-info" ),
+                Submit('search_rides', 'Search Riders', css_id="search_rides_button", css_class="btn btn-info" ),
                 Submit('search_offers', 'Search Offers', css_id="search_offers_button", css_class="btn btn-info" )
             )
         )

@@ -250,7 +250,53 @@ h2{
 
     .drop-shadow(0);
     .rounded-corners(3px);
+    #search_rides_button{
+	background: url("/static/images/users_search_yellow.png") no-repeat right #66B8D0;
+	width: 132px;
+	       text-align: left;
+	       padding-left: 7px;
+
+    }
+    #search_rides_button:hover{
+	background-color: #2F96B4;
+    }
+    #search_offers_button{
+	background: url("/static/images/search_car.png") no-repeat right #66B8D0;
+	width: 135px;
+	       text-align: left;
+	       padding-left: 7px;
+
+    }
+    #search_offers_button:hover{
+	background-color: #2F96B4;
+    }
 }
+
+#new_offer_btn{
+    background: url("/static/images/offer_ride.png") no-repeat right #0088CC;
+    width: 100px;
+   text-align:left;
+   padding-left: 7px;
+
+}
+#new_offer_btn:hover{
+    background-color: #0044CC;
+}
+
+#new_request_btn{
+    background: url("/static/images/thumbs_up.png") no-repeat right #0088CC;
+    width: 110px;
+   text-align:left;
+    padding-left: 7px;
+
+}
+#new_request_btn:hover{
+    background-color: #0044CC;
+}
+
+
+
+
 
 legend {
     border: none;
@@ -433,7 +479,7 @@ th{
     }
 }
 
-#forms_container {
+#forms_container, #login_paragraph {
     position:relative;
 width:320px;
     /*
@@ -445,8 +491,8 @@ width:320px;
 
 #google_signin_div {
     position:absolute;
-    left:178px;
-    top:325px;
+    left:153px;
+bottom: 10px;
     form {
 	display:inline;
 	margin-left:10px;
