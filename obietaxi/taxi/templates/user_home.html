@@ -51,13 +51,17 @@
 	  <!-- no offer accepted, show standing offers if any -->
 	{% else %}
 	  {% with askers=ride.askers %}
-	    <strong>
-	      {% if askers|length > 0 %}({{ askers|length }} offer{{ askers|pluralize }}){% endif %}
-	    </strong> |
+	    {% if askers|length > 0 %}
+	      <strong>
+		({{ askers|length }} offer{{ askers|pluralize }})
+	      </strong> |
+	      <strong>
+	    {% endif %}
 	    <!-- "options" link -->
-	    <strong>
-	      <a href="{% url request_options ride.id %}">manage</a>
-	    </strong>
+	    <a href="{% url request_options ride.id %}">manage</a>
+            {% if askers|length > 0 %}
+	      </strong>
+	    {% endif %}
 	  {% endwith %}
 	{% endif %}
       </li>
