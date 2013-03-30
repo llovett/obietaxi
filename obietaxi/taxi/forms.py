@@ -335,10 +335,10 @@ class CancellationForm(forms.Form):
 
     ride_id = forms.CharField( widget=forms.HiddenInput )
     reason = forms.CharField(
-        label="",
-        required=True,
+        label="Message to passengers/driver",
+        required=False,
         widget=forms.Textarea(
-            attrs={'cols':40, 'rows':5, 'placeholder':'Please give a reason for cancelling.'},
+            attrs={'cols':40, 'rows':5, 'value':'Sorry, this trip no longer works for me.'},
         )
     )
 
