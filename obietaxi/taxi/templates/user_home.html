@@ -63,7 +63,8 @@
 	      </strong>
 	    {% endif %}
 	  {% endwith %}
-	{% endif %}
+	{% endif %} |
+	<a href="{% url request_show ride.id %}">view</a>
       </li>
     {% endfor %}
     </ul>
