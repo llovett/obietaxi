@@ -226,13 +226,13 @@ def offer_ride( request ):
         _hostname(),
         reverse( 'process_offer_ride', args=('accept',
                                              offer.id,
-                                             request_id) )
+                                             req.id) )
     )
     decline_link = '%s%s'%(
             _hostname(),
             reverse( 'process_offer_ride', args=('decline',
                                                  offer.id,
-                                                 request_id) )
+                                                 req.id) )
     )
     appended = render_message( 'taxi/static/emails/offer_ride_accept_or_decline.txt', locals() )
     msg = "\r\n".join( (msg,30*'-',appended) )
@@ -248,16 +248,15 @@ def offer_ride( request ):
     return HttpResponseRedirect( reverse("browse") )
 
 @login_required
-def process_offer_ride( request ):
+def process_offer_ride( request, ride_response, ride_offer, ride_request ):
     '''
     Handles the 'accept' or 'decline' links sent to a passenger when a
     driver finds their RideRequest and submits an offer.
     '''
 
-    data = request.GET
-    request_id = data['req']
-    offer_id = data['offer']
-    response = data['response']
+    request_id = ride_request
+    offer_id = ride_offer
+    response = ride_response
     profile = request.session.get("profile")
 
     # Do some error checking
