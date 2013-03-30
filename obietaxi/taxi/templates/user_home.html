@@ -10,7 +10,7 @@
 	{% for offer in ride_offers_completed %}
 	  <li>
 	    {% if offer.passengers %}
-	      <a href="/offer/feedback/?offer_id={{ offer.id }}">
+	      <a href="{% url driver_feedback offer.id %}">
 	    {% endif %}
 	      {{ offer.start }} to {{ offer.end }} on {{ offer.date }}
 	    {% if offer.passengers %}
@@ -45,7 +45,7 @@
 	<br />
 	<!-- if there was an offer accepted -->
 	{% if ride.ride_offer %}
-	  <a href="/offer/show/?offer_id={{ ride.ride_offer.id }}">going on this trip</a> |
+	  <a href="{% url offer_show ride.ride_offer.id %}">going on this trip</a> |
 	  <!-- "options" link -->
 	  <a href="{% url request_options ride.id %}">manage</a>
 	  <!-- no offer accepted, show standing offers if any -->

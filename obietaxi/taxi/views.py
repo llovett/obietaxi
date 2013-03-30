@@ -896,7 +896,10 @@ def user_landing( request ):
 ###########
 
 @login_required
-def driver_feedback( request ):
+def driver_feedback( request, offer_id ):
+    offer = get_mongo_or_404( RideOffer, pk=ObjectId(offer_id) )
+
+    # Submitting feedback
     if request.method == 'POST':
         profile = request.session.get("profile")
         def fail( msg ):
@@ -904,7 +907,6 @@ def driver_feedback( request ):
             messages.add_message( request, messages.ERROR, msg )
             return HttpResponseRedirect( reverse('user_landing') )
 
-        offer = get_mongo_or_404( RideOffer, pk=request.POST['offer_id'] )
         # Must be the driver of this RideOffer
         if profile != offer.driver:
             return fail( "Cannot leave feedback on that trip." )
@@ -954,9 +956,8 @@ def driver_feedback( request ):
             messages.add_message( request, messages.SUCCESS, "Your correspondence has been recorded." )
             return HttpResponseRedirect( reverse('user_landing') )
 
-    offer_id = request.GET.get("offer_id")
-    form = DriverFeedbackForm( RideOffer.objects.get(pk=offer_id),
-                               initial={'offer_id':offer_id} )
+    form = DriverFeedbackForm( offer,
+                               initial={'offer_id':str(offer.id)} )
     return render_to_response("driver_feedback.html", locals(), context_instance=RequestContext(request) )
 
 @login_required
