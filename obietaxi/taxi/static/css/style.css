@@ -335,6 +335,12 @@ legend {
 #ride_table .startpos_cell_hdg {
   text-align: right;
 }
+#ride_table .askoffer_cell a,
+#ride_table .startpos_cell a,
+#ride_table .askoffer_cell_hdg a,
+#ride_table .startpos_cell_hdg a {
+  font-weight: bold;
+}
 #ride_table .endpos_cell,
 #ride_table .datetime_cell,
 #ride_table .contact_cell,

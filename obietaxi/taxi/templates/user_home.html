@@ -45,7 +45,7 @@
 	<br />
 	<!-- if there was an offer accepted -->
 	{% if ride.ride_offer %}
-	  <a href="{% url offer_show ride.ride_offer.id %}">going on this trip</a> |
+	  <em><a href="{% url offer_show ride.ride_offer.id %}">going on this trip</a></em> |
 	  <!-- "options" link -->
 	  <a href="{% url request_options ride.id %}">manage</a>
 	  <!-- no offer accepted, show standing offers if any -->
