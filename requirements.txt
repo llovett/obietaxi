@@ -1,7 +1,9 @@
 Django==1.4.3
-Polygon==2.0.5
+Polygon2==2.0.6
 argparse==1.2.1
+distribute==0.6.34
 django-crispy-forms==1.2.3
+django-mongorunner==0.1
 mongoengine==0.7.8
 pymongo==2.4.1
 wsgiref==0.1.2
