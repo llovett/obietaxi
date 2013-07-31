@@ -1,5 +1,3 @@
-import mongoengine as mdb
-
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -11,10 +9,9 @@ MANAGERS = ADMINS
 
 import os
 HERE = os.path.dirname( os.path.abspath(__file__) )
-mdb.connect('obietaxi')
 
 # This needs to be changed as the site is moved around
-HOSTNAME='llovett.cs.oberlin.edu:8050'
+HOSTNAME='localhost:8000'
 
 # Message storage backend
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'

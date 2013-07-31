@@ -1,6 +1,10 @@
+import mongoengine as mdb
 from django.conf.urls import patterns, include, url
 from django.views.generic.simple import direct_to_template
 from taxi import views
+
+# Connect to database
+mdb.connect('obietaxi')
 
 urlpatterns = patterns(
     '',
