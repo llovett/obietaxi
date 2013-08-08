@@ -7,3 +7,4 @@ django-mongorunner==0.1
 mongoengine==0.7.8
 pymongo==2.4.1
 wsgiref==0.1.2
+coverage==3.6

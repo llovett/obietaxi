@@ -6,3 +6,7 @@ local_settings.py
 *~
 obietaxi/obietaxi/static/
 *.swp
+# coverage.py related files
+.coverage
+htmlcov
+coverage.xml
